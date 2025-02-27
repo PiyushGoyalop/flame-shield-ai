@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Menu, X, Fire } from "lucide-react";
+import { Menu, X, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -33,7 +33,7 @@ export function Nav() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Fire size={24} className="text-wildfire-600" />
+          <Flame size={24} className="text-wildfire-600" />
           <span className="font-display font-bold text-xl">Wildfire Analytics</span>
         </Link>
 

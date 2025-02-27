@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Fire, Globe, BarChart4, Zap, MapPin, ChartLine } from "lucide-react";
+import { Flame, Globe, BarChart4, Zap, MapPin, ChartLine } from "lucide-react";
 
 export function FeatureSection() {
   const features = [
@@ -30,7 +30,7 @@ export function FeatureSection() {
       description: "Visualize historical wildfire patterns and identify seasonal trends to improve preparedness."
     },
     {
-      icon: <Fire className="h-8 w-8 text-wildfire-600" />,
+      icon: <Flame className="h-8 w-8 text-wildfire-600" />,
       title: "Cause Identification",
       description: "Explore the common causes of wildfires and their distribution across different regions."
     }

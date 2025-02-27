@@ -1,5 +1,5 @@
 
-import { Fire } from "lucide-react";
+import { Flame } from "lucide-react";
 
 export function Footer() {
   return (
@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Fire size={24} className="text-wildfire-600" />
+              <Flame size={24} className="text-wildfire-600" />
               <span className="font-display font-bold text-xl">Wildfire Analytics</span>
             </div>
             <p className="text-muted-foreground text-sm">
