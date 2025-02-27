@@ -27,28 +27,28 @@ export function Nav() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out py-4 px-6 md:px-8",
         isScrolled
-          ? "bg-white/80 backdrop-blur-md shadow-subtle"
-          : "bg-transparent"
+          ? "bg-white/90 backdrop-blur-md shadow-subtle"
+          : "bg-transparent text-white"
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Flame size={24} className="text-wildfire-600" />
-          <span className="font-display font-bold text-xl">Wildfire Analytics</span>
+          <Flame size={24} className={isScrolled ? "text-wildfire-500" : "text-wildfire-300"} />
+          <span className={`font-display font-bold text-xl ${isScrolled ? "text-wildfire-800" : "text-white"}`}>Wildfire Analytics</span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className="highlight-link font-medium">
+          <Link to="/" className={`highlight-link font-medium ${isScrolled ? "text-wildfire-800" : "text-white"}`}>
             Home
           </Link>
-          <Link to="/analytics" className="highlight-link font-medium">
+          <Link to="/analytics" className={`highlight-link font-medium ${isScrolled ? "text-wildfire-800" : "text-white"}`}>
             Analytics
           </Link>
-          <Link to="/predict" className="highlight-link font-medium">
+          <Link to="/predict" className={`highlight-link font-medium ${isScrolled ? "text-wildfire-800" : "text-white"}`}>
             Prediction
           </Link>
-          <Link to="/about" className="highlight-link font-medium">
+          <Link to="/about" className={`highlight-link font-medium ${isScrolled ? "text-wildfire-800" : "text-white"}`}>
             About
           </Link>
         </nav>
@@ -57,7 +57,7 @@ export function Nav() {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className={`md:hidden ${isScrolled ? "text-wildfire-800" : "text-white"}`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

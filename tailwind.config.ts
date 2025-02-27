@@ -63,16 +63,17 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				// Updated wildfire color palette with blue tones
 				wildfire: {
-					100: '#FFF5F0',
-					200: '#FFE5D9',
-					300: '#FFCDB2',
-					400: '#FFB4A2',
-					500: '#E5989B',
-					600: '#B5838D',
-					700: '#6D6875',
-					800: '#3A3238',
-					900: '#1E1A1C'
+					100: '#EEF4FF', // Light blue
+					200: '#D1E0FF', 
+					300: '#A4C2F4',
+					400: '#739BE9',
+					500: '#3F75E0', // Primary blue
+					600: '#2756B3',
+					700: '#193C87',
+					800: '#0F265C',
+					900: '#081231'
 				},
 				danger: {
 					100: '#FFF5F5',
@@ -190,8 +191,12 @@ export default {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 				'wildfire-texture': "url('/wildfire-texture.png')",
-				'forest-dark': "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/forest-background.jpg')",
-				'dot-pattern': "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233a3238' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='13' cy='13' r='1.5'/%3E%3C/g%3E%3C/svg%3E\")",
+				'forest-dark': "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb')",
+				'mountain-bg': "url('https://images.unsplash.com/photo-1426604966848-d7adac402bff')",
+				'forest-light': "url('https://images.unsplash.com/photo-1523712999610-f77fbcfc3843')",
+				'water-bg': "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb')",
+				'ocean-bg': "url('https://images.unsplash.com/photo-1500375592092-40eb2168fd21')",
+				'dot-pattern': "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23193C87' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='13' cy='13' r='1.5'/%3E%3C/g%3E%3C/svg%3E\")",
 			}
 		}
 	},
