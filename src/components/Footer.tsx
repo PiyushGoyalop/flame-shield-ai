@@ -76,13 +76,13 @@ export function Footer() {
               <h3 className="font-medium text-base mb-4 text-wildfire-200">Contact</h3>
               <ul className="space-y-2 text-sm">
                 <li className="text-wildfire-100/70">
-                  Email: info@wildfireanalytics.ai
+                  Name: Piyush Goyal
                 </li>
                 <li className="text-wildfire-100/70">
-                  Phone: +1 (555) 123-4567
+                  Email: piyushgoyalujn386@gmail.com
                 </li>
                 <li className="text-wildfire-100/70">
-                  Address: 123 Forest Ave, Research City, CA 90210
+                  Phone: +919893894491
                 </li>
               </ul>
             </div>
