@@ -1,16 +1,39 @@
 
+import { useState, useEffect } from "react";
 import { PredictionForm } from "@/components/PredictionForm";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Flame, BarChart4, FileCode, Globe, CloudRain, Thermometer } from "lucide-react";
+import { Flame, BarChart4, FileCode, Globe, CloudRain, Thermometer, Database, LineChart } from "lucide-react";
 
 const Predict = () => {
+  const [backgroundImage, setBackgroundImage] = useState<number>(1);
+
+  // Rotate through different background images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBackgroundImage(prev => (prev % 5) + 1);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Get background class based on current image
+  const getBackgroundClass = () => {
+    switch(backgroundImage) {
+      case 1: return "bg-gradient-to-br from-white to-wildfire-50";
+      case 2: return "bg-gradient-to-br from-white to-blue-50";
+      case 3: return "bg-gradient-to-br from-white to-green-50";
+      case 4: return "bg-gradient-to-br from-white to-amber-50";
+      case 5: return "bg-gradient-to-br from-white to-wildfire-100";
+      default: return "bg-gradient-to-br from-white to-wildfire-50";
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
       
-      <main className="flex-grow pt-28 pb-20">
+      <main className={`flex-grow pt-28 pb-20 transition-colors duration-1000 ${getBackgroundClass()}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
@@ -27,69 +50,41 @@ const Predict = () => {
             <h2 className="text-2xl font-display font-bold mb-6 text-center">Advanced ML-Powered Prediction</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-              <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-wildfire-100 p-2.5 rounded-lg">
-                      <FileCode className="h-5 w-5 text-wildfire-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">XGBoost Algorithm</h3>
-                      <p className="text-muted-foreground">
-                        Our model uses XGBoost with optimized hyperparameters to achieve 94.2% accuracy in wildfire prediction.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <FeatureCard 
+                icon={FileCode} 
+                title="XGBoost Algorithm" 
+                description="Our model uses XGBoost with optimized hyperparameters to achieve 94.2% accuracy in wildfire prediction."
+              />
               
-              <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-wildfire-100 p-2.5 rounded-lg">
-                      <Globe className="h-5 w-5 text-wildfire-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Real-Time Data</h3>
-                      <p className="text-muted-foreground">
-                        Incorporates current weather conditions via OpenWeather API for more accurate risk assessment.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <FeatureCard 
+                icon={Globe} 
+                title="Real-Time Data" 
+                description="Incorporates current weather conditions via OpenWeather API for more accurate risk assessment."
+              />
               
-              <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-wildfire-100 p-2.5 rounded-lg">
-                      <BarChart4 className="h-5 w-5 text-wildfire-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">SMOTE Balancing</h3>
-                      <p className="text-muted-foreground">
-                        Uses Synthetic Minority Over-sampling Technique to address class imbalance for better prediction.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <FeatureCard 
+                icon={BarChart4} 
+                title="SMOTE Balancing" 
+                description="Uses Synthetic Minority Over-sampling Technique to address class imbalance for better prediction."
+              />
               
-              <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-wildfire-100 p-2.5 rounded-lg">
-                      <CloudRain className="h-5 w-5 text-wildfire-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">CO₂ Correlation</h3>
-                      <p className="text-muted-foreground">
-                        Analyzes the relationship between carbon emissions and wildfire occurrence probability.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <FeatureCard 
+                icon={CloudRain} 
+                title="CO₂ Correlation" 
+                description="Analyzes the relationship between carbon emissions and wildfire occurrence probability."
+              />
+              
+              <FeatureCard 
+                icon={Database} 
+                title="GridSearchCV Tuning" 
+                description="Optimizes hyperparameters using 5-fold cross-validation to maximize model performance."
+              />
+              
+              <FeatureCard 
+                icon={LineChart} 
+                title="Pattern Recognition" 
+                description="Identifies temporal and spatial patterns in wildfire occurrences across diverse geographical regions."
+              />
             </div>
             
             <Card className="border-wildfire-200">
@@ -127,5 +122,32 @@ const Predict = () => {
     </div>
   );
 };
+
+// Helper component to make the code more modular
+const FeatureCard = ({ 
+  icon: Icon, 
+  title, 
+  description 
+}: { 
+  icon: React.ComponentType<any>; 
+  title: string; 
+  description: string;
+}) => (
+  <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all hover:-translate-y-1 duration-300">
+    <CardContent className="p-6">
+      <div className="flex items-start gap-4">
+        <div className="bg-wildfire-100 p-2.5 rounded-lg">
+          <Icon className="h-5 w-5 text-wildfire-600" />
+        </div>
+        <div>
+          <h3 className="font-medium text-lg mb-2">{title}</h3>
+          <p className="text-muted-foreground">
+            {description}
+          </p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default Predict;
