@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Search, AlertTriangle } from "lucide-react";
+import { Search, AlertTriangle, Thermometer, Droplets, Wind } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,6 +12,9 @@ interface PredictionResult {
   location: string;
   probability: number;
   co2Level: number;
+  temperature: number;
+  humidity: number;
+  droughtIndex: number;
 }
 
 export function PredictionForm() {
@@ -38,11 +41,17 @@ export function PredictionForm() {
       // Sample data - in a real app, this would come from the backend/API
       const probability = Math.random() * 100;
       const co2Level = Math.random() * 50 + 5; // Random CO2 level between 5 and 55 MT
+      const temperature = Math.random() * 30 + 5; // Random temperature between 5°C and 35°C
+      const humidity = Math.random() * 60 + 20; // Random humidity between 20% and 80%
+      const droughtIndex = 100 - humidity; // Simple drought index calculation
       
       setResult({
         location,
         probability: Math.round(probability * 100) / 100,
         co2Level: Math.round(co2Level * 10) / 10,
+        temperature: Math.round(temperature * 10) / 10,
+        humidity: Math.round(humidity),
+        droughtIndex: Math.round(droughtIndex),
       });
       
       setIsLoading(false);
@@ -116,14 +125,48 @@ export function PredictionForm() {
                   <span>High Risk</span>
                 </div>
                 
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Wildfire Probability:</span>
-                    <span className="font-bold">{result.probability}%</span>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="p-4 bg-secondary/50 rounded-lg">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium">Wildfire Probability:</span>
+                      <span className="font-bold">{result.probability}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">CO₂ Levels:</span>
+                      <span>{result.co2Level} MT</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">CO₂ Levels:</span>
-                    <span>{result.co2Level} MT</span>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-3 bg-wildfire-50 rounded-lg border border-wildfire-100">
+                      <div className="flex items-center justify-center mb-1">
+                        <Thermometer className="h-4 w-4 text-wildfire-500" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground">Temperature</div>
+                        <div className="font-medium">{result.temperature}°C</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-wildfire-50 rounded-lg border border-wildfire-100">
+                      <div className="flex items-center justify-center mb-1">
+                        <Droplets className="h-4 w-4 text-wildfire-500" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground">Humidity</div>
+                        <div className="font-medium">{result.humidity}%</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-wildfire-50 rounded-lg border border-wildfire-100">
+                      <div className="flex items-center justify-center mb-1">
+                        <Wind className="h-4 w-4 text-wildfire-500" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground">Drought Index</div>
+                        <div className="font-medium">{result.droughtIndex}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -141,7 +184,7 @@ export function PredictionForm() {
           )}
         </CardContent>
         <CardFooter className="flex flex-col px-6 text-xs text-muted-foreground">
-          <p>Our prediction model is based on historical wildfire data, CO₂ emissions, and geographic features.</p>
+          <p>Our prediction model is based on historical wildfire data, CO₂ emissions, and geographic features with real-time weather data.</p>
         </CardFooter>
       </Card>
     </div>
