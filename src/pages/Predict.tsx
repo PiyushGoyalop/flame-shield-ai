@@ -6,37 +6,81 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, BarChart4, FileCode, Globe, CloudRain, Thermometer, Database, LineChart } from "lucide-react";
 
+// Array of background images for rotation
+const backgroundImages = [
+  "bg-[url('/prediction-bg-1.jpg')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-white/90",
+  "bg-[url('/prediction-bg-2.jpg')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-white/90",
+  "bg-[url('/prediction-bg-3.jpg')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-white/90",
+  "bg-[url('/prediction-bg-4.jpg')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-white/90",
+  "bg-[url('/prediction-bg-5.jpg')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-white/90"
+];
+
+// Array of gradient backgrounds for when images aren't loaded
+const gradientBackgrounds = [
+  "bg-gradient-to-br from-white to-wildfire-50",
+  "bg-gradient-to-br from-white to-blue-50",
+  "bg-gradient-to-br from-white to-green-50",
+  "bg-gradient-to-br from-white to-amber-50",
+  "bg-gradient-to-br from-white to-wildfire-100"
+];
+
 const Predict = () => {
-  const [backgroundImage, setBackgroundImage] = useState<number>(1);
+  const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
+  const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
+
+  // Function to preload the background images
+  useEffect(() => {
+    const preloadImages = async () => {
+      try {
+        const imageUrls = [
+          '/prediction-bg-1.jpg',
+          '/prediction-bg-2.jpg',
+          '/prediction-bg-3.jpg',
+          '/prediction-bg-4.jpg',
+          '/prediction-bg-5.jpg',
+        ];
+        
+        const preloadPromises = imageUrls.map(url => {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+        });
+        
+        await Promise.all(preloadPromises);
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error("Failed to preload images:", error);
+        // Fallback to gradient backgrounds
+      }
+    };
+    
+    preloadImages();
+  }, []);
 
   // Rotate through different background images
   useEffect(() => {
     const interval = setInterval(() => {
-      setBackgroundImage(prev => (prev % 5) + 1);
-    }, 12000);
+      setBackgroundIndex(prev => (prev + 1) % 5);
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
   // Get background class based on current image
   const getBackgroundClass = () => {
-    switch(backgroundImage) {
-      case 1: return "bg-gradient-to-br from-white to-wildfire-50";
-      case 2: return "bg-gradient-to-br from-white to-blue-50";
-      case 3: return "bg-gradient-to-br from-white to-green-50";
-      case 4: return "bg-gradient-to-br from-white to-amber-50";
-      case 5: return "bg-gradient-to-br from-white to-wildfire-100";
-      default: return "bg-gradient-to-br from-white to-wildfire-50";
-    }
+    return imagesLoaded ? backgroundImages[backgroundIndex] : gradientBackgrounds[backgroundIndex];
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
       
-      <main className={`flex-grow pt-28 pb-20 transition-colors duration-1000 ${getBackgroundClass()}`}>
+      <main className={`flex-grow pt-28 pb-20 transition-all duration-1500 ${getBackgroundClass()}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+          <div className="text-center max-w-2xl mx-auto mb-10 bg-white/80 p-6 rounded-lg backdrop-blur-sm transform transition-all duration-500 hover:scale-105">
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-wildfire-800">
               Wildfire Risk Prediction
             </h1>
             <p className="text-muted-foreground text-lg">
@@ -49,7 +93,7 @@ const Predict = () => {
           <div className="mt-16 max-w-4xl mx-auto">
             <h2 className="text-2xl font-display font-bold mb-6 text-center">Advanced ML-Powered Prediction</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
               <FeatureCard 
                 icon={FileCode} 
                 title="XGBoost Algorithm" 
@@ -87,7 +131,7 @@ const Predict = () => {
               />
             </div>
             
-            <Card className="border-wildfire-200">
+            <Card className="border-wildfire-200 transform transition-all duration-500 hover:shadow-xl bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6">
                 <h3 className="text-xl font-medium mb-4">How Our Prediction Works</h3>
                 <p className="text-muted-foreground mb-4">
@@ -133,7 +177,7 @@ const FeatureCard = ({
   title: string; 
   description: string;
 }) => (
-  <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all hover:-translate-y-1 duration-300">
+  <Card className="border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation transition-all hover:-translate-y-1 duration-300 bg-white/80 backdrop-blur-sm">
     <CardContent className="p-6">
       <div className="flex items-start gap-4">
         <div className="bg-wildfire-100 p-2.5 rounded-lg">
