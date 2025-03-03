@@ -55,15 +55,16 @@ export function PredictionForm() {
       const humidity = Math.random() * 60 + 20; // Random humidity between 20% and 80%
       const droughtIndex = 100 - humidity; // Simple drought index calculation
       
-      setResult({
+      const newResult = {
         location,
         probability: Math.round(randomProbability * 100) / 100,
         co2Level: Math.round(co2Level * 10) / 10,
         temperature: Math.round(temperature * 10) / 10,
         humidity: Math.round(humidity),
         droughtIndex: Math.round(droughtIndex),
-      });
+      };
       
+      setResult(newResult);
       setIsLoading(false);
       
       // Show success toast
