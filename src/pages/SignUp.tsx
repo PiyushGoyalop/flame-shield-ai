@@ -53,11 +53,30 @@ const SignUp = () => {
       return;
     }
 
+    // Check if email already exists
+    const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    const existingUser = registeredUsers.find((user: any) => user.email === email);
+    
+    if (existingUser) {
+      toast({
+        title: "Email already registered",
+        description: "This email is already registered. Please sign in instead.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate registration
+    // Register new user
     setTimeout(() => {
-      // For demo, we'll just set a flag in localStorage
+      const newUser = { name, email, password };
+      registeredUsers.push(newUser);
+      
+      // Store registered users
+      localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
+      
+      // Set user as logged in
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userName", name);
       localStorage.setItem("userEmail", email);

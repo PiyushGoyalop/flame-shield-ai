@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { PredictionFormCard } from "./prediction/PredictionFormCard";
 import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface PredictionResult {
   location: string;
@@ -20,13 +21,32 @@ export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [location, setLocation] = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check if user is authenticated
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsAuthenticated(isLoggedIn);
+  }, []);
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
   };
 
   const handleSubmit = () => {
+    // If user is not authenticated, redirect to sign in
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to make a prediction",
+        variant: "destructive",
+      });
+      navigate("/signin?redirect=predict");
+      return;
+    }
+
     if (!location) {
       toast({
         title: "Location required",
@@ -67,6 +87,31 @@ export function PredictionForm() {
       setResult(newResult);
       setIsLoading(false);
       
+      // Store prediction in history if user is authenticated
+      if (isAuthenticated) {
+        // Get user email from localStorage
+        const userEmail = localStorage.getItem("userEmail");
+        
+        // Create a key specific to this user for storing predictions
+        const historyKey = `predictions_${userEmail}`;
+        
+        // Get existing predictions or initialize empty array
+        const existingPredictions = JSON.parse(localStorage.getItem(historyKey) || "[]");
+        
+        // Add new prediction to history with timestamp
+        const predictionWithId = {
+          ...newResult,
+          id: `p${Date.now()}`,
+          date: new Date().toISOString().split('T')[0]
+        };
+        
+        // Add to beginning of array
+        existingPredictions.unshift(predictionWithId);
+        
+        // Save back to localStorage
+        localStorage.setItem(historyKey, JSON.stringify(existingPredictions));
+      }
+      
       // Show success toast
       toast({
         title: "Prediction Complete",
@@ -87,7 +132,7 @@ export function PredictionForm() {
               className="w-full bg-wildfire-600 hover:bg-wildfire-700 transition-all" 
               disabled={isLoading || !location}
             >
-              {isLoading ? "Analyzing..." : "Predict Risk"}
+              {isLoading ? "Analyzing..." : isAuthenticated ? "Predict Risk" : "Sign In to Predict"}
             </Button>
           </div>
           

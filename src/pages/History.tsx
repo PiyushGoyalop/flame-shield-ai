@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationSelector } from "@/components/prediction/LocationSelector";
+import { useNavigate } from "react-router-dom";
 
 // Sample historical prediction data
 interface HistoricalPrediction {
@@ -28,18 +29,23 @@ const History = () => {
   const [searchMode, setSearchMode] = useState<boolean>(false);
   const [searchLocation, setSearchLocation] = useState<string>("");
   const [searchIsLoading, setSearchIsLoading] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Check login status (simulated)
+  // Check login status and load user-specific predictions
   useEffect(() => {
-    // Get login status from localStorage (this is just for demo)
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(loggedIn);
     
-    // If logged in, load any existing predictions (for demo purposes)
     if (loggedIn) {
-      // Try to get predictions from localStorage
-      const savedPredictions = localStorage.getItem("predictions");
+      const email = localStorage.getItem("userEmail") || "";
+      setUserEmail(email);
+      
+      // Load user-specific predictions
+      const historyKey = `predictions_${email}`;
+      const savedPredictions = localStorage.getItem(historyKey);
+      
       if (savedPredictions) {
         setPredictions(JSON.parse(savedPredictions));
       }
@@ -47,23 +53,19 @@ const History = () => {
       setIsLoading(false);
     } else {
       setIsLoading(false);
+      // Redirect to sign in if not logged in
+      navigate("/signin?redirect=history");
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogin = () => {
-    // Simulate login for demo
-    localStorage.setItem("isLoggedIn", "true");
-    setIsLoggedIn(true);
-    
-    toast({
-      title: "Logged in successfully",
-      description: "Now you can view your prediction history.",
-    });
+    navigate("/signin?redirect=history");
   };
 
   const handleLogout = () => {
-    // Clear login state
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
     setIsLoggedIn(false);
     setPredictions([]);
     
@@ -71,6 +73,9 @@ const History = () => {
       title: "Logged out",
       description: "You have been logged out successfully.",
     });
+    
+    // Redirect to sign in
+    navigate("/signin");
   };
 
   const handleLocationSelect = (location: string) => {
@@ -112,8 +117,9 @@ const History = () => {
       const updatedPredictions = [newPrediction, ...predictions];
       setPredictions(updatedPredictions);
       
-      // Save to localStorage (for demo purposes)
-      localStorage.setItem("predictions", JSON.stringify(updatedPredictions));
+      // Save to user-specific localStorage
+      const historyKey = `predictions_${userEmail}`;
+      localStorage.setItem(historyKey, JSON.stringify(updatedPredictions));
       
       // Reset search and show success message
       setSearchLocation("");
