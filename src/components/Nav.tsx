@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Menu, X, Flame, ChevronRight } from "lucide-react";
+import { Menu, X, Flame, ChevronRight, UserCircle, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
@@ -63,10 +63,36 @@ export function Nav() {
           <NavLink to="/predict" isActive={isActive("/predict")} isScrolled={isScrolled}>
             Prediction
           </NavLink>
+          <NavLink to="/history" isActive={isActive("/history")} isScrolled={isScrolled}>
+            <History className="h-4 w-4 mr-1" /> History
+          </NavLink>
           <NavLink to="/about" isActive={isActive("/about")} isScrolled={isScrolled}>
             About
           </NavLink>
         </nav>
+
+        {/* Authentication buttons */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link to="/signin">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={`${isScrolled ? "text-wildfire-700 hover:text-wildfire-800" : "text-white hover:bg-white/10"}`}
+            >
+              Sign In
+            </Button>
+          </Link>
+          <Link to="/signup">
+            <Button 
+              size="sm"
+              className={`${isScrolled 
+                ? "bg-wildfire-500 hover:bg-wildfire-600 text-white" 
+                : "bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"}`}
+            >
+              Sign Up
+            </Button>
+          </Link>
+        </div>
 
         {/* Mobile Menu Button */}
         <Button
@@ -91,9 +117,24 @@ export function Nav() {
           <MobileNavLink to="/predict" isActive={isActive("/predict")}>
             Prediction
           </MobileNavLink>
+          <MobileNavLink to="/history" isActive={isActive("/history")}>
+            History
+          </MobileNavLink>
           <MobileNavLink to="/about" isActive={isActive("/about")}>
             About
           </MobileNavLink>
+          <div className="flex gap-2 mt-2">
+            <Link to="/signin" className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/signup" className="flex-1">
+              <Button size="sm" className="w-full bg-wildfire-500 hover:bg-wildfire-600">
+                Sign Up
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
     </header>
@@ -115,7 +156,7 @@ const NavLink = ({
   <Link 
     to={to} 
     className={`
-      highlight-link font-medium relative 
+      highlight-link font-medium relative flex items-center
       ${isScrolled ? "text-wildfire-800" : "text-white"}
       ${isActive ? "after:absolute after:w-full after:h-0.5 after:bg-wildfire-500 after:bottom-0 after:left-0" : ""}
       transition-all duration-300 hover:text-wildfire-500

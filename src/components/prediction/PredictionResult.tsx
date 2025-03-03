@@ -3,6 +3,7 @@ import { MapPin } from "lucide-react";
 import { RiskIndicator } from "./RiskIndicator";
 import { WeatherStats } from "./WeatherStats";
 import { MainStats } from "./MainStats";
+import { Precautions } from "./Precautions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
@@ -18,6 +19,13 @@ export interface PredictionResultProps {
 }
 
 export function PredictionResult({ result }: PredictionResultProps) {
+  // Determine risk level for precautions
+  const getRiskLevel = () => {
+    if (result.probability < 33) return 'low';
+    if (result.probability < 66) return 'moderate';
+    return 'high';
+  };
+
   return (
     <div className="mt-6 animate-fade-in">
       <div className="mb-4 text-center">
@@ -44,6 +52,8 @@ export function PredictionResult({ result }: PredictionResultProps) {
             </AlertDescription>
           </Alert>
         )}
+        
+        <Precautions riskLevel={getRiskLevel()} />
       </div>
     </div>
   );

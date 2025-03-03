@@ -9,6 +9,9 @@ import Analytics from "./pages/Analytics";
 import Predict from "./pages/Predict";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import History from "./pages/History";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +26,9 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/predict" element={<Predict />} />
           <Route path="/about" element={<About />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

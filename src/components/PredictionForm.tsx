@@ -3,8 +3,9 @@ import { useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { PredictionFormCard } from "./prediction/PredictionFormCard";
-import { SearchForm } from "./prediction/SearchForm";
+import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
+import { Button } from "./ui/button";
 
 interface PredictionResult {
   location: string;
@@ -18,9 +19,23 @@ interface PredictionResult {
 export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
+  const [location, setLocation] = useState<string>("");
   const { toast } = useToast();
 
-  const handleSubmit = (location: string) => {
+  const handleLocationSelect = (selectedLocation: string) => {
+    setLocation(selectedLocation);
+  };
+
+  const handleSubmit = () => {
+    if (!location) {
+      toast({
+        title: "Location required",
+        description: "Please select a location to make a prediction",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulating API call to the ML model
@@ -63,7 +78,17 @@ export function PredictionForm() {
     <div className="max-w-md w-full mx-auto">
       <PredictionFormCard>
         <CardContent>
-          <SearchForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <div className="space-y-4">
+            <LocationSelector onLocationSelect={handleLocationSelect} isLoading={isLoading} />
+            
+            <Button 
+              onClick={handleSubmit} 
+              className="w-full bg-wildfire-600 hover:bg-wildfire-700 transition-all" 
+              disabled={isLoading || !location}
+            >
+              {isLoading ? "Analyzing..." : "Predict Risk"}
+            </Button>
+          </div>
           
           {result && <PredictionResult result={result} />}
         </CardContent>

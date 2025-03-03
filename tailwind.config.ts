@@ -63,17 +63,17 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Updated wildfire color palette with blue tones
+				// Updated wildfire color palette with fire tones
 				wildfire: {
-					100: '#EEF4FF', // Light blue
-					200: '#D1E0FF', 
-					300: '#A4C2F4',
-					400: '#739BE9',
-					500: '#3F75E0', // Primary blue
-					600: '#2756B3',
-					700: '#193C87',
-					800: '#0F265C',
-					900: '#081231'
+					100: '#FFF5F2', // Light orange/peach
+					200: '#FFECE5', 
+					300: '#FFD6C4',
+					400: '#FFBA9C',
+					500: '#FF8c5A', // Primary orange
+					600: '#E66C34',
+					700: '#C34D22',
+					800: '#9A3412',
+					900: '#7C2D12'
 				},
 				danger: {
 					100: '#FFF5F5',

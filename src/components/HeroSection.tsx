@@ -37,12 +37,6 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 h-full flex items-center">
         <div className="max-w-3xl text-white">
-          <p className="text-sm md:text-base font-medium text-wildfire-200 mb-4">
-            <span className="inline-block px-3 py-1 rounded-full bg-wildfire-800/60 backdrop-blur-sm border border-wildfire-600/20">
-              Advanced Machine Learning
-            </span>
-          </p>
-          
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6 tracking-tight">
             Predict and Analyze{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-wildfire-300 to-wildfire-500">Wildfire Risks</span>{" "}

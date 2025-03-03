@@ -22,14 +22,14 @@ export function WeatherStats({ result }: WeatherStatsProps) {
       <StatCard 
         title="Humidity" 
         value={`${result.humidity}%`}
-        icon={<Droplets className="h-5 w-5 text-blue-500" />}
-        className="border-blue-100 bg-white/90"
+        icon={<Droplets className="h-5 w-5 text-wildfire-500" />}
+        className="border-wildfire-100 bg-white/90"
       />
       <StatCard 
         title="Drought" 
         value={`${result.droughtIndex}`}
-        icon={<Wind className="h-5 w-5 text-amber-500" />}
-        className="border-amber-100 bg-white/90"
+        icon={<Wind className="h-5 w-5 text-wildfire-500" />}
+        className="border-wildfire-100 bg-white/90"
       />
     </div>
   );
