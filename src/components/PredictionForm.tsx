@@ -87,7 +87,7 @@ export function PredictionForm() {
       setResult(newResult);
       setIsLoading(false);
       
-      // Store prediction in history if user is authenticated
+      // Automatically store prediction in history if user is authenticated
       if (isAuthenticated) {
         // Get user email from localStorage
         const userEmail = localStorage.getItem("userEmail");

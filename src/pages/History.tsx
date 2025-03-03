@@ -4,11 +4,8 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, History as HistoryIcon, Clock, AlertTriangle, Check, ExternalLink, Search, Plus } from "lucide-react";
+import { MapPin, History as HistoryIcon, Clock, AlertTriangle, Check, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LocationSelector } from "@/components/prediction/LocationSelector";
 import { useNavigate } from "react-router-dom";
 
 // Sample historical prediction data
@@ -26,9 +23,6 @@ const History = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [predictions, setPredictions] = useState<HistoricalPrediction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [searchMode, setSearchMode] = useState<boolean>(false);
-  const [searchLocation, setSearchLocation] = useState<string>("");
-  const [searchIsLoading, setSearchIsLoading] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -78,61 +72,6 @@ const History = () => {
     navigate("/signin");
   };
 
-  const handleLocationSelect = (location: string) => {
-    setSearchLocation(location);
-  };
-
-  const handleSearchSubmit = () => {
-    if (!searchLocation) {
-      toast({
-        title: "Location required",
-        description: "Please select a location to search",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSearchIsLoading(true);
-    
-    // Simulate API call to get prediction
-    setTimeout(() => {
-      // Generate random prediction data
-      const probability = Math.round((Math.random() * 70 + 10) * 100) / 100;
-      const co2Level = Math.round((Math.random() * 30 + 15) * 10) / 10;
-      const temperature = Math.round((Math.random() * 25 + 10) * 10) / 10;
-      const currentProbability = Math.round((probability + (Math.random() * 20 - 10)) * 100) / 100;
-      
-      // Create a new prediction
-      const newPrediction: HistoricalPrediction = {
-        id: `p${Date.now()}`,
-        location: searchLocation,
-        date: new Date().toISOString().split('T')[0],
-        probability,
-        co2Level,
-        temperature,
-        currentProbability: currentProbability < 0 ? 0 : currentProbability > 100 ? 100 : currentProbability
-      };
-      
-      // Add to predictions list
-      const updatedPredictions = [newPrediction, ...predictions];
-      setPredictions(updatedPredictions);
-      
-      // Save to user-specific localStorage
-      const historyKey = `predictions_${userEmail}`;
-      localStorage.setItem(historyKey, JSON.stringify(updatedPredictions));
-      
-      // Reset search and show success message
-      setSearchLocation("");
-      setSearchMode(false);
-      setSearchIsLoading(false);
-      
-      toast({
-        title: "Location added to history",
-        description: `Prediction for ${searchLocation} has been saved to your history.`,
-      });
-    }, 1500);
-  };
-
   // Function to determine status color
   const getStatusColor = (probability: number) => {
     if (probability < 33) return "text-green-600";
@@ -180,27 +119,12 @@ const History = () => {
             <div>
               <h1 className="text-3xl font-display font-bold mb-2">Prediction History</h1>
               <p className="text-muted-foreground">
-                Search and add locations to track wildfire risk over time
+                View your previous wildfire risk predictions
               </p>
             </div>
             
             {isLoggedIn ? (
               <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  className="border-wildfire-200 text-wildfire-700 hover:bg-wildfire-50"
-                  onClick={() => setSearchMode(!searchMode)}
-                >
-                  {searchMode ? (
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" /> Cancel
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" /> Add Location
-                    </span>
-                  )}
-                </Button>
                 <Button 
                   variant="outline" 
                   className="border-wildfire-200 text-wildfire-700 hover:bg-wildfire-50"
@@ -211,31 +135,6 @@ const History = () => {
               </div>
             ) : null}
           </div>
-
-          {/* Search Form */}
-          {isLoggedIn && searchMode && (
-            <Card className="mb-8 border-wildfire-100">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <Search className="h-4 w-4" /> 
-                  Add Location to History
-                </h3>
-                <div className="space-y-4">
-                  <LocationSelector 
-                    onLocationSelect={handleLocationSelect} 
-                    isLoading={searchIsLoading} 
-                  />
-                  <Button 
-                    onClick={handleSearchSubmit} 
-                    className="w-full bg-wildfire-600 hover:bg-wildfire-700" 
-                    disabled={searchIsLoading || !searchLocation}
-                  >
-                    {searchIsLoading ? "Searching..." : "Add to History"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
           
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
@@ -269,15 +168,15 @@ const History = () => {
           ) : predictions.length === 0 ? (
             <Card className="bg-white shadow-sm border-wildfire-100">
               <CardContent className="p-8 text-center">
-                <h2 className="text-xl font-bold mb-3">No Locations Saved Yet</h2>
+                <h2 className="text-xl font-bold mb-3">No Predictions Yet</h2>
                 <p className="text-muted-foreground mb-6">
-                  Use the "Add Location" button to search for areas and save them to your history.
+                  Make your first prediction to see it in your history.
                 </p>
                 <Button 
                   className="bg-wildfire-500 hover:bg-wildfire-600 text-white"
-                  onClick={() => setSearchMode(true)}
+                  onClick={() => navigate("/predict")}
                 >
-                  <Plus className="h-4 w-4 mr-2" /> Add Your First Location
+                  Make a Prediction
                 </Button>
               </CardContent>
             </Card>
