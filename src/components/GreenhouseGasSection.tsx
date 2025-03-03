@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Cloud, ThermometerSun, Tree, Flame, Wind } from "lucide-react";
+import { Cloud, ThermometerSun, Trees, Flame, Wind } from "lucide-react";
 
 export function GreenhouseGasSection() {
   return (
@@ -52,7 +52,7 @@ export function GreenhouseGasSection() {
             
             <div className="space-y-4">
               <h4 className="text-lg font-medium flex items-center gap-2 text-wildfire-700">
-                <Tree className="h-5 w-5" /> Nature-Based Solutions
+                <Trees className="h-5 w-5" /> Nature-Based Solutions
               </h4>
               <ul className="space-y-2 list-disc pl-5 text-muted-foreground">
                 <li>Protect and restore forests that absorb CO₂</li>

@@ -47,9 +47,14 @@ export function Nav() {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 transform hover:scale-105 transition-transform">
-          <Flame size={24} className={isScrolled ? "text-wildfire-500" : "text-wildfire-300"} />
-          <span className={`font-display font-bold text-xl ${isScrolled ? "text-wildfire-800" : "text-white"}`}>Wildfire Analytics</span>
+        <Link to="/" className="flex flex-col items-start gap-0 transform hover:scale-105 transition-transform">
+          <div className="flex items-center gap-2">
+            <Flame size={24} className={isScrolled ? "text-wildfire-500" : "text-wildfire-300"} />
+            <span className={`font-display font-bold text-xl ${isScrolled ? "text-wildfire-800" : "text-white"}`}>FlameShield AI</span>
+          </div>
+          <span className={`text-xs ${isScrolled ? "text-wildfire-600" : "text-wildfire-100"} ml-8`}>
+            Your AI-based wildfire early warning system
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
