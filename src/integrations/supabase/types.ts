@@ -9,7 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      predictions: {
+        Row: {
+          co2_level: number
+          created_at: string
+          drought_index: number
+          humidity: number
+          id: string
+          location: string
+          probability: number
+          temperature: number
+          user_id: string
+        }
+        Insert: {
+          co2_level: number
+          created_at?: string
+          drought_index: number
+          humidity: number
+          id?: string
+          location: string
+          probability: number
+          temperature: number
+          user_id: string
+        }
+        Update: {
+          co2_level?: number
+          created_at?: string
+          drought_index?: number
+          humidity?: number
+          id?: string
+          location?: string
+          probability?: number
+          temperature?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          mobile: string | null
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          mobile?: string | null
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          mobile?: string | null
+          name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
