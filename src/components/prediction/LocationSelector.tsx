@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { ChevronDown, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Complete list of all 50 US states
 const statesData = [
@@ -434,6 +435,8 @@ export function LocationSelector({ onLocationSelect, isLoading }: LocationSelect
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [availableCities, setAvailableCities] = useState<{value: string, label: string}[]>([]);
+  const [customLocation, setCustomLocation] = useState<string>("");
+  const [inputMode, setInputMode] = useState<"dropdown" | "text">("dropdown");
 
   // Update available cities when state changes
   useEffect(() => {
@@ -443,71 +446,89 @@ export function LocationSelector({ onLocationSelect, isLoading }: LocationSelect
     }
   }, [selectedState]);
 
-  // When city is selected, call the parent's onLocationSelect with full location string
+  // When city is selected or custom location is entered, call the parent's onLocationSelect
   useEffect(() => {
-    if (selectedState && selectedCity) {
+    if (inputMode === "dropdown" && selectedState && selectedCity) {
       const stateName = statesData.find(s => s.value === selectedState)?.label || "";
       const cityName = availableCities.find(c => c.value === selectedCity)?.label || "";
       onLocationSelect(`${cityName}, ${stateName}`);
+    } else if (inputMode === "text" && customLocation.trim()) {
+      onLocationSelect(customLocation.trim());
     }
-  }, [selectedCity, selectedState, availableCities, onLocationSelect]);
+  }, [selectedCity, selectedState, customLocation, inputMode, availableCities, onLocationSelect]);
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="state-select">State</Label>
-        <Select
-          disabled={isLoading}
-          value={selectedState}
-          onValueChange={(value) => setSelectedState(value)}
-        >
-          <SelectTrigger className="w-full" id="state-select">
-            <SelectValue placeholder="Select a state" />
-          </SelectTrigger>
-          <SelectContent>
-            {statesData.map((state) => (
-              <SelectItem key={state.value} value={state.value}>
-                {state.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Tabs defaultValue="dropdown" onValueChange={(value) => setInputMode(value as "dropdown" | "text")}>
+        <TabsList className="w-full">
+          <TabsTrigger value="dropdown" className="flex-1">Use Dropdown</TabsTrigger>
+          <TabsTrigger value="text" className="flex-1">Enter Location</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="dropdown" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="state-select">State</Label>
+            <Select
+              disabled={isLoading}
+              value={selectedState}
+              onValueChange={(value) => setSelectedState(value)}
+            >
+              <SelectTrigger className="w-full" id="state-select">
+                <SelectValue placeholder="Select a state" />
+              </SelectTrigger>
+              <SelectContent>
+                {statesData.map((state) => (
+                  <SelectItem key={state.value} value={state.value}>
+                    {state.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="city-select">City</Label>
-        <Select
-          disabled={isLoading || !selectedState}
-          value={selectedCity}
-          onValueChange={(value) => setSelectedCity(value)}
-        >
-          <SelectTrigger 
-            className="w-full" 
-            id="city-select"
-          >
-            <SelectValue placeholder={!selectedState ? "Select a state first" : "Select a city"} />
-          </SelectTrigger>
-          <SelectContent>
-            {availableCities.map((city) => (
-              <SelectItem key={city.value} value={city.value}>
-                {city.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {!selectedState && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Please select a state first
-          </p>
-        )}
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="city-select">City</Label>
+            <Select
+              disabled={isLoading || !selectedState}
+              value={selectedCity}
+              onValueChange={(value) => setSelectedCity(value)}
+            >
+              <SelectTrigger className="w-full" id="city-select">
+                <SelectValue placeholder={!selectedState ? "Select a state first" : "Select a city"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCities.map((city) => (
+                  <SelectItem key={city.value} value={city.value}>
+                    {city.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="text">
+          <div className="space-y-2">
+            <Label htmlFor="custom-location">Enter Location</Label>
+            <Input
+              id="custom-location"
+              placeholder="e.g. Sacramento, California"
+              value={customLocation}
+              onChange={(e) => setCustomLocation(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
-      {selectedState && selectedCity && (
+      {((inputMode === "dropdown" && selectedState && selectedCity) || 
+        (inputMode === "text" && customLocation)) && (
         <div className="mt-2 p-2 bg-wildfire-50 rounded-md border border-wildfire-100 text-sm flex items-center gap-2">
           <MapPin className="h-4 w-4 text-wildfire-500" />
           <span>
-            {availableCities.find(c => c.value === selectedCity)?.label}, {" "}
-            {statesData.find(s => s.value === selectedState)?.label}
+            {inputMode === "dropdown" 
+              ? `${availableCities.find(c => c.value === selectedCity)?.label}, ${statesData.find(s => s.value === selectedState)?.label}`
+              : customLocation}
           </span>
         </div>
       )}

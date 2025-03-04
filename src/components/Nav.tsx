@@ -53,7 +53,7 @@ export function Nav() {
             <span className={`font-display font-bold text-xl ${isScrolled ? "text-wildfire-800" : "text-white"}`}>FlameShield AI</span>
           </div>
           <span className={`text-xs ${isScrolled ? "text-wildfire-600" : "text-wildfire-100"} ml-8`}>
-            Your AI-based wildfire early warning system
+            AI-powered Real-time wildfire prediction & monitoring
           </span>
         </Link>
 
@@ -68,8 +68,8 @@ export function Nav() {
           <NavLink to="/predict" isActive={isActive("/predict")} isScrolled={isScrolled}>
             Prediction
           </NavLink>
-          <NavLink to="/history" isActive={isActive("/history")} isScrolled={isScrolled}>
-            <History className="h-4 w-4 mr-1" /> History
+          <NavLink to="/account" isActive={isActive("/account")} isScrolled={isScrolled}>
+            <UserCircle className="h-4 w-4 mr-1" /> Account
           </NavLink>
           <NavLink to="/about" isActive={isActive("/about")} isScrolled={isScrolled}>
             About
