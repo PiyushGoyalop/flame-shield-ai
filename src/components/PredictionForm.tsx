@@ -7,6 +7,8 @@ import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PredictionResult {
   location: string;
@@ -21,23 +23,17 @@ export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [location, setLocation] = useState<string>("");
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Check if user is authenticated
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsAuthenticated(isLoggedIn);
-  }, []);
+  const { user } = useAuth();
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // If user is not authenticated, redirect to sign in
-    if (!isAuthenticated) {
+    if (!user) {
       toast({
         title: "Authentication required",
         description: "Please sign in to make a prediction",
@@ -59,7 +55,7 @@ export function PredictionForm() {
     setIsLoading(true);
 
     // Simulating API call to the ML model
-    setTimeout(() => {
+    setTimeout(async () => {
       // Generate more realistic random data
       const randomProbability = (
         location.toLowerCase().includes('california') ? Math.random() * 35 + 55 : // Higher for California
@@ -85,32 +81,29 @@ export function PredictionForm() {
       };
       
       setResult(newResult);
-      setIsLoading(false);
       
-      // Automatically store prediction in history if user is authenticated
-      if (isAuthenticated) {
-        // Get user email from localStorage
-        const userEmail = localStorage.getItem("userEmail");
+      // Store prediction in Supabase
+      try {
+        const { error } = await supabase.from('predictions').insert({
+          user_id: user.id,
+          location: newResult.location,
+          probability: newResult.probability,
+          co2_level: newResult.co2Level,
+          temperature: newResult.temperature,
+          humidity: newResult.humidity,
+          drought_index: newResult.droughtIndex
+        });
         
-        // Create a key specific to this user for storing predictions
-        const historyKey = `predictions_${userEmail}`;
-        
-        // Get existing predictions or initialize empty array
-        const existingPredictions = JSON.parse(localStorage.getItem(historyKey) || "[]");
-        
-        // Add new prediction to history with timestamp
-        const predictionWithId = {
-          ...newResult,
-          id: `p${Date.now()}`,
-          date: new Date().toISOString().split('T')[0]
-        };
-        
-        // Add to beginning of array
-        existingPredictions.unshift(predictionWithId);
-        
-        // Save back to localStorage
-        localStorage.setItem(historyKey, JSON.stringify(existingPredictions));
+        if (error) throw error;
+      } catch (error: any) {
+        toast({
+          title: "Error saving prediction",
+          description: error.message,
+          variant: "destructive"
+        });
       }
+      
+      setIsLoading(false);
       
       // Show success toast
       toast({
@@ -132,7 +125,7 @@ export function PredictionForm() {
               className="w-full bg-wildfire-600 hover:bg-wildfire-700 transition-all" 
               disabled={isLoading || !location}
             >
-              {isLoading ? "Analyzing..." : isAuthenticated ? "Predict Risk" : "Sign In to Predict"}
+              {isLoading ? "Analyzing..." : user ? "Predict Risk" : "Sign In to Predict"}
             </Button>
           </div>
           

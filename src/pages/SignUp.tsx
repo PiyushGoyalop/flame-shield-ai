@@ -12,25 +12,28 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [mobile, setMobile] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
     if (!name || !email || !password || !confirmPassword) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -54,43 +57,18 @@ const SignUp = () => {
       return;
     }
 
-    // Check if email already exists
-    const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    const existingUser = registeredUsers.find((user: any) => user.email === email);
-    
-    if (existingUser) {
-      toast({
-        title: "Email already registered",
-        description: "This email is already registered. Please sign in instead.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
-    // Register new user
-    setTimeout(() => {
-      const newUser = { name, email, password };
-      registeredUsers.push(newUser);
-      
-      // Store registered users
-      localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
-      
-      // Set user as logged in
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userEmail", email);
-      
-      // Show success toast
-      toast({
-        title: "Account created",
-        description: "Welcome to Wildfire Analytics!",
-      });
-      
+    try {
+      await signUp(email, password, name);
+      // If signup is successful, navigate to the sign-in page
+      // Note: In a real app, you might want to implement email verification first
+      navigate("/signin");
+    } catch (error) {
+      // Error already handled in signUp function
+    } finally {
       setIsLoading(false);
-      navigate("/history");
-    }, 1500);
+    }
   };
 
   return (
@@ -131,6 +109,18 @@ const SignUp = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
                     required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="mobile">Mobile Number (Optional)</Label>
+                  <Input
+                    id="mobile"
+                    type="tel"
+                    placeholder="+1 (555) 555-5555"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    disabled={isLoading}
                   />
                 </div>
                 

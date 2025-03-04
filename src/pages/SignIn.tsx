@@ -14,6 +14,7 @@ import { GoogleButton } from "@/components/auth/GoogleButton";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -22,8 +23,9 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getRedirectPath } = useAuthRedirect();
+  const { signIn, googleSignIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
@@ -38,76 +40,31 @@ const SignIn = () => {
 
     setIsLoading(true);
 
-    // Get registered users from localStorage
-    const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    
-    // Find user with matching email
-    const user = registeredUsers.find((user: any) => user.email === email);
-    
-    // If user not found or password doesn't match
-    if (!user || user.password !== password) {
-      setIsLoading(false);
-      toast({
-        title: "Invalid credentials",
-        description: "Email or password is incorrect",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Successful login
-    setTimeout(() => {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userName", user.name);
-      localStorage.setItem("userEmail", email);
-      
-      // Show success toast
+    try {
+      await signIn(email, password);
       toast({
         title: "Sign in successful",
         description: "Welcome back to FlameShield AI!",
       });
-      
-      setIsLoading(false);
       navigate(getRedirectPath());
-    }, 1000);
+    } catch (error) {
+      // Error is already handled in the signIn function
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
     
-    // Simulate Google authentication
-    setTimeout(() => {
-      const googleUser = {
-        name: "Google User",
-        email: "user@gmail.com",
-        signInMethod: "google"
-      };
-      
-      // Check if this Google user already exists
-      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-      const existingUser = registeredUsers.find((user: any) => user.email === googleUser.email);
-      
-      // If not registered, add to registered users
-      if (!existingUser) {
-        registeredUsers.push(googleUser);
-        localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
-      }
-      
-      // Set user info in localStorage
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userName", googleUser.name);
-      localStorage.setItem("userEmail", googleUser.email);
-      localStorage.setItem("signInMethod", "google");
-      
-      // Show success toast
-      toast({
-        title: "Google sign in successful",
-        description: "You've signed in with Google successfully!",
-      });
-      
+    try {
+      await googleSignIn();
+      // Toast will be shown after redirect back from Google
+    } catch (error) {
+      // Error is already handled in the googleSignIn function
+    } finally {
       setIsLoading(false);
-      navigate(getRedirectPath());
-    }, 1500);
+    }
   };
 
   return (

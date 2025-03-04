@@ -2,74 +2,95 @@
 import { useEffect, useState } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, History as HistoryIcon, Clock, AlertTriangle, Check, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-// Sample historical prediction data
-interface HistoricalPrediction {
+// Prediction interface
+interface Prediction {
   id: string;
   location: string;
-  date: string;
   probability: number;
-  co2Level: number;
+  co2_level: number;
   temperature: number;
-  currentProbability?: number;
+  humidity: number;
+  drought_index: number;
+  created_at: string;
+  current_probability?: number;
 }
 
 const History = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [predictions, setPredictions] = useState<HistoricalPrediction[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userEmail, setUserEmail] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  // Check login status and load user-specific predictions
+  // Fetch predictions from Supabase
   useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedIn);
-    
-    if (loggedIn) {
-      const email = localStorage.getItem("userEmail") || "";
-      setUserEmail(email);
-      
-      // Load user-specific predictions
-      const historyKey = `predictions_${email}`;
-      const savedPredictions = localStorage.getItem(historyKey);
-      
-      if (savedPredictions) {
-        setPredictions(JSON.parse(savedPredictions));
+    const fetchPredictions = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
       }
-      
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-      // Redirect to sign in if not logged in
-      navigate("/signin?redirect=history");
-    }
-  }, [navigate]);
+
+      try {
+        const { data, error } = await supabase
+          .from('predictions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        // Simulate current probability for demonstration purposes
+        const predictionsWithCurrent = data.map(prediction => ({
+          ...prediction,
+          current_probability: simulateCurrentProbability(prediction.probability)
+        }));
+        
+        setPredictions(predictionsWithCurrent);
+      } catch (error: any) {
+        toast({
+          title: "Error loading predictions",
+          description: error.message,
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPredictions();
+  }, [user, toast]);
+
+  // Simulate current probability for demonstration
+  const simulateCurrentProbability = (originalProbability: number) => {
+    const change = (Math.random() - 0.5) * 15; // Random change between -7.5% and +7.5%
+    const newProbability = Math.max(0, Math.min(100, originalProbability + change));
+    return Math.round(newProbability * 10) / 10;
+  };
 
   const handleLogin = () => {
     navigate("/signin?redirect=history");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    setIsLoggedIn(false);
-    setPredictions([]);
-    
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully.",
-    });
-    
-    // Redirect to sign in
+  const handleLogout = async () => {
+    await signOut();
     navigate("/signin");
+  };
+
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   // Function to determine status color
@@ -123,7 +144,7 @@ const History = () => {
               </p>
             </div>
             
-            {isLoggedIn ? (
+            {user ? (
               <div className="flex gap-3">
                 <Button 
                   variant="outline" 
@@ -140,7 +161,7 @@ const History = () => {
             <div className="flex justify-center items-center h-64">
               <div className="animate-pulse text-wildfire-500">Loading history...</div>
             </div>
-          ) : !isLoggedIn ? (
+          ) : !user ? (
             <Card className="bg-white shadow-sm border-wildfire-100">
               <CardContent className="p-8 text-center">
                 <div className="flex justify-center mb-6">
@@ -159,7 +180,7 @@ const History = () => {
                   >
                     Sign In
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => navigate("/signup")}>
                     Create an Account
                   </Button>
                 </div>
@@ -193,7 +214,7 @@ const History = () => {
                         </div>
                         <div className="text-sm text-muted-foreground mb-3 flex items-center gap-2">
                           <Clock className="h-3 w-3" />
-                          <span>Predicted on {prediction.date}</span>
+                          <span>Predicted on {formatDate(prediction.created_at)}</span>
                         </div>
                       </div>
                       
@@ -207,17 +228,17 @@ const History = () => {
                         
                         <div className="text-center min-w-[110px]">
                           <p className="text-sm text-muted-foreground mb-1">Current Risk</p>
-                          <p className={`text-lg font-bold ${getStatusColor(prediction.currentProbability || 0)}`}>
-                            {prediction.currentProbability}%
+                          <p className={`text-lg font-bold ${getStatusColor(prediction.current_probability || 0)}`}>
+                            {prediction.current_probability}%
                           </p>
                         </div>
                         
-                        {prediction.currentProbability && (
+                        {prediction.current_probability && (
                           <div className="md:border-l md:border-gray-200 pl-6 hidden md:block">
                             <div className="flex items-center gap-1">
-                              {getProbabilityChange(prediction.probability, prediction.currentProbability)?.icon}
-                              <span className={`text-sm ${getProbabilityChange(prediction.probability, prediction.currentProbability)?.color}`}>
-                                {getProbabilityChange(prediction.probability, prediction.currentProbability)?.text}
+                              {getProbabilityChange(prediction.probability, prediction.current_probability)?.icon}
+                              <span className={`text-sm ${getProbabilityChange(prediction.probability, prediction.current_probability)?.color}`}>
+                                {getProbabilityChange(prediction.probability, prediction.current_probability)?.text}
                               </span>
                             </div>
                           </div>
@@ -229,7 +250,7 @@ const History = () => {
                           size="sm" 
                           variant="outline"
                           className="border-wildfire-200 hover:bg-wildfire-50"
-                          onClick={() => window.location.href = `/predict?location=${encodeURIComponent(prediction.location)}`}
+                          onClick={() => navigate(`/predict?location=${encodeURIComponent(prediction.location)}`)}
                         >
                           <ExternalLink className="h-4 w-4 mr-1" /> View Details
                         </Button>
@@ -237,12 +258,12 @@ const History = () => {
                     </div>
                     
                     {/* For mobile: show change below other stats */}
-                    {prediction.currentProbability && (
+                    {prediction.current_probability && (
                       <div className="border-t border-gray-100 pt-3 mt-3 text-center md:hidden">
                         <div className="flex items-center gap-1 justify-center">
-                          {getProbabilityChange(prediction.probability, prediction.currentProbability)?.icon}
-                          <span className={`text-sm ${getProbabilityChange(prediction.probability, prediction.currentProbability)?.color}`}>
-                            {getProbabilityChange(prediction.probability, prediction.currentProbability)?.text}
+                          {getProbabilityChange(prediction.probability, prediction.current_probability)?.icon}
+                          <span className={`text-sm ${getProbabilityChange(prediction.probability, prediction.current_probability)?.color}`}>
+                            {getProbabilityChange(prediction.probability, prediction.current_probability)?.text}
                           </span>
                         </div>
                       </div>
