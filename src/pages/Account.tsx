@@ -18,7 +18,7 @@ const Account = () => {
     email: "",
     mobile: "",
   });
-  const [predictions, setPredictions] = useState([]);
+  const [predictions, setPredictions] = useState<any[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingPredictions, setIsLoadingPredictions] = useState(true);
   const { user, signOut } = useAuth();
@@ -28,30 +28,55 @@ const Account = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!user && !isLoadingProfile) {
+      console.log("No user found, redirecting to signin");
       navigate('/signin?redirect=/account');
     }
   }, [user, isLoadingProfile, navigate]);
 
   // Fetch user profile data
   const fetchUserData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user found for fetching data");
+      setIsLoadingProfile(false);
+      return;
+    }
     
     try {
+      console.log("Fetching user data for:", user.id);
       setIsLoadingProfile(true);
+      
+      // Try from profiles table first
       const { data, error } = await supabase
         .from('profiles')
         .select('name, email, mobile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
       
-      setUserData({
-        name: data.name || '',
-        email: data.email || '',
-        mobile: data.mobile || '',
-      });
+      console.log("Profile data received:", data);
+      
+      // If no profile found, get data from user metadata
+      if (!data) {
+        console.log("No profile found, using user metadata");
+        const userData = user.user_metadata || {};
+        setUserData({
+          name: userData.name || '',
+          email: user.email || '',
+          mobile: userData.mobile || '',
+        });
+      } else {
+        setUserData({
+          name: data.name || '',
+          email: data.email || user.email || '',
+          mobile: data.mobile || '',
+        });
+      }
     } catch (error: any) {
+      console.error("Error in fetchUserData:", error);
       toast({
         title: "Error loading profile",
         description: error.message,
@@ -64,9 +89,14 @@ const Account = () => {
 
   // Fetch user predictions
   const fetchPredictions = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user found for fetching predictions");
+      setIsLoadingPredictions(false);
+      return;
+    }
     
     try {
+      console.log("Fetching predictions for user:", user.id);
       setIsLoadingPredictions(true);
       const { data, error } = await supabase
         .from('predictions')
@@ -74,10 +104,15 @@ const Account = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching predictions:", error);
+        throw error;
+      }
       
+      console.log("Predictions data received:", data?.length || 0, "predictions");
       setPredictions(data || []);
     } catch (error: any) {
+      console.error("Error in fetchPredictions:", error);
       toast({
         title: "Error loading predictions",
         description: error.message,
@@ -89,6 +124,7 @@ const Account = () => {
   };
 
   useEffect(() => {
+    console.log("Account component - current user:", user?.id);
     if (user) {
       fetchUserData();
       fetchPredictions();
@@ -100,6 +136,7 @@ const Account = () => {
     navigate('/');
   };
 
+  // If not authenticated, show a loading state or redirect
   if (!user && !isLoadingProfile) {
     return null; // Will redirect via the useEffect
   }

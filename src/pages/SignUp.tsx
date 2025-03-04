@@ -61,9 +61,14 @@ const SignUp = () => {
 
     try {
       await signUp(email, password, name, mobile);
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. You're now signed in.",
+      });
       // Navigate to the main page after successful signup
-      navigate("/");
+      navigate("/account");
     } catch (error) {
+      console.error("Signup error in component:", error);
       // Error already handled in signUp function
     } finally {
       setIsLoading(false);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
@@ -40,12 +39,10 @@ const SignIn = () => {
 
     try {
       await signIn(email, password);
-      toast({
-        title: "Sign in successful",
-        description: "Welcome back to FlameShield AI!",
-      });
+      console.log("Sign in successful, navigating to:", getRedirectPath());
       navigate(getRedirectPath());
     } catch (error) {
+      console.error("Error in signin component:", error);
       // Error is already handled in the signIn function
     } finally {
       setIsLoading(false);

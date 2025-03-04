@@ -23,15 +23,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error("Error getting session:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -42,9 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      console.log("Sign in successful:", data?.user?.id);
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back to FlameShield AI!",
+      });
     } catch (error: any) {
+      console.error("Sign in error:", error.message);
       toast({
         title: "Sign in failed",
         description: error.message,
@@ -56,7 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string, mobile: string) => {
     try {
-      // Sign up without email verification
+      console.log("Signing up with:", { email, name, mobile });
+      
+      // Sign up with auth
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -64,19 +79,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: {
             name,
             mobile
-          },
-          emailRedirectTo: window.location.origin
+          }
         }
       });
       
       if (error) throw error;
       
-      // If successful, manually update the profiles table with mobile number
+      console.log("Sign up auth response:", data);
+      
+      // If successful, manually create a profiles entry (as a fallback)
       if (data?.user) {
-        await supabase
-          .from('profiles')
-          .update({ mobile })
-          .eq('id', data.user.id);
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({ 
+              id: data.user.id,
+              name,
+              email,
+              mobile
+            });
+          
+          if (profileError) {
+            console.error("Error creating profile:", profileError);
+          } else {
+            console.log("Profile created successfully");
+          }
+        } catch (profileErr) {
+          console.error("Profile creation error:", profileErr);
+        }
       }
       
       toast({
@@ -84,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Your account has been created successfully.",
       });
     } catch (error: any) {
+      console.error("Sign up error:", error);
       toast({
         title: "Sign up failed",
         description: error.message,
@@ -97,6 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      setUser(null);
+      setSession(null);
+      
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
     } catch (error: any) {
       toast({
         title: "Sign out failed",

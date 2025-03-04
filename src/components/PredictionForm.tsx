@@ -32,6 +32,8 @@ export function PredictionForm() {
   };
 
   const handleSubmit = async () => {
+    console.log("Submit prediction - current user:", user?.id);
+    
     // If user is not authenticated, redirect to sign in
     if (!user) {
       toast({
@@ -39,7 +41,7 @@ export function PredictionForm() {
         description: "Please sign in to make a prediction",
         variant: "destructive",
       });
-      navigate("/signin?redirect=predict");
+      navigate("/signin?redirect=/predict");
       return;
     }
 
@@ -56,34 +58,35 @@ export function PredictionForm() {
 
     // Simulating API call to the ML model
     setTimeout(async () => {
-      // Generate more realistic random data
-      const randomProbability = (
-        location.toLowerCase().includes('california') ? Math.random() * 35 + 55 : // Higher for California
-        location.toLowerCase().includes('colorado') ? Math.random() * 30 + 45 : // Medium-high for Colorado
-        location.toLowerCase().includes('oregon') ? Math.random() * 25 + 40 : // Medium for Oregon
-        location.toLowerCase().includes('york') ? Math.random() * 15 + 10 : // Lower for New York
-        location.toLowerCase().includes('florida') ? Math.random() * 20 + 30 : // Medium-low for Florida
-        Math.random() * 60 + 20 // Random for other places
-      );
-      
-      const co2Level = Math.random() * 50 + 5; // Random CO2 level between 5 and 55 MT
-      const temperature = Math.random() * 30 + 5; // Random temperature between 5°C and 35°C
-      const humidity = Math.random() * 60 + 20; // Random humidity between 20% and 80%
-      const droughtIndex = 100 - humidity; // Simple drought index calculation
-      
-      const newResult = {
-        location,
-        probability: Math.round(randomProbability * 100) / 100,
-        co2Level: Math.round(co2Level * 10) / 10,
-        temperature: Math.round(temperature * 10) / 10,
-        humidity: Math.round(humidity),
-        droughtIndex: Math.round(droughtIndex),
-      };
-      
-      setResult(newResult);
-      
-      // Store prediction in Supabase
       try {
+        // Generate more realistic random data
+        const randomProbability = (
+          location.toLowerCase().includes('california') ? Math.random() * 35 + 55 : // Higher for California
+          location.toLowerCase().includes('colorado') ? Math.random() * 30 + 45 : // Medium-high for Colorado
+          location.toLowerCase().includes('oregon') ? Math.random() * 25 + 40 : // Medium for Oregon
+          location.toLowerCase().includes('york') ? Math.random() * 15 + 10 : // Lower for New York
+          location.toLowerCase().includes('florida') ? Math.random() * 20 + 30 : // Medium-low for Florida
+          Math.random() * 60 + 20 // Random for other places
+        );
+        
+        const co2Level = Math.random() * 50 + 5; // Random CO2 level between 5 and 55 MT
+        const temperature = Math.random() * 30 + 5; // Random temperature between 5°C and 35°C
+        const humidity = Math.random() * 60 + 20; // Random humidity between 20% and 80%
+        const droughtIndex = 100 - humidity; // Simple drought index calculation
+        
+        const newResult = {
+          location,
+          probability: Math.round(randomProbability * 100) / 100,
+          co2Level: Math.round(co2Level * 10) / 10,
+          temperature: Math.round(temperature * 10) / 10,
+          humidity: Math.round(humidity),
+          droughtIndex: Math.round(droughtIndex),
+        };
+        
+        setResult(newResult);
+        
+        // Store prediction in Supabase
+        console.log("Saving prediction to Supabase for user:", user.id);
         const { error } = await supabase.from('predictions').insert({
           user_id: user.id,
           location: newResult.location,
@@ -94,22 +97,28 @@ export function PredictionForm() {
           drought_index: newResult.droughtIndex
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error("Error saving prediction:", error);
+          throw error;
+        }
+        
+        console.log("Prediction saved successfully");
+        
+        // Show success toast
+        toast({
+          title: "Prediction Complete",
+          description: `Analysis for ${location} has been generated.`,
+        });
       } catch (error: any) {
+        console.error("Error in prediction flow:", error);
         toast({
           title: "Error saving prediction",
           description: error.message,
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-      
-      // Show success toast
-      toast({
-        title: "Prediction Complete",
-        description: `Analysis for ${location} has been generated.`,
-      });
     }, 1500);
   };
 
