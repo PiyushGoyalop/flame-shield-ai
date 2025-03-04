@@ -9,9 +9,8 @@ interface AuthContextProps {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, mobile: string) => Promise<void>;
   signOut: () => Promise<void>;
-  googleSignIn: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -55,22 +54,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, mobile: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ 
+      // Sign up without email verification
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           data: {
             name,
-          }
+            mobile
+          },
+          emailRedirectTo: window.location.origin
         }
       });
+      
       if (error) throw error;
+      
+      // If successful, manually update the profiles table with mobile number
+      if (data?.user) {
+        await supabase
+          .from('profiles')
+          .update({ mobile })
+          .eq('id', data.user.id);
+      }
       
       toast({
         title: "Account created",
-        description: "Please check your email for the confirmation link.",
+        description: "Your account has been created successfully.",
       });
     } catch (error: any) {
       toast({
@@ -95,25 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const googleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        }
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Google sign in failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
   return (
     <AuthContext.Provider value={{
       user,
@@ -122,7 +114,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signOut,
-      googleSignIn,
     }}>
       {children}
     </AuthContext.Provider>

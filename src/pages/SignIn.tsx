@@ -8,9 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
 import { AuthHeader } from "@/components/auth/AuthHeader";
-import { GoogleButton } from "@/components/auth/GoogleButton";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
@@ -23,7 +21,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getRedirectPath } = useAuthRedirect();
-  const { signIn, googleSignIn } = useAuth();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,19 +52,6 @@ const SignIn = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    
-    try {
-      await googleSignIn();
-      // Toast will be shown after redirect back from Google
-    } catch (error) {
-      // Error is already handled in the googleSignIn function
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -82,18 +67,6 @@ const SignIn = () => {
             </CardHeader>
             
             <CardContent>
-              {/* Google Sign In Button */}
-              <GoogleButton onClick={handleGoogleSignIn} isLoading={isLoading} />
-              
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>

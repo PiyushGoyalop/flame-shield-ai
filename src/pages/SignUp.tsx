@@ -30,7 +30,7 @@ const SignUp = () => {
     e.preventDefault();
     
     // Simple validation
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword || !mobile) {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields",
@@ -60,10 +60,9 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, name);
-      // If signup is successful, navigate to the sign-in page
-      // Note: In a real app, you might want to implement email verification first
-      navigate("/signin");
+      await signUp(email, password, name, mobile);
+      // Navigate to the main page after successful signup
+      navigate("/");
     } catch (error) {
       // Error already handled in signUp function
     } finally {
@@ -113,7 +112,7 @@ const SignUp = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number (Optional)</Label>
+                  <Label htmlFor="mobile">Mobile Number</Label>
                   <Input
                     id="mobile"
                     type="tel"
@@ -121,6 +120,7 @@ const SignUp = () => {
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
                     disabled={isLoading}
+                    required
                   />
                 </div>
                 
