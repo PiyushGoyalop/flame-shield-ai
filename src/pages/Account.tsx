@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCircle, History } from "lucide-react";
+import { ProfileInfo } from "@/components/account/ProfileInfo";
+import { PredictionHistory } from "@/components/account/PredictionHistory";
 
 const Account = () => {
   const [userData, setUserData] = useState({
@@ -51,52 +52,11 @@ const Account = () => {
             </TabsList>
             
             <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Name</label>
-                    <p className="mt-1">{userData.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Email</label>
-                    <p className="mt-1">{userData.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Mobile Number</label>
-                    <p className="mt-1">{userData.mobile || "Not provided"}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <ProfileInfo userData={userData} />
             </TabsContent>
             
             <TabsContent value="history">
-              <div className="space-y-4">
-                {predictions.length > 0 ? (
-                  predictions.map((prediction: any) => (
-                    <Card key={prediction.id}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium">{prediction.location}</h3>
-                            <p className="text-sm text-muted-foreground">{prediction.date}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-medium">{prediction.probability}%</div>
-                            <div className="text-sm text-muted-foreground">Risk Level</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No prediction history found
-                  </p>
-                )}
-              </div>
+              <PredictionHistory predictions={predictions} />
             </TabsContent>
           </Tabs>
         </div>

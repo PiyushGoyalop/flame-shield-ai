@@ -3,13 +3,15 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
-import { Flame, UserPlus, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { UserPlus } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { PasswordInput } from "@/components/auth/PasswordInput";
+import { LoadingButton } from "@/components/auth/LoadingButton";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -17,7 +19,6 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -100,15 +101,10 @@ const SignUp = () => {
         <div className="max-w-md mx-auto px-6 md:px-8">
           <Card className="border-wildfire-100 shadow-elevation">
             <CardHeader className="text-center">
-              <div className="flex justify-center mb-2">
-                <div className="bg-wildfire-100 rounded-full p-3">
-                  <Flame className="h-8 w-8 text-wildfire-500" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl font-display">Create an Account</CardTitle>
-              <CardDescription>
-                Join Wildfire Analytics to access all features and track prediction history
-              </CardDescription>
+              <AuthHeader 
+                title="Create an Account" 
+                description="Join Wildfire Analytics to access all features and track prediction history"
+              />
             </CardHeader>
             
             <CardContent>
@@ -140,36 +136,23 @@ const SignUp = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    id="password"
+                    value={password}
+                    onChange={setPassword}
+                    disabled={isLoading}
+                    required={true}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirm-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={setConfirmPassword}
                     disabled={isLoading}
-                    required
+                    required={true}
                   />
                 </div>
                 
@@ -194,25 +177,13 @@ const SignUp = () => {
                   </label>
                 </div>
                 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-wildfire-600 hover:bg-wildfire-700 text-white"
-                  disabled={isLoading}
+                <LoadingButton 
+                  isLoading={isLoading} 
+                  loadingText="Creating Account..."
+                  icon={<UserPlus className="h-4 w-4" />}
                 >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating Account...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <UserPlus className="h-4 w-4" /> Create Account
-                    </span>
-                  )}
-                </Button>
+                  Create Account
+                </LoadingButton>
                 
                 <div className="text-center text-sm text-muted-foreground mt-6">
                   Already have an account?{" "}
