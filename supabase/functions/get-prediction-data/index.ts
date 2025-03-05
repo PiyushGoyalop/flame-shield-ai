@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
@@ -78,7 +77,7 @@ async function getCoordinates(location: string): Promise<{ lat: number; lon: num
 // Get weather data using coordinates
 async function getWeatherData(lat: number, lon: number): Promise<WeatherData> {
   try {
-    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`;
+    const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`;
     const response = await fetch(weatherUrl);
     const data = await response.json();
     
@@ -96,7 +95,7 @@ async function getWeatherData(lat: number, lon: number): Promise<WeatherData> {
 // Get air pollution data using coordinates
 async function getAirPollutionData(lat: number, lon: number): Promise<AirPollutionData> {
   try {
-    const airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}`;
+    const airPollutionUrl = `http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}`;
     const response = await fetch(airPollutionUrl);
     const data = await response.json();
     
@@ -209,14 +208,21 @@ serve(async (req) => {
       );
     }
     
+    // Log the API key (masked for security)
+    const maskedKey = OPENWEATHER_API_KEY.substring(0, 4) + "..." + OPENWEATHER_API_KEY.substring(OPENWEATHER_API_KEY.length - 4);
+    console.log(`Using OpenWeather API key: ${maskedKey}`);
+    
     // Get coordinates for the location
     const { lat, lon } = await getCoordinates(location);
+    console.log(`Coordinates for ${location}: lat=${lat}, lon=${lon}`);
     
     // Get weather data
     const weatherData = await getWeatherData(lat, lon);
+    console.log(`Weather data received for ${location}`);
     
     // Get air pollution data
     const airPollutionData = await getAirPollutionData(lat, lon);
+    console.log(`Air pollution data received for ${location}`);
     
     // Extract air quality values
     const airQualityIndex = airPollutionData.list[0].main.aqi; // Air Quality Index (1-5)
@@ -256,6 +262,8 @@ serve(async (req) => {
       pm2_5: pm2_5,
       pm10: pm10
     };
+    
+    console.log(`Prediction completed for ${location}: probability=${probability}%`);
     
     return new Response(
       JSON.stringify(predictionData),
