@@ -1,6 +1,5 @@
 
 import { PieChartIcon } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 interface LandCoverChartProps {
   landCover: {
@@ -15,7 +14,7 @@ interface LandCoverChartProps {
 export function LandCoverChart({ landCover }: LandCoverChartProps) {
   if (!landCover) return null;
 
-  // Prepare land cover data for pie chart
+  // Prepare land cover data
   const landCoverData = [
     { name: 'Forest', value: landCover.forest_percent, color: '#22c55e' },
     { name: 'Grassland', value: landCover.grassland_percent, color: '#84cc16' },
@@ -28,42 +27,24 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
 
   return (
     <div className="mt-8 w-full">
-      <h4 className="text-sm font-medium mb-20 flex items-center gap-1">
+      <h4 className="text-sm font-medium mb-4 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Land Cover Distribution</span>
       </h4>
-      <div className="h-[400px] mb-8">
-        <ResponsiveContainer width="100%" height="80%">
-          <PieChart margin={{ top: 0, right: 30, bottom: 60, left: 30 }}>
-            <Pie
-              data={landCoverData}
-              cx="50%"
-              cy="50%"
-              labelLine={true}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
-              nameKey="name"
-              label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-              paddingAngle={2}
-            >
-              {landCoverData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip 
-              formatter={(value) => [`${value}%`, 'Coverage']}
-              contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '8px' }}
-            />
-            <Legend 
-              layout="horizontal" 
-              verticalAlign="bottom" 
-              align="center"
-              wrapperStyle={{ paddingTop: '30px' }}
-              formatter={(value) => <span className="text-sm">{value}</span>}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+      
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 mb-8">
+        {landCoverData.map((item, index) => (
+          <div 
+            key={`box-${index}`} 
+            className="p-3 rounded-lg border hover:shadow-sm transition-all"
+            style={{ borderColor: item.color, backgroundColor: `${item.color}15` }}
+          >
+            <div className="flex flex-col items-center text-center">
+              <span className="text-sm mb-1">{item.name}</span>
+              <span className="text-lg font-semibold">{item.value}%</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

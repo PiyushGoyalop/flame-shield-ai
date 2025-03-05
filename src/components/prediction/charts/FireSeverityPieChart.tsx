@@ -1,5 +1,4 @@
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { PieChartIcon } from "lucide-react";
 
 interface FireSeverityData {
@@ -25,42 +24,31 @@ export function FireSeverityPieChart({ data }: FireSeverityPieChartProps) {
 
   if (severityData.length === 0) return null;
 
+  // Calculate total for percentages
+  const total = severityData.reduce((acc, item) => acc + item.value, 0);
+
   return (
-    <div className="h-[400px] pt-4 pb-6">
-      <h4 className="text-sm font-medium mb-20 flex items-center gap-1">
+    <div className="pt-4 pb-6">
+      <h4 className="text-sm font-medium mb-4 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Fire Severity</span>
       </h4>
-      <ResponsiveContainer width="100%" height="80%">
-        <PieChart margin={{ top: 0, right: 30, bottom: 70, left: 30 }}>
-          <Pie
-            data={severityData}
-            cx="50%"
-            cy="50%"
-            labelLine={true}
-            outerRadius={100}
-            fill="#8884d8"
-            dataKey="value"
-            nameKey="name"
-            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-            paddingAngle={2}
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+        {severityData.map((item, index) => (
+          <div 
+            key={`box-${index}`} 
+            className="p-3 rounded-lg border hover:shadow-sm transition-all"
+            style={{ borderColor: item.color, backgroundColor: `${item.color}15` }}
           >
-            {severityData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip 
-            formatter={(value) => [`${value} fires`, 'Count']}
-            contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '8px' }} 
-          />
-          <Legend 
-            layout="horizontal" 
-            verticalAlign="bottom" 
-            align="center"
-            wrapperStyle={{ paddingTop: '30px' }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+            <div className="flex flex-col items-center text-center">
+              <span className="text-sm mb-1">{item.name}</span>
+              <span className="text-lg font-semibold">{((item.value / total) * 100).toFixed(0)}%</span>
+              <span className="text-xs text-muted-foreground mt-1">({item.value} fires)</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
