@@ -27,20 +27,20 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
   if (landCoverData.length === 0) return null;
 
   return (
-    <div className="mt-4 w-full">
-      <h4 className="text-sm font-medium mb-3 flex items-center gap-1">
+    <div className="mt-6 w-full">
+      <h4 className="text-sm font-medium mb-4 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Land Cover Distribution</span>
       </h4>
-      <div className="h-[320px] mb-6">
+      <div className="h-[350px] mb-8">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart margin={{ top: 10, right: 10, bottom: 30, left: 10 }}>
             <Pie
               data={landCoverData}
               cx="50%"
-              cy="45%"
+              cy="40%"
               labelLine={true}
-              outerRadius={80}
+              outerRadius={90}
               fill="#8884d8"
               dataKey="value"
               nameKey="name"
@@ -58,7 +58,7 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
               layout="horizontal" 
               verticalAlign="bottom" 
               align="center"
-              wrapperStyle={{ paddingTop: '20px', paddingBottom: '10px' }}
+              wrapperStyle={{ paddingTop: '30px', paddingBottom: '10px' }}
               formatter={(value) => <span className="text-sm">{value}</span>}
             />
           </PieChart>
