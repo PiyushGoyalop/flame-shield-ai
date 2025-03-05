@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRedirectUrl } from '@/hooks/useRedirectUrl';
+import { useNavigate } from 'react-router-dom';
 import { 
   getSession,
   signInWithEmail,
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { getRedirectUrl } = useRedirectUrl();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -64,6 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Sign in successful",
         description: "Welcome back to FlameShield AI!",
       });
+
+      // Navigate to home page
+      navigate('/');
     } catch (error: any) {
       console.error("Sign in error:", error.message);
       toast({
@@ -87,6 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Account created successfully",
         description: "Welcome to FlameShield AI!",
       });
+
+      // Navigate to sign in page after successful signup
+      navigate('/signin');
     } catch (error: any) {
       console.error("Sign up error:", error);
       toast({

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Menu, X, Flame, ChevronRight, UserCircle, History } from "lucide-react";
+import { Menu, X, Flame, ChevronRight, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
@@ -55,7 +55,7 @@ export function Nav() {
           </NavLink>
         </nav>
 
-        {/* Authentication buttons */}
+        {/* Authentication buttons - moved after the navigation links */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <Link to="/account">
