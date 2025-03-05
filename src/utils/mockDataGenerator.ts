@@ -1,7 +1,6 @@
-
 import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
 
-// Define the CustomDataCache interface to ensure consistency
+// Keep the interface for internal type consistency
 interface CustomDataCache {
   wildfires: any[];
   co2: any[];
@@ -16,20 +15,12 @@ const getLocationSeed = (location: string): number => {
   return Math.abs(hash) / 2147483647;
 };
 
-export const getMockPredictionData = async (
-  location: string, 
-  customData?: CustomDataCache
-) => {
+export const getMockPredictionData = async (location: string) => {
   const seed = getLocationSeed(location);
   
-  // Load datasets - either from custom uploaded data or from the default files
-  const wildfireData = customData?.wildfires?.length 
-    ? customData.wildfires 
-    : await getHistoricWildfireData();
-    
-  const co2Data = customData?.co2?.length 
-    ? customData.co2 
-    : await getCO2EmissionsData();
+  // Load datasets from the default files
+  const wildfireData = await getHistoricWildfireData();
+  const co2Data = await getCO2EmissionsData();
   
   console.log("Using wildfire data:", wildfireData.length, "records");
   console.log("Using CO2 data:", co2Data.length, "records");

@@ -6,43 +6,23 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PredictionData } from "@/types/prediction";
 import { getPredictionData, savePrediction } from "@/services/predictionService";
 
-// Define the CustomDataCache interface
+// Define the CustomDataCache interface for backend use
 interface CustomDataCache {
   wildfires: any[];
   co2: any[];
 }
-
-// Cache for custom uploaded data
-const customDataCache: CustomDataCache = {
-  wildfires: [],
-  co2: []
-};
 
 export function usePrediction() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionData | null>(null);
   const [location, setLocation] = useState<string>("");
   const [apiMode, setApiMode] = useState<boolean>(true);
-  const [usingCustomData, setUsingCustomData] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
-  };
-
-  const handleCustomDataUpload = (data: any[], type: "wildfires" | "co2") => {
-    customDataCache[type] = data;
-    setUsingCustomData(true);
-    
-    if (apiMode) {
-      setApiMode(false);
-      toast({
-        title: "Switched to Simulation Mode",
-        description: "Using your custom data for predictions",
-      });
-    }
   };
 
   const handleSubmit = async () => {
@@ -70,7 +50,7 @@ export function usePrediction() {
     setIsLoading(true);
 
     try {
-      const predictionData = await getPredictionData(location, apiMode, usingCustomData ? customDataCache : undefined);
+      const predictionData = await getPredictionData(location, apiMode);
       setResult(predictionData);
       
       await savePrediction(user.id, predictionData);
@@ -78,7 +58,7 @@ export function usePrediction() {
       toast({
         title: "Prediction Complete",
         description: `Analysis for ${predictionData.location} has been generated using ${
-          apiMode ? 'real-time data' : (usingCustomData ? 'your custom dataset' : 'simulation data')
+          apiMode ? 'real-time data' : 'simulation data'
         }.`,
       });
     } catch (error: any) {
@@ -119,7 +99,6 @@ export function usePrediction() {
     location,
     apiMode,
     handleLocationSelect,
-    handleSubmit,
-    handleCustomDataUpload
+    handleSubmit
   };
 }

@@ -2,26 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { PredictionData } from "@/types/prediction";
 import { getMockPredictionData } from "@/utils/mockDataGenerator";
 
-// Type for custom data cache
-interface CustomDataCache {
-  wildfires: any[];
-  co2: any[];
-}
-
 export async function getPredictionData(
   location: string, 
-  apiMode: boolean, 
-  customData?: CustomDataCache
+  apiMode: boolean
 ): Promise<PredictionData> {
   if (!apiMode) {
-    console.log(
-      customData 
-        ? "Using custom uploaded data for location:" 
-        : "Using mock data with enhanced datasets for location:", 
-      location
-    );
-    
-    const mockData = await getMockPredictionData(location, customData);
+    console.log("Using mock data with enhanced datasets for location:", location);
+    const mockData = await getMockPredictionData(location);
     return {
       location,
       ...mockData
