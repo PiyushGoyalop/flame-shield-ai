@@ -1,5 +1,4 @@
 import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
-import { supabase } from "@/integrations/supabase/client";
 
 // Keep the interface for internal type consistency
 interface CustomDataCache {
@@ -108,7 +107,7 @@ export const getMockPredictionData = async (location: string) => {
     if (finalTotal > 100) forestPercent -= (finalTotal - 100);
     
     // Generate historic data based on the real dataset if we have a match
-    const historic_data = matchingWildfireLocation ? generateHistoricData(wildfireData, matchingWildfireLocation.location as string) : undefined;
+    const historic_data = matchingWildfireLocation ? generateHistoricData(wildfireData, matchingWildfireLocation.location as string) : generateSyntheticHistoricData(location, seed);
     
     return {
       probability: Math.round(probability * 100) / 100,
@@ -133,27 +132,9 @@ export const getMockPredictionData = async (location: string) => {
       historic_data
     };
   } catch (error) {
-    console.error("Error in mock data generation, trying failsafe endpoint:", error);
+    console.error("Error in mock data generation, using synthetic data:", error);
     
-    // If local data loading fails, try the failsafe endpoint
-    try {
-      const { data: failsafeData, error: failsafeError } = await supabase.functions.invoke('get-historic-data-failsafe', {
-        body: { location, dataType: 'wildfires' }
-      });
-      
-      if (failsafeError) {
-        console.error("Failsafe data endpoint also failed:", failsafeError);
-      } else if (failsafeData) {
-        console.log("Using failsafe data from endpoint:", failsafeData);
-        
-        // Generate basic prediction data with the failsafe historic data
-        return generateBasicPredictionWithFailsafeData(location, seed, failsafeData);
-      }
-    } catch (failsafeError) {
-      console.error("Failed to access failsafe endpoint:", failsafeError);
-    }
-    
-    // Last resort: generate completely synthetic data
+    // Generate completely synthetic data as a fallback
     return generateSyntheticData(location, seed);
   }
 };
@@ -226,58 +207,8 @@ function generateHistoricData(wildfireData: any[], location: string) {
   };
 }
 
-function generateBasicPredictionWithFailsafeData(location: string, seed: number, failsafeData: any) {
-  const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
-  const isCoastal = /beach|coast|ocean|bay|gulf|sea/.test(location.toLowerCase());
-  const isForested = /forest|wood|pine|redwood|national park/.test(location.toLowerCase());
-  const isDesert = /desert|valley|canyon|mesa/.test(location.toLowerCase());
-  
-  // Calculate basic prediction values
-  const probability = Math.min(95, Math.max(5, 40 + (seed * 35)));
-  const temperature = 10 + (seed * 25);
-  const humidity = isCoastal ? 50 + (seed * 30) : 20 + (seed * 40);
-  const droughtIndex = isHighRiskState ? 80 - humidity : 60 - humidity;
-  const co2Level = 15 + (seed * 20);
-  
-  // Generate vegetation indices
-  const ndvi = isForested ? 0.7 + (seed * 0.3) : 0.3 + (seed * 0.4);
-  const evi = Math.max(0, Math.min(1, ndvi * 0.9 + (seed * 0.1 - 0.05)));
-  
-  // Generate basic land cover percentages
-  const forestPercent = 40;
-  const grasslandPercent = 30;
-  const urbanPercent = 20;
-  const waterPercent = 5;
-  const barrenPercent = 5;
-  
-  return {
-    probability: Math.round(probability * 100) / 100,
-    temperature: Math.round(temperature * 10) / 10,
-    humidity: Math.round(humidity),
-    co2Level: Math.round(co2Level * 10) / 10,
-    droughtIndex: Math.round(Math.max(0, droughtIndex)),
-    air_quality_index: Math.round(1 + seed * 4),
-    pm2_5: Math.round(seed * 50 * 10) / 10,
-    pm10: Math.round(seed * 70 * 10) / 10,
-    historic_data: failsafeData,
-    vegetation_index: {
-      ndvi: Math.round(ndvi * 100) / 100,
-      evi: Math.round(evi * 100) / 100
-    },
-    land_cover: {
-      forest_percent: forestPercent,
-      grassland_percent: grasslandPercent,
-      urban_percent: urbanPercent,
-      water_percent: waterPercent,
-      barren_percent: barrenPercent
-    }
-  };
-}
-
-function generateSyntheticData(location: string, seed: number) {
-  const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
-  
-  // Generate completely synthetic historic data
+function generateSyntheticHistoricData(location: string, seed: number) {
+  // Generate yearly incident data for the past 5 years
   const yearlyIncidents = [2019, 2020, 2021, 2022, 2023].map(year => ({
     year,
     incidents: Math.round(500 + (1500 * seed) + (year - 2019) * 200)
@@ -285,23 +216,31 @@ function generateSyntheticData(location: string, seed: number) {
   
   const totalIncidents = yearlyIncidents.reduce((sum, item) => sum + item.incidents, 0);
   
-  const historicData = {
+  // Create synthetic historical data structure
+  return {
     total_incidents: totalIncidents,
     largest_fire_acres: Math.round(50000 + seed * 950000),
     average_fire_size_acres: Math.round(100 + seed * 1900),
     yearly_incidents: yearlyIncidents,
     severity_distribution: {
-      low: Math.round(totalIncidents * 0.5),
-      medium: Math.round(totalIncidents * 0.3),
-      high: Math.round(totalIncidents * 0.15),
-      extreme: Math.round(totalIncidents * 0.05)
+      low: 50,
+      medium: 30,
+      high: 15,
+      extreme: 5
     },
     causes: {
-      lightning: Math.round(totalIncidents * 0.3),
-      human: Math.round(totalIncidents * 0.6),
-      unknown: Math.round(totalIncidents * 0.1)
+      lightning: 30,
+      human: 60,
+      unknown: 10
     }
   };
+}
+
+function generateSyntheticData(location: string, seed: number) {
+  const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
+  
+  // Generate synthetic historic data
+  const historicData = generateSyntheticHistoricData(location, seed);
   
   // Generate basic prediction values
   const probability = Math.min(95, Math.max(5, isHighRiskState ? 60 + (seed * 30) : 30 + (seed * 40)));

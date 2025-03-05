@@ -8,7 +8,7 @@ export async function getPredictionData(
   apiMode: boolean
 ): Promise<PredictionData> {
   if (!apiMode) {
-    console.log("Using mock data with enhanced datasets for location:", location);
+    console.log("Using mock data for location:", location);
     const mockData = await getMockPredictionData(location);
     return {
       location,
@@ -46,19 +46,6 @@ export async function getPredictionData(
     
     if (historicError) {
       console.error("Error calling historic wildfire data API:", historicError);
-      console.log("Trying failsafe endpoint for historic data...");
-      
-      // Try the failsafe endpoint if the primary one fails
-      const { data: failsafeResponse, error: failsafeError } = await supabase.functions.invoke('get-historic-data-failsafe', {
-        body: { location, dataType: 'wildfires' }
-      });
-      
-      if (failsafeError) {
-        console.error("Failsafe historic data also failed:", failsafeError);
-      } else if (failsafeResponse) {
-        console.log("Using failsafe historic data:", failsafeResponse);
-        historicData = failsafeResponse;
-      }
     } else {
       console.log("Historical data API response:", historicResponse);
       
