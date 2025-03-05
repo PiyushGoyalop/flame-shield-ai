@@ -1,12 +1,37 @@
-
 import { WeatherData, AirPollutionData } from "./types.ts";
 import { OPENWEATHER_API_KEY, WEATHERAPI_KEY } from "./utils.ts";
 
 // Basic geocoding function with fallback
 export async function getCoordinates(location: string): Promise<{ lat: number; lon: number }> {
   try {
-    // Try OpenWeather geocoding first
-    const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(location)}&limit=1&appid=${OPENWEATHER_API_KEY}`;
+    // Clean up location string - remove extra spaces, commas at the end, etc.
+    const cleanLocation = location.trim().replace(/,\s*$/, "");
+    
+    // Try direct city name for simplicity
+    if (cleanLocation.includes(",")) {
+      const parts = cleanLocation.split(",");
+      // If we have a city and state/country format, try with just the city first
+      const cityOnly = parts[0].trim();
+      
+      try {
+        // Try with city only first
+        const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityOnly)}&limit=1&appid=${OPENWEATHER_API_KEY}`;
+        const response = await fetch(geocodingUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            console.log(`Found coordinates using city name: ${cityOnly}`);
+            return { lat: data[0].lat, lon: data[0].lon };
+          }
+        }
+      } catch (error) {
+        console.log(`City-only geocoding failed, trying full location`);
+      }
+    }
+    
+    // Try OpenWeather geocoding with full location
+    const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cleanLocation)}&limit=1&appid=${OPENWEATHER_API_KEY}`;
     const response = await fetch(geocodingUrl);
     
     if (!response.ok) {
@@ -16,11 +41,12 @@ export async function getCoordinates(location: string): Promise<{ lat: number; l
     const data = await response.json();
     
     if (data && data.length > 0) {
+      console.log(`Found coordinates for ${cleanLocation} using OpenWeather`);
       return { lat: data[0].lat, lon: data[0].lon };
     }
     
     // If OpenWeather geocoding fails, try WeatherAPI.com
-    return await getCoordinatesFromWeatherAPI(location);
+    return await getCoordinatesFromWeatherAPI(cleanLocation);
   } catch (error) {
     console.error("Primary geocoding error:", error);
     console.log("Trying fallback geocoding API...");
@@ -31,7 +57,8 @@ export async function getCoordinates(location: string): Promise<{ lat: number; l
 // Fallback geocoding using WeatherAPI.com
 async function getCoordinatesFromWeatherAPI(location: string): Promise<{ lat: number; lon: number }> {
   try {
-    const geocodingUrl = `https://api.weatherapi.com/v1/search.json?key=${WEATHERAPI_KEY}&q=${encodeURIComponent(location)}`;
+    const cleanLocation = location.trim().replace(/,\s*$/, "");
+    const geocodingUrl = `https://api.weatherapi.com/v1/search.json?key=${WEATHERAPI_KEY}&q=${encodeURIComponent(cleanLocation)}`;
     const response = await fetch(geocodingUrl);
     
     if (!response.ok) {
@@ -41,16 +68,37 @@ async function getCoordinatesFromWeatherAPI(location: string): Promise<{ lat: nu
     const data = await response.json();
     
     if (data && data.length > 0) {
+      console.log(`Found coordinates using WeatherAPI.com: ${cleanLocation}`);
       return { 
         lat: parseFloat(data[0].lat), 
         lon: parseFloat(data[0].lon) 
       };
     } else {
+      // If location contains commas, try with just the first part
+      if (cleanLocation.includes(",")) {
+        const cityOnly = cleanLocation.split(",")[0].trim();
+        console.log(`Trying with city only: ${cityOnly}`);
+        
+        const simplifiedUrl = `https://api.weatherapi.com/v1/search.json?key=${WEATHERAPI_KEY}&q=${encodeURIComponent(cityOnly)}`;
+        const simplifiedResponse = await fetch(simplifiedUrl);
+        
+        if (simplifiedResponse.ok) {
+          const simplifiedData = await simplifiedResponse.json();
+          if (simplifiedData && simplifiedData.length > 0) {
+            console.log(`Found coordinates for simplified location: ${cityOnly}`);
+            return { 
+              lat: parseFloat(simplifiedData[0].lat), 
+              lon: parseFloat(simplifiedData[0].lon) 
+            };
+          }
+        }
+      }
+      
       throw new Error("Location not found in fallback API");
     }
   } catch (error) {
     console.error("Fallback geocoding error:", error);
-    throw new Error("All geocoding services failed. Please try a different location.");
+    throw new Error("All geocoding services failed. Please try a different location name format (e.g. 'San Francisco' or 'Los Angeles, CA').");
   }
 }
 

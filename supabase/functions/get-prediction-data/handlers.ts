@@ -25,7 +25,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   try {
     const { location } = await req.json() as RequestBody;
     
-    if (!location) {
+    if (!location || location.trim() === "") {
       return new Response(
         JSON.stringify({ error: "Location is required" }),
         { 
@@ -34,6 +34,9 @@ export async function handleRequest(req: Request): Promise<Response> {
         }
       );
     }
+    
+    // Log the location received for debugging
+    console.log(`Processing prediction request for location: "${location}"`);
     
     // Check if any API key is available
     if (!OPENWEATHER_API_KEY && !WEATHERAPI_KEY) {
@@ -52,67 +55,100 @@ export async function handleRequest(req: Request): Promise<Response> {
       console.warn("Running with limited API functionality");
     }
     
-    // Get coordinates for the location
-    const { lat, lon } = await getCoordinates(location);
-    console.log(`Coordinates for ${location}: lat=${lat}, lon=${lon}`);
-    
-    // Get weather data
-    const weatherData = await getWeatherData(lat, lon);
-    console.log(`Weather data received for ${location}`);
-    
-    // Get air pollution data
-    const airPollutionData = await getAirPollutionData(lat, lon);
-    console.log(`Air pollution data received for ${location}`);
-    
-    // Get Earth Engine data (vegetation indices and land cover)
-    let vegetationData, landCoverData;
     try {
-      const earthEngineResponse = await fetch(`https://lmnvkkpxcqzogeisbygc.supabase.co/functions/v1/get-earth-engine-data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.get('Authorization') || ''
-        },
-        body: JSON.stringify({ latitude: lat, longitude: lon })
-      });
+      // Get coordinates for the location
+      const { lat, lon } = await getCoordinates(location);
+      console.log(`Coordinates for ${location}: lat=${lat}, lon=${lon}`);
       
-      if (earthEngineResponse.ok) {
-        const earthEngineData = await earthEngineResponse.json();
-        console.log(`Earth Engine data received for ${location}`);
-        vegetationData = earthEngineData.vegetation_index;
-        landCoverData = earthEngineData.land_cover;
-      } else {
-        console.error(`Failed to get Earth Engine data: ${await earthEngineResponse.text()}`);
+      // Get weather data
+      const weatherData = await getWeatherData(lat, lon);
+      console.log(`Weather data received for ${location}`);
+      
+      // Get air pollution data
+      const airPollutionData = await getAirPollutionData(lat, lon);
+      console.log(`Air pollution data received for ${location}`);
+      
+      // Get Earth Engine data (vegetation indices and land cover)
+      let vegetationData, landCoverData;
+      try {
+        const earthEngineResponse = await fetch(`https://lmnvkkpxcqzogeisbygc.supabase.co/functions/v1/get-earth-engine-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.get('Authorization') || ''
+          },
+          body: JSON.stringify({ latitude: lat, longitude: lon })
+        });
+        
+        if (earthEngineResponse.ok) {
+          const earthEngineData = await earthEngineResponse.json();
+          console.log(`Earth Engine data received for ${location}`);
+          vegetationData = earthEngineData.vegetation_index;
+          landCoverData = earthEngineData.land_cover;
+        } else {
+          console.error(`Failed to get Earth Engine data: ${await earthEngineResponse.text()}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching Earth Engine data: ${error.message}`);
       }
+      
+      // Process data and generate prediction
+      const predictionData = generatePrediction(
+        location, 
+        weatherData, 
+        airPollutionData, 
+        lat, 
+        lon, 
+        vegetationData, 
+        landCoverData
+      );
+      
+      console.log(`Prediction completed for ${location}: probability=${predictionData.probability}%`);
+      
+      return new Response(
+        JSON.stringify(predictionData),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
     } catch (error) {
-      console.error(`Error fetching Earth Engine data: ${error.message}`);
-    }
-    
-    // Process data and generate prediction
-    const predictionData = generatePrediction(
-      location, 
-      weatherData, 
-      airPollutionData, 
-      lat, 
-      lon, 
-      vegetationData, 
-      landCoverData
-    );
-    
-    console.log(`Prediction completed for ${location}: probability=${predictionData.probability}%`);
-    
-    return new Response(
-      JSON.stringify(predictionData),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      // More specific error for geocoding failures
+      if (error.message.includes("geocoding") || error.message.includes("location")) {
+        console.error("Location error:", error.message);
+        return new Response(
+          JSON.stringify({ 
+            error: error.message,
+            details: "Try using a simpler location format like 'City' or 'City, State'"
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, "Content-Type": "application/json" } 
+          }
+        );
       }
-    );
+      
+      // General API errors
+      console.error("API error:", error);
+      return new Response(
+        JSON.stringify({ 
+          error: "Error processing weather data. Please try again with a different location.",
+          details: error.message
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
   } catch (error) {
-    console.error("Error processing prediction:", error);
+    console.error("Unexpected error processing prediction:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to process prediction" }),
+      JSON.stringify({ 
+        error: "Unexpected error processing prediction", 
+        details: error.message || "An unknown error occurred"
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 

@@ -56,21 +56,29 @@ export function usePrediction() {
     } catch (error: any) {
       console.error("Error in prediction flow:", error);
       
+      // Check if there are specific details in the error
+      const errorDetails = error.error?.details || error.details || error.message;
+      const errorMessage = error.error?.message || error.message || "Unknown error";
+      
       if (apiMode) {
         setApiMode(false);
         toast({
           title: "API Connection Issue",
-          description: "Switching to simulation mode due to API issues. Your API key may be missing or invalid.",
+          description: `Switching to simulation mode due to API issues. ${errorDetails || errorMessage}`,
           variant: "destructive"
         });
         
-        handleSubmit();
+        // Wait for state to update before calling again
+        setTimeout(() => {
+          handleSubmit();
+        }, 100);
       } else {
         toast({
-          title: "Error saving prediction",
-          description: error.message,
+          title: "Error processing prediction",
+          description: errorDetails || errorMessage,
           variant: "destructive"
         });
+        setIsLoading(false);
       }
     } finally {
       setIsLoading(false);
