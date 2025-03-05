@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
-import { Flame, AlertTriangle, TrendingUp, PieChart as PieChartIcon } from "lucide-react";
+import { Flame, AlertTriangle, TrendingUp, PieChartIcon } from "lucide-react";
 
 interface HistoricData {
   total_incidents: number;
@@ -46,14 +45,12 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
 
   const formattedChartData = data.yearly_incidents.slice().sort((a, b) => a.year - b.year);
   
-  // Prepare causes data for pie chart if available
   const causesData = data.causes ? [
     { name: 'Lightning', value: data.causes.lightning, color: '#60a5fa' },
     { name: 'Human', value: data.causes.human, color: '#f87171' },
     { name: 'Unknown', value: data.causes.unknown, color: '#9ca3af' }
   ].filter(item => item.value > 0) : [];
   
-  // Prepare severity data for pie chart if available
   const severityData = data.severity_distribution ? [
     { name: 'Low (<100 acres)', value: data.severity_distribution.low, color: '#34d399' },
     { name: 'Medium (100-1k acres)', value: data.severity_distribution.medium, color: '#fbbf24' },
@@ -61,7 +58,6 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
     { name: 'Extreme (>10k acres)', value: data.severity_distribution.extreme, color: '#ef4444' }
   ].filter(item => item.value > 0) : [];
 
-  // Check if we have any data to display
   const hasData = data.total_incidents > 0;
 
   return (
@@ -114,27 +110,27 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
             )}
 
             {(causesData.length > 0 || severityData.length > 0) && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-10 mb-14">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10 mb-14">
                 {causesData.length > 0 && (
-                  <div className="h-[400px] pt-6">
-                    <h4 className="text-sm font-medium mb-6 flex items-center gap-1">
+                  <div className="h-[480px] pt-4 pb-6">
+                    <h4 className="text-sm font-medium mb-4 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Causes</span>
                     </h4>
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
+                      <PieChart margin={{ top: 30, right: 30, bottom: 70, left: 30 }}>
                         <Pie
                           data={causesData}
                           cx="50%"
-                          cy="35%"
+                          cy="40%"
                           labelLine={true}
-                          outerRadius={110}
-                          innerRadius={40}
+                          outerRadius={130}
+                          innerRadius={50}
                           fill="#8884d8"
                           dataKey="value"
                           nameKey="name"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          paddingAngle={1}
+                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                          paddingAngle={2}
                         >
                           {causesData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -148,7 +144,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                           layout="horizontal" 
                           verticalAlign="bottom" 
                           align="center"
-                          wrapperStyle={{ paddingTop: '40px', paddingBottom: '20px' }}
+                          wrapperStyle={{ paddingTop: '60px', paddingBottom: '30px' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -156,25 +152,25 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                 )}
                 
                 {severityData.length > 0 && (
-                  <div className="h-[400px] pt-6">
-                    <h4 className="text-sm font-medium mb-6 flex items-center gap-1">
+                  <div className="h-[480px] pt-4 pb-6">
+                    <h4 className="text-sm font-medium mb-4 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Severity</span>
                     </h4>
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
+                      <PieChart margin={{ top: 30, right: 30, bottom: 70, left: 30 }}>
                         <Pie
                           data={severityData}
                           cx="50%"
-                          cy="35%"
+                          cy="40%"
                           labelLine={true}
-                          outerRadius={110}
-                          innerRadius={40}
+                          outerRadius={130}
+                          innerRadius={50}
                           fill="#8884d8"
                           dataKey="value"
                           nameKey="name"
                           label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                          paddingAngle={1}
+                          paddingAngle={2}
                         >
                           {severityData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -188,7 +184,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                           layout="horizontal" 
                           verticalAlign="bottom" 
                           align="center"
-                          wrapperStyle={{ paddingTop: '40px', paddingBottom: '20px' }}
+                          wrapperStyle={{ paddingTop: '60px', paddingBottom: '30px' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -197,7 +193,6 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
               </div>
             )}
 
-            {/* Risk Alert based on incidents - with increased margin-top for better separation */}
             {data.total_incidents > 15 && (
               <div className="mt-16 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />

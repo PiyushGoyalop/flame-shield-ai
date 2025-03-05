@@ -77,8 +77,8 @@ const Predict = () => {
     <div className="min-h-screen flex flex-col">
       <Nav />
       
-      <main className={`flex-grow pt-28 pb-20 transition-all duration-1500 ${getBackgroundClass()}`}>
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <main className={`flex-grow pt-24 pb-20 transition-all duration-1500 ${getBackgroundClass()}`}>
+        <div className="w-full max-w-[95%] xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10 bg-white/80 p-6 rounded-lg backdrop-blur-sm transform transition-all duration-500 hover:scale-105">
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-wildfire-800">
               Wildfire Risk Prediction
@@ -90,7 +90,7 @@ const Predict = () => {
           
           <PredictionForm />
           
-          <div className="mt-16 max-w-6xl mx-auto">
+          <div className="mt-16 max-w-[95%] xl:max-w-6xl mx-auto">
             <h2 className="text-2xl font-display font-bold mb-6 text-center">Advanced ML-Powered Prediction</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
