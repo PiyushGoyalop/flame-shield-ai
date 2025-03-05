@@ -1,5 +1,5 @@
 
-import { PieChart as PieChartIcon } from "lucide-react";
+import { PieChartIcon } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 interface LandCoverChartProps {
@@ -27,12 +27,12 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
   if (landCoverData.length === 0) return null;
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 w-full">
       <h4 className="text-sm font-medium mb-3 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Land Cover Distribution</span>
       </h4>
-      <div className="h-64">
+      <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -40,18 +40,27 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
               cx="50%"
               cy="50%"
               labelLine={true}
-              outerRadius={80}
+              outerRadius={90}
               fill="#8884d8"
               dataKey="value"
               nameKey="name"
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
             >
               {landCoverData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => [`${value}%`, 'Coverage']} />
-            <Legend />
+            <Tooltip 
+              formatter={(value) => [`${value}%`, 'Coverage']}
+              contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '8px' }}
+            />
+            <Legend 
+              layout="horizontal" 
+              verticalAlign="bottom" 
+              align="center"
+              wrapperStyle={{ paddingTop: '20px' }}
+              formatter={(value) => <span className="text-sm">{value}</span>}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>

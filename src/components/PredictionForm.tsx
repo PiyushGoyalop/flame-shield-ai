@@ -18,7 +18,7 @@ export function PredictionForm() {
   } = usePrediction();
 
   return (
-    <div className="max-w-md w-full mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
       <PredictionFormCard>
         <CardContent>
           <div className="space-y-4">
