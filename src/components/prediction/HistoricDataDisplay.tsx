@@ -114,9 +114,9 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
             )}
 
             {(causesData.length > 0 || severityData.length > 0) && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 mb-8">
                 {causesData.length > 0 && (
-                  <div className="h-[300px]">
+                  <div className="h-[320px]">
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Causes</span>
@@ -146,7 +146,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                           layout="horizontal" 
                           verticalAlign="bottom" 
                           align="center"
-                          wrapperStyle={{ paddingTop: '10px' }}
+                          wrapperStyle={{ paddingTop: '20px', paddingBottom: '10px' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -154,7 +154,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                 )}
                 
                 {severityData.length > 0 && (
-                  <div className="h-[300px]">
+                  <div className="h-[320px]">
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Severity</span>
@@ -184,7 +184,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                           layout="horizontal" 
                           verticalAlign="bottom" 
                           align="center"
-                          wrapperStyle={{ paddingTop: '10px' }}
+                          wrapperStyle={{ paddingTop: '20px', paddingBottom: '10px' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -193,9 +193,9 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
               </div>
             )}
 
-            {/* Risk Alert based on incidents */}
+            {/* Risk Alert based on incidents - with added margin-top */}
             {data.total_incidents > 15 && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+              <div className="mt-8 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-amber-700">Elevated Historical Risk</p>
