@@ -118,6 +118,7 @@ export const resendConfirmationEmail = async (email: string, redirectUrl: string
  */
 export const resetPassword = async (email: string, redirectUrl: string) => {
   console.log("Sending password reset email to:", email);
+  console.log("Using redirect URL:", redirectUrl);
   
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: redirectUrl + "?type=recovery"

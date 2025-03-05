@@ -4,13 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { PasswordInput } from "./PasswordInput";
 import { PasswordRequirements } from "./PasswordRequirements";
-import { isStrongPassword } from "@/services/authService";
+import { Label } from "@/components/ui/label";
 
 export function PasswordResetForm() {
   const [password, setPassword] = useState("");
@@ -63,9 +61,17 @@ export function PasswordResetForm() {
     setIsSubmitting(true);
 
     try {
+      // Log before attempting the update to help with debugging
+      console.log("Attempting to update password");
+      
       const { error } = await supabase.auth.updateUser({ password });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
+      console.log("Password update successful");
       
       toast({
         title: "Password updated successfully",
