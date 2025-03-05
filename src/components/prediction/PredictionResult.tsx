@@ -6,6 +6,7 @@ import { Precautions } from "./Precautions";
 import { PredictionData } from "@/types/prediction";
 import { EarthEngineDataDisplay } from "./EarthEngineDataDisplay";
 import { Card, CardContent } from "@/components/ui/card";
+import { RiskIndicator } from "./RiskIndicator";
 
 export function PredictionResult({ result }: { result: PredictionData }) {
   // Safeguard against null or undefined result
@@ -43,6 +44,8 @@ export function PredictionResult({ result }: { result: PredictionData }) {
           />
         </CardContent>
       </Card>
+      
+      <RiskIndicator probability={displayData.probability} />
       
       <MainStats 
         probability={displayData.probability} 
