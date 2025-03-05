@@ -95,29 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log("Sign up auth response:", data);
       
-      // If successful, manually create or update a profiles entry
-      if (data?.user) {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({ 
-              id: data.user.id,
-              name,
-              email,
-              mobile
-            }, { 
-              onConflict: 'id' 
-            });
-          
-          if (profileError) {
-            console.error("Error creating profile:", profileError);
-          } else {
-            console.log("Profile created successfully with mobile:", mobile);
-          }
-        } catch (profileErr) {
-          console.error("Profile creation error:", profileErr);
-        }
-      }
+      // We're not manually inserting profiles anymore since we have the trigger function
+      // that's handled by the database. The trigger will create the profiles entry
+      // when the user is confirmed through the email link.
       
       // Show a specific toast for email confirmation
       toast({
