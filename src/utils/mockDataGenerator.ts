@@ -1,4 +1,5 @@
 import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
+import { supabase } from "@/integrations/supabase/client";
 
 // Keep the interface for internal type consistency
 interface CustomDataCache {
