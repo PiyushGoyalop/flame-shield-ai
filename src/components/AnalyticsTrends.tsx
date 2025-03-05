@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +32,9 @@ const yearlyData = [
   { year: "2020", wildfires: 65321 },
   { year: "2021", wildfires: 68421 },
   { year: "2022", wildfires: 66789 },
+  { year: "2023", wildfires: 67954 },
+  { year: "2024", wildfires: 69320 },
+  { year: "2025", wildfires: 71050 }
 ];
 
 const co2Correlation = [
@@ -57,7 +59,6 @@ export function AnalyticsTrends() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate data loading
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 500);
@@ -67,7 +68,6 @@ export function AnalyticsTrends() {
 
   const handleYearChange = (value: string) => {
     setSelectedYear(value);
-    // In a real app, this would filter data based on the selected year
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -117,6 +117,9 @@ export function AnalyticsTrends() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Years</SelectItem>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2023">2023</SelectItem>
               <SelectItem value="2022">2022</SelectItem>
               <SelectItem value="2021">2021</SelectItem>
               <SelectItem value="2020">2020</SelectItem>
@@ -214,7 +217,7 @@ export function AnalyticsTrends() {
             <CardHeader>
               <CardTitle>Yearly Wildfire Trend</CardTitle>
               <CardDescription>
-                Total number of wildfires recorded per year from 2015-2022
+                Total number of wildfires recorded per year from 2015-2025
               </CardDescription>
             </CardHeader>
             <CardContent>
