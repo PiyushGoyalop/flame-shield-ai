@@ -50,7 +50,7 @@ const AuthRedirect = () => {
           
           toast({
             title: "Authentication successful",
-            description: "You have been successfully signed in.",
+            description: "You can now sign in.",
           });
           
           // Redirect to home page immediately
