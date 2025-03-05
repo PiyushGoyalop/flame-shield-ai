@@ -19,6 +19,53 @@ interface PredictionResult {
   droughtIndex: number;
 }
 
+// Deterministic "seed" function that generates consistent numbers for same locations
+const getLocationSeed = (location: string): number => {
+  // Convert string to a simple numeric hash
+  let hash = 0;
+  for (let i = 0; i < location.length; i++) {
+    hash = ((hash << 5) - hash) + location.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash) / 2147483647; // Normalize between 0 and 1
+};
+
+// Location-based mock data generator
+const getMockPredictionData = (location: string) => {
+  const seed = getLocationSeed(location);
+  
+  // Use location characteristics for more realistic values
+  const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
+  const isCoastal = /beach|coast|ocean|bay|gulf|sea/.test(location.toLowerCase());
+  const isForested = /forest|wood|pine|redwood|national park/.test(location.toLowerCase());
+  const isUrban = /city|downtown|urban|metro/.test(location.toLowerCase());
+  
+  // Base probability factors
+  let baseProbability = 0;
+  if (isHighRiskState) baseProbability += 40;
+  if (isForested) baseProbability += 25;
+  if (isCoastal) baseProbability -= 15;
+  if (isUrban) baseProbability -= 10;
+  
+  // Deterministic location-based randomization
+  const locationFactor = seed * 35; // Scale from 0-35
+  
+  // Calculate prediction values
+  const probability = Math.min(95, Math.max(5, baseProbability + locationFactor));
+  const temperature = 10 + (seed * 25); // Between 10°C and 35°C
+  const humidity = isCoastal ? 50 + (seed * 30) : 20 + (seed * 40); // Higher humidity for coastal areas
+  const co2Level = 5 + (seed * 40) + (isUrban ? 15 : 0); // Higher CO2 for urban areas
+  const droughtIndex = isHighRiskState ? 80 - humidity : 60 - humidity;
+  
+  return {
+    probability: Math.round(probability * 100) / 100,
+    temperature: Math.round(temperature * 10) / 10,
+    humidity: Math.round(humidity),
+    co2Level: Math.round(co2Level * 10) / 10,
+    droughtIndex: Math.round(Math.max(0, droughtIndex)),
+  };
+};
+
 export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
@@ -56,31 +103,15 @@ export function PredictionForm() {
 
     setIsLoading(true);
 
-    // Simulating API call to the ML model
+    // Simulating API call to the ML model with deterministic output
     setTimeout(async () => {
       try {
-        // Generate more realistic random data
-        const randomProbability = (
-          location.toLowerCase().includes('california') ? Math.random() * 35 + 55 : // Higher for California
-          location.toLowerCase().includes('colorado') ? Math.random() * 30 + 45 : // Medium-high for Colorado
-          location.toLowerCase().includes('oregon') ? Math.random() * 25 + 40 : // Medium for Oregon
-          location.toLowerCase().includes('york') ? Math.random() * 15 + 10 : // Lower for New York
-          location.toLowerCase().includes('florida') ? Math.random() * 20 + 30 : // Medium-low for Florida
-          Math.random() * 60 + 20 // Random for other places
-        );
-        
-        const co2Level = Math.random() * 50 + 5; // Random CO2 level between 5 and 55 MT
-        const temperature = Math.random() * 30 + 5; // Random temperature between 5°C and 35°C
-        const humidity = Math.random() * 60 + 20; // Random humidity between 20% and 80%
-        const droughtIndex = 100 - humidity; // Simple drought index calculation
+        // Get deterministic data for the location
+        const predictionData = getMockPredictionData(location);
         
         const newResult = {
           location,
-          probability: Math.round(randomProbability * 100) / 100,
-          co2Level: Math.round(co2Level * 10) / 10,
-          temperature: Math.round(temperature * 10) / 10,
-          humidity: Math.round(humidity),
-          droughtIndex: Math.round(droughtIndex),
+          ...predictionData
         };
         
         setResult(newResult);
