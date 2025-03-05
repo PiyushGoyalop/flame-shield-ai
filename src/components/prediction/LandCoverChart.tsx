@@ -1,0 +1,60 @@
+
+import { PieChart as PieChartIcon } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+
+interface LandCoverChartProps {
+  landCover: {
+    forest_percent: number;
+    grassland_percent: number;
+    urban_percent: number;
+    water_percent: number;
+    barren_percent: number;
+  };
+}
+
+export function LandCoverChart({ landCover }: LandCoverChartProps) {
+  if (!landCover) return null;
+
+  // Prepare land cover data for pie chart
+  const landCoverData = [
+    { name: 'Forest', value: landCover.forest_percent, color: '#22c55e' },
+    { name: 'Grassland', value: landCover.grassland_percent, color: '#84cc16' },
+    { name: 'Urban', value: landCover.urban_percent, color: '#94a3b8' },
+    { name: 'Water', value: landCover.water_percent, color: '#38bdf8' },
+    { name: 'Barren', value: landCover.barren_percent, color: '#d4d4d4' }
+  ].filter(item => item.value > 0);
+
+  if (landCoverData.length === 0) return null;
+
+  return (
+    <div className="mt-4">
+      <h4 className="text-sm font-medium mb-3 flex items-center gap-1">
+        <PieChartIcon className="w-4 h-4" />
+        <span>Land Cover Distribution</span>
+      </h4>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={landCoverData}
+              cx="50%"
+              cy="50%"
+              labelLine={true}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+              nameKey="name"
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            >
+              {landCoverData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value) => [`${value}%`, 'Coverage']} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
