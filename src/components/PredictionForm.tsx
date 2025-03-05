@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,16 @@ import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+
+interface HistoricData {
+  total_incidents: number;
+  largest_fire_acres: number;
+  average_fire_size_acres: number;
+  yearly_incidents: {
+    year: number;
+    incidents: number;
+  }[];
+}
 
 interface PredictionResult {
   location: string;
@@ -22,6 +31,7 @@ interface PredictionResult {
   air_quality_index?: number;
   pm2_5?: number;
   pm10?: number;
+  historic_data?: HistoricData;
 }
 
 const getLocationSeed = (location: string): number => {
@@ -106,6 +116,7 @@ export function PredictionForm() {
 
     try {
       let predictionData;
+      let historicData;
       
       if (apiMode) {
         const { data, error } = await supabase.functions.invoke('get-prediction-data', {
@@ -121,6 +132,31 @@ export function PredictionForm() {
           throw new Error("No data returned from prediction API");
         }
         
+        const { data: historicResponse, error: historicError } = await supabase.functions.invoke('get-historic-wildfire-data', {
+          body: { 
+            location, 
+            lat: data.latitude, 
+            lon: data.longitude 
+          }
+        });
+        
+        if (historicError) {
+          console.error("Error calling historic wildfire data API:", historicError);
+          // Continue without historic data, don't throw error
+        }
+        
+        if (historicResponse) {
+          historicData = {
+            total_incidents: historicResponse.total_incidents,
+            largest_fire_acres: historicResponse.largest_fire_acres,
+            average_fire_size_acres: historicResponse.average_fire_size_acres,
+            yearly_incidents: historicResponse.yearly_incidents.map(item => ({
+              year: item.year,
+              incidents: item.incidents
+            }))
+          };
+        }
+        
         predictionData = {
           location: data.location,
           probability: data.probability,
@@ -132,7 +168,8 @@ export function PredictionForm() {
           longitude: data.longitude,
           air_quality_index: data.air_quality_index,
           pm2_5: data.pm2_5,
-          pm10: data.pm10
+          pm10: data.pm10,
+          historic_data: historicData
         };
       } else {
         const mockData = getMockPredictionData(location);
@@ -146,7 +183,6 @@ export function PredictionForm() {
       
       console.log("Saving prediction to api_predictions table for user:", user.id);
       
-      // Create the insert object with only the fields that exist in the database
       const insertData = {
         user_id: user.id,
         location: predictionData.location,
