@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../get-prediction-data/utils.ts";
 
@@ -44,8 +43,8 @@ async function handleRequest(req: Request): Promise<Response> {
     
     console.log(`Fetching historic wildfire data for ${location || `lat: ${lat}, lon: ${lon}`} with radius ${searchRadius}km`);
     
-    // Get historical wildfire data
-    const historicData = await getHistoricWildfireData(location, lat, lon, searchRadius);
+    // Get historical wildfire data from USGS API
+    const historicData = await getUSGSWildfireData(location, lat, lon, searchRadius);
     
     return new Response(
       JSON.stringify(historicData),
@@ -67,32 +66,107 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 }
 
-// Get historical wildfire data
-// For this implementation, we're using a simulated dataset
-// In a production environment, this would connect to a real API
-async function getHistoricWildfireData(location?: string, lat?: number, lon?: number, radius: number = 50) {
-  console.log("Generating historic wildfire data...");
+// Fetch historical wildfire data from USGS API
+async function getUSGSWildfireData(location?: string, lat?: number, lon?: number, radius: number = 50) {
+  console.log("Fetching USGS wildfire data...");
   
-  // Generate a seed based on location or coordinates for consistent results
-  let seed = 0;
-  if (location) {
-    for (let i = 0; i < location.length; i++) {
-      seed = ((seed << 5) - seed) + location.charCodeAt(i);
-      seed |= 0;
+  // Build base URL for USGS wildfire data
+  // Using the GeoMAC Wildfire API endpoint
+  const baseUrl = "https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/USGS_Wildland_Fire_Combined_Dataset/FeatureServer/0/query";
+  
+  // Get current date and date 5 years ago for historical data
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setFullYear(startDate.getFullYear() - 5);
+  
+  // Format dates for API query
+  const startDateStr = startDate.toISOString().split('T')[0];
+  const endDateStr = endDate.toISOString().split('T')[0];
+  
+  // If we have lat/lon, use them directly
+  // Otherwise, try to geocode the location name to get coordinates
+  let queryLat = lat;
+  let queryLon = lon;
+  
+  if (!queryLat || !queryLon) {
+    if (location) {
+      try {
+        // Attempt to geocode the location name to get coordinates
+        const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+        const geocodeResponse = await fetch(geocodeUrl, {
+          headers: {
+            "User-Agent": "WildfireRiskPredictionApp/1.0"
+          }
+        });
+        
+        if (!geocodeResponse.ok) {
+          throw new Error(`Geocoding failed with status ${geocodeResponse.status}`);
+        }
+        
+        const geocodeData = await geocodeResponse.json();
+        if (geocodeData && geocodeData.length > 0) {
+          queryLat = parseFloat(geocodeData[0].lat);
+          queryLon = parseFloat(geocodeData[0].lon);
+        } else {
+          throw new Error(`Location "${location}" could not be geocoded`);
+        }
+      } catch (error) {
+        console.error("Geocoding error:", error);
+        throw new Error(`Failed to geocode location: ${error.message}`);
+      }
+    } else {
+      throw new Error("Either location name or coordinates are required");
     }
-  } else if (lat && lon) {
-    seed = Math.abs(lat * 10000 + lon * 10000);
   }
-  seed = Math.abs(seed) / 2147483647;
   
-  // Determine risk factor based on location pattern matching
-  const isHighRiskName = /california|arizona|nevada|colorado|oregon|washington|utah|forest|mountain|canyon|valley|park|reserve/i.test(location || '');
-  const baseFrequency = isHighRiskName ? 8 : 3;
+  console.log(`Using coordinates: ${queryLat}, ${queryLon} with radius ${radius}km`);
   
-  // Generate 5 years of historical data
-  const currentYear = new Date().getFullYear();
+  // Convert radius from km to degrees (approximate conversion)
+  // 1 degree of latitude is approximately 111 km
+  const radiusDegrees = radius / 111;
+  
+  // Prepare USGS API parameters
+  const params = new URLSearchParams({
+    where: `FireDiscoveryDateTime >= DATE '${startDateStr}' AND FireDiscoveryDateTime <= DATE '${endDateStr}'`,
+    geometry: `${queryLon},${queryLat}`,
+    geometryType: "esriGeometryPoint",
+    distance: String(radiusDegrees),
+    units: "esriSRUnit_Degree",
+    outFields: "FireDiscoveryDateTime,IncidentName,IncidentTypeCategory,FireCause,DailyAcres,CalculatedAcres",
+    returnGeometry: "false",
+    spatialRel: "esriSpatialRelIntersects",
+    outSR: "4326",
+    f: "json"
+  });
+  
+  try {
+    // Make request to USGS API
+    const response = await fetch(`${baseUrl}?${params.toString()}`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`USGS API request failed with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`USGS API returned ${data.features?.length || 0} wildfire records`);
+    
+    // Process and transform the data into our required format
+    return processUSGSData(data, location || `Coordinates (${queryLat}, ${queryLon})`, radius);
+  } catch (error) {
+    console.error("USGS API request error:", error);
+    throw new Error(`Failed to fetch USGS wildfire data: ${error.message}`);
+  }
+}
+
+// Process and transform USGS data into our application format
+function processUSGSData(usgsData: any, locationName: string, radius: number) {
+  // Default response structure
   const historicData = {
-    location: location || `Coordinates (${lat}, ${lon})`,
+    location: locationName,
     radius_km: radius,
     total_incidents: 0,
     yearly_incidents: [],
@@ -102,72 +176,132 @@ async function getHistoricWildfireData(location?: string, lat?: number, lon?: nu
     average_fire_size_acres: 0
   };
   
-  let totalAcres = 0;
-  
-  // Generate yearly data
-  for (let i = 0; i < 5; i++) {
-    const year = currentYear - i - 1;
-    const yearSeed = (seed + (i * 0.1)) % 1;
-    
-    // Calculate incidents with some randomness
-    const incidents = Math.floor(baseFrequency + (yearSeed * 12));
-    
-    // Generate severity distribution
-    const lowSeverity = Math.floor(incidents * (0.3 + yearSeed * 0.2));
-    const mediumSeverity = Math.floor(incidents * (0.3 + yearSeed * 0.1));
-    const highSeverity = Math.floor(incidents * (0.2 + yearSeed * 0.1));
-    const extremeSeverity = incidents - lowSeverity - mediumSeverity - highSeverity;
-    
-    // Generate cause distribution
-    const lightningCaused = Math.floor(incidents * (0.3 + yearSeed * 0.2));
-    const humanCaused = Math.floor(incidents * (0.4 + yearSeed * 0.2));
-    const unknownCaused = incidents - lightningCaused - humanCaused;
-    
-    // Calculate largest fire
-    const largestFire = Math.round((5000 + yearSeed * 20000) * (isHighRiskName ? 2 : 1));
-    
-    // Calculate average fire size
-    const averageSize = Math.round((100 + yearSeed * 500) * (isHighRiskName ? 1.5 : 1));
-    totalAcres += averageSize * incidents;
-    
-    // Update totals
-    historicData.total_incidents += incidents;
-    historicData.severity_distribution.low += lowSeverity;
-    historicData.severity_distribution.medium += mediumSeverity;
-    historicData.severity_distribution.high += highSeverity;
-    historicData.severity_distribution.extreme += extremeSeverity;
-    historicData.causes.lightning += lightningCaused;
-    historicData.causes.human += humanCaused;
-    historicData.causes.unknown += unknownCaused;
-    
-    if (largestFire > historicData.largest_fire_acres) {
-      historicData.largest_fire_acres = largestFire;
-    }
-    
-    // Add yearly data
-    historicData.yearly_incidents.push({
-      year,
-      incidents,
-      severity: {
-        low: lowSeverity,
-        medium: mediumSeverity, 
-        high: highSeverity,
-        extreme: extremeSeverity
-      },
-      causes: {
-        lightning: lightningCaused,
-        human: humanCaused,
-        unknown: unknownCaused
-      },
-      largest_fire_acres: largestFire,
-      average_fire_size_acres: averageSize
-    });
+  // If no data or no features, return default structure
+  if (!usgsData || !usgsData.features || !Array.isArray(usgsData.features)) {
+    console.warn("No wildfire data found for this location");
+    return historicData;
   }
   
-  // Calculate overall average fire size
-  historicData.average_fire_size_acres = Math.round(totalAcres / historicData.total_incidents) || 0;
+  const features = usgsData.features;
+  const totalIncidents = features.length;
+  historicData.total_incidents = totalIncidents;
   
-  console.log(`Generated historic data with ${historicData.total_incidents} incidents over 5 years`);
+  // Initialize tracking variables
+  let totalAcres = 0;
+  let yearlyData = {};
+  const currentYear = new Date().getFullYear();
+  
+  // Process each wildfire incident
+  features.forEach(feature => {
+    const attributes = feature.attributes;
+    
+    // Skip if missing critical data
+    if (!attributes || !attributes.FireDiscoveryDateTime) {
+      return;
+    }
+    
+    // Parse fire date and get year
+    const fireDate = new Date(attributes.FireDiscoveryDateTime);
+    const fireYear = fireDate.getFullYear();
+    
+    // Only process data within the 5-year window
+    if (fireYear < currentYear - 5 || fireYear > currentYear) {
+      return;
+    }
+    
+    // Initialize year data if not exists
+    if (!yearlyData[fireYear]) {
+      yearlyData[fireYear] = {
+        year: fireYear,
+        incidents: 0,
+        severity: { low: 0, medium: 0, high: 0, extreme: 0 },
+        causes: { lightning: 0, human: 0, unknown: 0 },
+        largest_fire_acres: 0,
+        average_fire_size_acres: 0,
+        total_acres: 0
+      };
+    }
+    
+    // Increment incident count
+    yearlyData[fireYear].incidents++;
+    
+    // Extract fire size (acres)
+    let fireSize = 0;
+    if (attributes.CalculatedAcres) {
+      fireSize = parseFloat(attributes.CalculatedAcres);
+    } else if (attributes.DailyAcres) {
+      fireSize = parseFloat(attributes.DailyAcres);
+    }
+    
+    // Validate fire size
+    if (!isNaN(fireSize) && fireSize > 0) {
+      totalAcres += fireSize;
+      yearlyData[fireYear].total_acres += fireSize;
+      
+      // Update largest fire size
+      if (fireSize > historicData.largest_fire_acres) {
+        historicData.largest_fire_acres = fireSize;
+      }
+      
+      if (fireSize > yearlyData[fireYear].largest_fire_acres) {
+        yearlyData[fireYear].largest_fire_acres = fireSize;
+      }
+      
+      // Categorize severity based on fire size
+      if (fireSize < 100) {
+        historicData.severity_distribution.low++;
+        yearlyData[fireYear].severity.low++;
+      } else if (fireSize < 1000) {
+        historicData.severity_distribution.medium++;
+        yearlyData[fireYear].severity.medium++;
+      } else if (fireSize < 10000) {
+        historicData.severity_distribution.high++;
+        yearlyData[fireYear].severity.high++;
+      } else {
+        historicData.severity_distribution.extreme++;
+        yearlyData[fireYear].severity.extreme++;
+      }
+    }
+    
+    // Categorize fire cause
+    const fireCause = (attributes.FireCause || "").toLowerCase();
+    if (fireCause.includes("lightning")) {
+      historicData.causes.lightning++;
+      yearlyData[fireYear].causes.lightning++;
+    } else if (fireCause.includes("human") || 
+               fireCause.includes("campfire") || 
+               fireCause.includes("equipment") || 
+               fireCause.includes("arson") || 
+               fireCause.includes("debris") || 
+               fireCause.includes("railroad") || 
+               fireCause.includes("powerline") || 
+               fireCause.includes("smoking")) {
+      historicData.causes.human++;
+      yearlyData[fireYear].causes.human++;
+    } else {
+      historicData.causes.unknown++;
+      yearlyData[fireYear].causes.unknown++;
+    }
+  });
+  
+  // Calculate average fire size
+  if (totalIncidents > 0) {
+    historicData.average_fire_size_acres = Math.round(totalAcres / totalIncidents);
+  }
+  
+  // Calculate yearly averages and create sorted yearly incidents array
+  historicData.yearly_incidents = Object.values(yearlyData)
+    .map(yearData => {
+      const year = yearData as any;
+      if (year.incidents > 0) {
+        year.average_fire_size_acres = Math.round(year.total_acres / year.incidents);
+      }
+      delete year.total_acres; // Remove temporary property
+      return year;
+    })
+    .sort((a: any, b: any) => a.year - b.year);
+  
+  console.log(`Processed ${totalIncidents} wildfire incidents spanning ${historicData.yearly_incidents.length} years`);
   
   return historicData;
 }

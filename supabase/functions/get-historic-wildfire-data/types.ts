@@ -45,3 +45,19 @@ export interface HistoricWildfireData {
   largest_fire_acres: number;
   average_fire_size_acres: number;
 }
+
+// USGS API Response Types
+export interface USGSWildfireFeature {
+  attributes: {
+    FireDiscoveryDateTime: number;
+    IncidentName?: string;
+    IncidentTypeCategory?: string;
+    FireCause?: string;
+    DailyAcres?: number;
+    CalculatedAcres?: number;
+  }
+}
+
+export interface USGSWildfireResponse {
+  features: USGSWildfireFeature[];
+}
