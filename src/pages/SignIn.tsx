@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SignIn = () => {
@@ -19,7 +18,6 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getRedirectPath } = useAuthRedirect();
   const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +37,8 @@ const SignIn = () => {
 
     try {
       await signIn(email, password);
-      console.log("Sign in successful, navigating to:", getRedirectPath());
-      navigate(getRedirectPath());
+      console.log("Sign in successful, navigating to home page");
+      navigate('/');
     } catch (error) {
       console.error("Error in signin component:", error);
       // Error is already handled in the signIn function

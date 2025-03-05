@@ -46,9 +46,9 @@ const AuthRedirect = () => {
             description: "You have been successfully signed in.",
           });
           
-          // After 3 seconds, redirect to history page
+          // After 3 seconds, redirect to home page
           setTimeout(() => {
-            navigate("/history");
+            navigate("/");
           }, 3000);
         } else {
           // If we don't have an access token or confirmation, something went wrong
@@ -94,7 +94,7 @@ const AuthRedirect = () => {
                 </p>
                 <Button
                   className="mt-2"
-                  onClick={() => navigate(location.search.includes("type=email_confirmation") ? "/signin" : "/history")}
+                  onClick={() => navigate(location.search.includes("type=email_confirmation") ? "/signin" : "/")}
                 >
                   Continue Now
                 </Button>
