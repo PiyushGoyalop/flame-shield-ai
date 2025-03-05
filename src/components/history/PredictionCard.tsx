@@ -63,6 +63,11 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
     };
   };
 
+  // Handle the view details click with auto-submit flag
+  const handleViewDetails = () => {
+    navigate(`/predict?location=${encodeURIComponent(prediction.location)}&autoSubmit=true`);
+  };
+
   return (
     <Card key={prediction.id} className="border-wildfire-100 hover:border-wildfire-200 transition-all">
       <CardContent className="p-6">
@@ -110,7 +115,7 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
               size="sm" 
               variant="outline"
               className="border-wildfire-200 hover:bg-wildfire-50"
-              onClick={() => navigate(`/predict?location=${encodeURIComponent(prediction.location)}`)}
+              onClick={handleViewDetails}
             >
               <ExternalLink className="h-4 w-4 mr-1" /> View Details
             </Button>

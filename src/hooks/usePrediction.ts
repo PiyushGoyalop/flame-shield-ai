@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { PredictionData } from "@/types/prediction";
@@ -20,12 +20,32 @@ export function usePrediction() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const locationParams = useLocation();
+  
+  // Parse URL query parameters
+  useEffect(() => {
+    const queryParams = new URLSearchParams(locationParams.search);
+    const locationParam = queryParams.get("location");
+    const autoSubmit = queryParams.get("autoSubmit");
+    
+    if (locationParam) {
+      setLocation(locationParam);
+      // Auto submit if the flag is present
+      if (autoSubmit === "true") {
+        // We need to wait for the state to update
+        setTimeout(() => {
+          handleSubmit(locationParam);
+        }, 100);
+      }
+    }
+  }, [locationParams.search]);
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (locationOverride?: string) => {
+    const locationToUse = locationOverride || location;
     console.log("Submit prediction - current user:", user?.id);
     
     if (!user) {
@@ -38,7 +58,7 @@ export function usePrediction() {
       return;
     }
 
-    if (!location) {
+    if (!locationToUse) {
       toast({
         title: "Location required",
         description: "Please select a location to make a prediction",
@@ -50,7 +70,7 @@ export function usePrediction() {
     setIsLoading(true);
 
     try {
-      const predictionData = await getPredictionData(location, apiMode);
+      const predictionData = await getPredictionData(locationToUse, apiMode);
       setResult(predictionData);
       
       await savePrediction(user.id, predictionData);
@@ -76,7 +96,7 @@ export function usePrediction() {
         
         // Wait for state to update before calling again
         setTimeout(() => {
-          handleSubmit();
+          handleSubmit(locationToUse);
         }, 100);
       } else {
         toast({

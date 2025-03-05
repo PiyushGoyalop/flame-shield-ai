@@ -5,6 +5,7 @@ import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { usePrediction } from "@/hooks/usePrediction";
+import { useEffect } from "react";
 
 export function PredictionForm() {
   const {
@@ -20,10 +21,14 @@ export function PredictionForm() {
       <PredictionFormCard>
         <CardContent>
           <div className="space-y-4">
-            <LocationSelector onLocationSelect={handleLocationSelect} isLoading={isLoading} />
+            <LocationSelector 
+              onLocationSelect={handleLocationSelect} 
+              isLoading={isLoading} 
+              initialLocation={location}
+            />
             
             <Button 
-              onClick={handleSubmit} 
+              onClick={() => handleSubmit()} 
               className="w-full bg-wildfire-600 hover:bg-wildfire-700 transition-all" 
               disabled={isLoading || !location}
             >
