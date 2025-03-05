@@ -1,4 +1,3 @@
-
 import { 
   RequestBody, 
   PredictionData, 
@@ -11,8 +10,7 @@ import {
   convertCOToCO2Equivalent,
   calculateDroughtIndex,
   calculateWildfireProbability,
-  OPENWEATHER_API_KEY,
-  WEATHERAPI_KEY
+  OPENWEATHER_API_KEY
 } from "./utils.ts";
 import { 
   getCoordinates, 
@@ -38,10 +36,10 @@ export async function handleRequest(req: Request): Promise<Response> {
     // Log the location received for debugging
     console.log(`Processing prediction request for location: "${location}"`);
     
-    // Check if any API key is available
-    if (!OPENWEATHER_API_KEY && !WEATHERAPI_KEY) {
+    // Check if API key is available
+    if (!OPENWEATHER_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "No weather API keys are configured" }),
+        JSON.stringify({ error: "OpenWeather API key is not configured" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
@@ -49,11 +47,8 @@ export async function handleRequest(req: Request): Promise<Response> {
       );
     }
     
-    // Log the API keys (masked for security)
-    const hasConfiguredApi = logApiKey();
-    if (!hasConfiguredApi) {
-      console.warn("Running with limited API functionality");
-    }
+    // Log the API key (masked for security)
+    logApiKey();
     
     try {
       // Get coordinates for the location
