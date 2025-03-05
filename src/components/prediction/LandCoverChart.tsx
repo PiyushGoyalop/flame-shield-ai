@@ -28,7 +28,7 @@ export function LandCoverChart({ landCover }: LandCoverChartProps) {
 
   return (
     <div className="mt-8 w-full">
-      <h4 className="text-sm font-medium mb-6 flex items-center gap-1">
+      <h4 className="text-sm font-medium mb-8 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Land Cover Distribution</span>
       </h4>
