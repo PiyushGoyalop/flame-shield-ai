@@ -17,17 +17,17 @@ export function PredictionResult({ result }: { result: PredictionData }) {
     );
   }
 
-  // Transform data to ensure compatibility with both naming conventions
+  // Transform data to ensure compatibility with PredictionData type
   const displayData = {
     location: result.location || "Unknown Location",
     latitude: result.latitude || 0,
     longitude: result.longitude || 0,
     probability: result.probability || 0,
-    co2Level: result.co2Level || result.co2_level || 0,
+    co2Level: result.co2Level || 0,
     temperature: result.temperature || 0,
     humidity: result.humidity || 0,
-    droughtIndex: result.droughtIndex || result.drought_index || 0,
-    airQualityIndex: result.air_quality_index || result.airQualityIndex || 0,
+    droughtIndex: result.droughtIndex || 0,
+    air_quality_index: result.air_quality_index || 0,
     pm2_5: result.pm2_5 || 0,
     pm10: result.pm10 || 0
   };
@@ -50,7 +50,7 @@ export function PredictionResult({ result }: { result: PredictionData }) {
         temperature={displayData.temperature} 
         humidity={displayData.humidity} 
         droughtIndex={displayData.droughtIndex}
-        airQualityIndex={displayData.airQualityIndex}
+        airQualityIndex={displayData.air_quality_index}
         pm2_5={displayData.pm2_5}
         pm10={displayData.pm10}
       />
