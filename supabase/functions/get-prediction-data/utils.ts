@@ -1,4 +1,3 @@
-
 // CORS headers for cross-origin requests
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,18 +6,32 @@ export const corsHeaders = {
 
 // Environment variables
 export const OPENWEATHER_API_KEY = Deno.env.get("OPENWEATHER_API_KEY") || "";
+export const WEATHERAPI_KEY = Deno.env.get("WEATHERAPI_KEY") || "";
 
 // Utility functions
 export function logApiKey() {
+  let primaryApiConfigured = false;
+  let fallbackApiConfigured = false;
+  
   if (!OPENWEATHER_API_KEY) {
     console.error("OpenWeather API key is not configured");
-    return false;
+  } else {
+    const maskedKey = OPENWEATHER_API_KEY.substring(0, 4) + "..." + 
+      OPENWEATHER_API_KEY.substring(OPENWEATHER_API_KEY.length - 4);
+    console.log(`Using OpenWeather API key: ${maskedKey}`);
+    primaryApiConfigured = true;
   }
   
-  const maskedKey = OPENWEATHER_API_KEY.substring(0, 4) + "..." + 
-    OPENWEATHER_API_KEY.substring(OPENWEATHER_API_KEY.length - 4);
-  console.log(`Using OpenWeather API key: ${maskedKey}`);
-  return true;
+  if (!WEATHERAPI_KEY) {
+    console.error("WeatherAPI.com key is not configured");
+  } else {
+    const maskedKey = WEATHERAPI_KEY.substring(0, 4) + "..." + 
+      WEATHERAPI_KEY.substring(WEATHERAPI_KEY.length - 4);
+    console.log(`Using WeatherAPI.com key as fallback: ${maskedKey}`);
+    fallbackApiConfigured = true;
+  }
+  
+  return primaryApiConfigured || fallbackApiConfigured;
 }
 
 // Convert CO to CO2 equivalent (approximate conversion for visualization)
