@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
@@ -25,7 +24,6 @@ const SignUp = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   
-  // Password validation state
   const [passwordValidation, setPasswordValidation] = useState({
     length: false,
     uppercase: false,
@@ -37,14 +35,12 @@ const SignUp = () => {
   const { toast } = useToast();
   const { signUp, user } = useAuth();
   
-  // If user is already logged in, redirect to home page
   useEffect(() => {
     if (user) {
       navigate('/');
     }
   }, [user, navigate]);
   
-  // Check password strength as the user types
   useEffect(() => {
     setPasswordValidation({
       length: password.length >= 8,
@@ -57,7 +53,6 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation
     if (!name || !email || !password || !confirmPassword) {
       toast({
         title: "Missing fields",
@@ -99,7 +94,6 @@ const SignUp = () => {
     try {
       const data = await signUp(email, password, name);
       
-      // Show email confirmation screen
       setShowEmailConfirmation(true);
       
       toast({
@@ -108,7 +102,6 @@ const SignUp = () => {
       });
     } catch (error) {
       console.error("Signup error in component:", error);
-      // Error already handled in signUp function
     } finally {
       setIsLoading(false);
     }
@@ -119,13 +112,9 @@ const SignUp = () => {
       <div className="min-h-screen flex flex-col">
         <Nav />
         <main className="flex-grow pt-28 pb-20">
-          <EmailConfirmation 
-            email={email} 
-            onResendEmail={() => {
-              const { resendConfirmationEmail } = useAuth();
-              resendConfirmationEmail(email);
-            }}
-          />
+          <div className="max-w-md mx-auto px-6 md:px-8">
+            <EmailConfirmation email={email} />
+          </div>
         </main>
         <Footer />
       </div>
@@ -183,7 +172,6 @@ const SignUp = () => {
                     required={true}
                   />
                   
-                  {/* Password strength indicators */}
                   <div className="mt-2 text-xs space-y-1">
                     <p className="font-medium text-gray-700">Password must include:</p>
                     <div className="grid grid-cols-2 gap-1">
