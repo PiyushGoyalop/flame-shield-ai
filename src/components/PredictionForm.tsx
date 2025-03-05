@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +16,8 @@ interface PredictionResult {
   temperature: number;
   humidity: number;
   droughtIndex: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 // Deterministic "seed" function that generates consistent numbers for same locations
@@ -70,6 +71,7 @@ export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [location, setLocation] = useState<string>("");
+  const [apiMode, setApiMode] = useState<boolean>(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -103,54 +105,95 @@ export function PredictionForm() {
 
     setIsLoading(true);
 
-    // Simulating API call to the ML model with deterministic output
-    setTimeout(async () => {
-      try {
-        // Get deterministic data for the location
-        const predictionData = getMockPredictionData(location);
-        
-        const newResult = {
-          location,
-          ...predictionData
-        };
-        
-        setResult(newResult);
-        
-        // Store prediction in Supabase
-        console.log("Saving prediction to Supabase for user:", user.id);
-        const { error } = await supabase.from('predictions').insert({
-          user_id: user.id,
-          location: newResult.location,
-          probability: newResult.probability,
-          co2_level: newResult.co2Level,
-          temperature: newResult.temperature,
-          humidity: newResult.humidity,
-          drought_index: newResult.droughtIndex
+    try {
+      let predictionData;
+      
+      if (apiMode) {
+        // Call the Supabase Edge Function
+        const { data, error } = await supabase.functions.invoke('get-prediction-data', {
+          body: { location }
         });
         
         if (error) {
-          console.error("Error saving prediction:", error);
+          console.error("Error calling prediction API:", error);
           throw error;
         }
         
-        console.log("Prediction saved successfully");
+        if (!data) {
+          throw new Error("No data returned from prediction API");
+        }
         
-        // Show success toast
+        predictionData = {
+          location: data.location,
+          probability: data.probability,
+          co2Level: data.co2_level,
+          temperature: data.temperature,
+          humidity: data.humidity,
+          droughtIndex: data.drought_index,
+          latitude: data.latitude,
+          longitude: data.longitude
+        };
+      } else {
+        // Fallback to mock data if API is disabled
+        const mockData = getMockPredictionData(location);
+        predictionData = {
+          location,
+          ...mockData
+        };
+      }
+      
+      setResult(predictionData);
+      
+      // Store prediction in Supabase
+      console.log("Saving prediction to api_predictions table for user:", user.id);
+      const { error: insertError } = await supabase.from('api_predictions').insert({
+        user_id: user.id,
+        location: predictionData.location,
+        latitude: predictionData.latitude,
+        longitude: predictionData.longitude,
+        probability: predictionData.probability,
+        co2_level: predictionData.co2Level,
+        temperature: predictionData.temperature,
+        humidity: predictionData.humidity,
+        drought_index: predictionData.droughtIndex
+      });
+      
+      if (insertError) {
+        console.error("Error saving prediction:", insertError);
+        throw insertError;
+      }
+      
+      console.log("Prediction saved successfully");
+      
+      // Show success toast
+      toast({
+        title: "Prediction Complete",
+        description: `Analysis for ${predictionData.location} has been generated using ${apiMode ? 'real-time data' : 'simulation data'}.`,
+      });
+    } catch (error: any) {
+      console.error("Error in prediction flow:", error);
+      
+      // Switch to mock data mode if API fails
+      if (apiMode) {
+        setApiMode(false);
         toast({
-          title: "Prediction Complete",
-          description: `Analysis for ${location} has been generated.`,
+          title: "API Connection Issue",
+          description: "Switching to simulation mode due to API issues. Your API key may be missing or invalid.",
+          variant: "destructive"
         });
-      } catch (error: any) {
-        console.error("Error in prediction flow:", error);
+        
+        // Retry with mock data
+        handleSubmit();
+      } else {
         toast({
           title: "Error saving prediction",
           description: error.message,
           variant: "destructive"
         });
-      } finally {
-        setIsLoading(false);
       }
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -159,6 +202,13 @@ export function PredictionForm() {
         <CardContent>
           <div className="space-y-4">
             <LocationSelector onLocationSelect={handleLocationSelect} isLoading={isLoading} />
+            
+            <div className="flex justify-between items-center mt-2 mb-1">
+              <span className="text-sm text-muted-foreground">Data Source:</span>
+              <span className={`text-xs ${apiMode ? 'text-green-600' : 'text-amber-600'} font-medium`}>
+                {apiMode ? 'API (Real Data)' : 'Simulation'}
+              </span>
+            </div>
             
             <Button 
               onClick={handleSubmit} 

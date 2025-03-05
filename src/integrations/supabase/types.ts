@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_predictions: {
+        Row: {
+          co2_level: number | null
+          created_at: string
+          drought_index: number | null
+          humidity: number | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          probability: number | null
+          temperature: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          co2_level?: number | null
+          created_at?: string
+          drought_index?: number | null
+          humidity?: number | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          probability?: number | null
+          temperature?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          co2_level?: number | null
+          created_at?: string
+          drought_index?: number | null
+          humidity?: number | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          probability?: number | null
+          temperature?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           co2_level: number
