@@ -4,7 +4,7 @@
  */
 export const useRedirectUrl = () => {
   const getRedirectUrl = () => {
-    // Get the current origin - works in development, production, or Vercel
+    // Get the current origin - works in development, production, or Lovable
     const origin = window.location.origin;
     
     // Log the redirect URL for debugging
