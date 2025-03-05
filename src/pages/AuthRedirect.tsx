@@ -1,16 +1,17 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const AuthRedirect = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleRedirect = async () => {
@@ -26,6 +27,12 @@ const AuthRedirect = () => {
           // This is an email confirmation
           setStatus("success");
           
+          // Show a toast notification to inform the user
+          toast({
+            title: "Email confirmed successfully",
+            description: "You can now sign in to your account.",
+          });
+          
           // After 3 seconds, redirect to sign in
           setTimeout(() => {
             navigate("/signin");
@@ -33,6 +40,11 @@ const AuthRedirect = () => {
         } else if (hashParams.has("access_token")) {
           // This is a successful authentication redirect
           setStatus("success");
+          
+          toast({
+            title: "Authentication successful",
+            description: "You have been successfully signed in.",
+          });
           
           // After 3 seconds, redirect to history page
           setTimeout(() => {
@@ -51,7 +63,7 @@ const AuthRedirect = () => {
     };
 
     handleRedirect();
-  }, [navigate, location]);
+  }, [navigate, location, toast]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

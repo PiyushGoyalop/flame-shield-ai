@@ -72,8 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing up with:", { email, name, mobile });
       
-      // Determine redirect URL
-      const redirectUrl = `${window.location.origin}/auth-redirect`;
+      // Get the current origin - works in development or production
+      const origin = window.location.origin;
+      const redirectUrl = `${origin}/auth-redirect`;
+      
+      console.log("Using redirect URL:", redirectUrl);
       
       // Sign up with auth - setting redirectTo to ensure proper redirection after confirmation
       const { error, data } = await supabase.auth.signUp({ 
@@ -134,8 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendConfirmationEmail = async (email: string) => {
     try {
-      // Determine redirect URL
-      const redirectUrl = `${window.location.origin}/auth-redirect`;
+      // Get the current origin - works in development or production
+      const origin = window.location.origin;
+      const redirectUrl = `${origin}/auth-redirect`;
+      
+      console.log("Using redirect URL for resend:", redirectUrl);
       
       const { error } = await supabase.auth.resend({
         type: 'signup',
