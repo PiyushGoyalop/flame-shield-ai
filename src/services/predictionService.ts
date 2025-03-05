@@ -109,36 +109,62 @@ export async function getPredictionData(
 }
 
 export async function savePrediction(userId: string, predictionData: PredictionData): Promise<void> {
-  console.log("Saving prediction to api_predictions table for user:", userId);
+  console.log("Saving prediction data:", predictionData);
+  console.log("User ID:", userId);
   
-  const insertData = {
-    user_id: userId,
-    location: predictionData.location,
-    latitude: predictionData.latitude,
-    longitude: predictionData.longitude,
-    probability: predictionData.probability,
-    co2_level: predictionData.co2Level,
-    temperature: predictionData.temperature,
-    humidity: predictionData.humidity,
-    drought_index: predictionData.droughtIndex,
-    air_quality_index: predictionData.air_quality_index,
-    pm2_5: predictionData.pm2_5,
-    pm10: predictionData.pm10,
-    vegetation_ndvi: predictionData.vegetation_index?.ndvi,
-    vegetation_evi: predictionData.vegetation_index?.evi,
-    forest_percent: predictionData.land_cover?.forest_percent,
-    grassland_percent: predictionData.land_cover?.grassland_percent,
-    urban_percent: predictionData.land_cover?.urban_percent,
-    water_percent: predictionData.land_cover?.water_percent,
-    barren_percent: predictionData.land_cover?.barren_percent
-  };
-  
-  const { error: insertError } = await supabase.from('api_predictions').insert(insertData);
-  
-  if (insertError) {
-    console.error("Error saving prediction:", insertError);
-    throw insertError;
+  try {
+    // First save to the legacy predictions table for backward compatibility
+    const legacyInsertData = {
+      user_id: userId,
+      location: predictionData.location,
+      probability: predictionData.probability,
+      co2_level: predictionData.co2Level || 0,
+      temperature: predictionData.temperature || 0,
+      humidity: predictionData.humidity || 0,
+      drought_index: predictionData.droughtIndex || 0
+    };
+    
+    const { error: legacyError } = await supabase.from('predictions').insert(legacyInsertData);
+    
+    if (legacyError) {
+      console.error("Error saving to legacy predictions table:", legacyError);
+    } else {
+      console.log("Successfully saved to legacy predictions table");
+    }
+    
+    // Then save to the more comprehensive api_predictions table
+    const insertData = {
+      user_id: userId,
+      location: predictionData.location,
+      latitude: predictionData.latitude,
+      longitude: predictionData.longitude,
+      probability: predictionData.probability,
+      co2_level: predictionData.co2Level,
+      temperature: predictionData.temperature,
+      humidity: predictionData.humidity,
+      drought_index: predictionData.droughtIndex,
+      air_quality_index: predictionData.air_quality_index,
+      pm2_5: predictionData.pm2_5,
+      pm10: predictionData.pm10,
+      vegetation_ndvi: predictionData.vegetation_index?.ndvi,
+      vegetation_evi: predictionData.vegetation_index?.evi,
+      forest_percent: predictionData.land_cover?.forest_percent,
+      grassland_percent: predictionData.land_cover?.grassland_percent,
+      urban_percent: predictionData.land_cover?.urban_percent,
+      water_percent: predictionData.land_cover?.water_percent,
+      barren_percent: predictionData.land_cover?.barren_percent
+    };
+    
+    const { error: insertError } = await supabase.from('api_predictions').insert(insertData);
+    
+    if (insertError) {
+      console.error("Error saving to api_predictions:", insertError);
+      throw insertError;
+    }
+    
+    console.log("Prediction saved successfully to both tables");
+  } catch (error) {
+    console.error("Error in savePrediction function:", error);
+    throw error;
   }
-  
-  console.log("Prediction saved successfully");
 }

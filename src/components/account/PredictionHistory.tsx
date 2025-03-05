@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Calendar } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Prediction {
   id: string;
@@ -21,8 +22,22 @@ interface PredictionHistoryProps {
 export function PredictionHistory({ predictions, isLoading }: PredictionHistoryProps) {
   if (isLoading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-pulse">Loading predictions...</div>
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="overflow-hidden">
+            <CardContent className="p-0">
+              <div className="p-4">
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+              <div className="grid grid-cols-3 gap-2 p-3 border-t border-gray-100">
+                <Skeleton className="h-10 rounded-md" />
+                <Skeleton className="h-10 rounded-md" />
+                <Skeleton className="h-10 rounded-md" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
   }

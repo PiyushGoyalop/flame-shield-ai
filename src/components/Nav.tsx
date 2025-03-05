@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu, X, Flame, ChevronRight, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,14 @@ export function Nav() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Handle scroll effect
+  // Handle scroll effect with debounce
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    window.addEventListener("scroll", handleScroll);
+    
+    // Use passive listener to improve performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -218,4 +220,3 @@ const MobileNavLink = ({
     {isActive && <ChevronRight className="h-4 w-4" />}
   </Link>
 );
-
