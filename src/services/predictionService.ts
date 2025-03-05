@@ -5,7 +5,8 @@ import { getMockPredictionData } from "@/utils/mockDataGenerator";
 
 export async function getPredictionData(location: string, apiMode: boolean): Promise<PredictionData> {
   if (!apiMode) {
-    const mockData = getMockPredictionData(location);
+    console.log("Using mock data with enhanced datasets for location:", location);
+    const mockData = await getMockPredictionData(location);
     return {
       location,
       ...mockData

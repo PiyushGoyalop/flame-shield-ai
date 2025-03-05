@@ -1,4 +1,6 @@
 
+import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
+
 const getLocationSeed = (location: string): number => {
   let hash = 0;
   for (let i = 0; i < location.length; i++) {
@@ -8,8 +10,16 @@ const getLocationSeed = (location: string): number => {
   return Math.abs(hash) / 2147483647;
 };
 
-export const getMockPredictionData = (location: string) => {
+export const getMockPredictionData = async (location: string) => {
   const seed = getLocationSeed(location);
+  
+  // Load real-world datasets
+  const wildfireData = await getHistoricWildfireData();
+  const co2Data = await getCO2EmissionsData();
+  
+  // Try to find matching locations in our datasets
+  const matchingWildfireLocation = findMatchingLocation(wildfireData, location);
+  const matchingCO2Location = findMatchingLocation(co2Data, location);
   
   const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
   const isCoastal = /beach|coast|ocean|bay|gulf|sea/.test(location.toLowerCase());
@@ -26,10 +36,36 @@ export const getMockPredictionData = (location: string) => {
   
   const locationFactor = seed * 35;
   
+  // Use CO2 data from dataset if available
+  let co2Level = matchingCO2Location 
+    ? (matchingCO2Location.average_co2_mt as number) + (seed * 5) 
+    : 5 + (seed * 40) + (isUrban ? 15 : 0);
+  
+  // Adjust probability based on historic wildfire data if available
+  if (matchingWildfireLocation) {
+    const recentYearData = wildfireData.filter(item => 
+      item.location === matchingWildfireLocation.location && 
+      (item.year as number) >= 2020
+    );
+    
+    if (recentYearData.length > 0) {
+      // Calculate average incidents per year
+      const avgIncidents = recentYearData.reduce((sum, item) => sum + (item.incidents as number), 0) / recentYearData.length;
+      // Calculate average acres burned per year
+      const avgAcres = recentYearData.reduce((sum, item) => sum + (item.acres_burned as number), 0) / recentYearData.length;
+      
+      // Adjust probability based on historic data
+      if (avgIncidents > 2000 || avgAcres > 500000) {
+        baseProbability += 15; // High historical fire activity
+      } else if (avgIncidents > 1000 || avgAcres > 100000) {
+        baseProbability += 8; // Moderate historical fire activity
+      }
+    }
+  }
+  
   const probability = Math.min(95, Math.max(5, baseProbability + locationFactor));
   const temperature = 10 + (seed * 25);
   const humidity = isCoastal ? 50 + (seed * 30) : 20 + (seed * 40);
-  const co2Level = 5 + (seed * 40) + (isUrban ? 15 : 0);
   const droughtIndex = isHighRiskState ? 80 - humidity : 60 - humidity;
   
   // Generate vegetation indices
@@ -60,6 +96,9 @@ export const getMockPredictionData = (location: string) => {
   if (finalTotal < 100) forestPercent += (100 - finalTotal);
   if (finalTotal > 100) forestPercent -= (finalTotal - 100);
   
+  // Generate historic data based on the real dataset if we have a match
+  const historic_data = matchingWildfireLocation ? generateHistoricData(wildfireData, matchingWildfireLocation.location as string) : undefined;
+  
   return {
     probability: Math.round(probability * 100) / 100,
     temperature: Math.round(temperature * 10) / 10,
@@ -79,6 +118,76 @@ export const getMockPredictionData = (location: string) => {
       urban_percent: urbanPercent,
       water_percent: waterPercent,
       barren_percent: barrenPercent
-    }
+    },
+    historic_data
   };
 };
+
+// Generate historic data based on the real dataset
+function generateHistoricData(wildfireData: any[], location: string) {
+  const locationData = wildfireData.filter(item => (item.location as string) === location);
+  
+  if (locationData.length === 0) return undefined;
+  
+  // Calculate total incidents and averages
+  const total_incidents = locationData.reduce((sum, item) => sum + (item.incidents as number), 0);
+  const largest_fire_acres = Math.max(...locationData.map(item => item.acres_burned as number));
+  const average_fire_size_acres = Math.round(locationData.reduce((sum, item) => sum + (item.acres_burned as number), 0) / total_incidents);
+  
+  // Generate severity distribution
+  const severity_distribution = {
+    low: Math.round(30 + Math.random() * 20),
+    medium: Math.round(25 + Math.random() * 20),
+    high: Math.round(10 + Math.random() * 15),
+    extreme: Math.round(5 + Math.random() * 10)
+  };
+  
+  // Normalize to 100%
+  const severityTotal = severity_distribution.low + severity_distribution.medium + 
+                        severity_distribution.high + severity_distribution.extreme;
+  
+  severity_distribution.low = Math.round((severity_distribution.low / severityTotal) * 100);
+  severity_distribution.medium = Math.round((severity_distribution.medium / severityTotal) * 100);
+  severity_distribution.high = Math.round((severity_distribution.high / severityTotal) * 100);
+  severity_distribution.extreme = Math.round((severity_distribution.extreme / severityTotal) * 100);
+  
+  // Adjust to ensure total is 100%
+  const finalSeverityTotal = severity_distribution.low + severity_distribution.medium + 
+                            severity_distribution.high + severity_distribution.extreme;
+  
+  if (finalSeverityTotal < 100) severity_distribution.low += (100 - finalSeverityTotal);
+  if (finalSeverityTotal > 100) severity_distribution.low -= (finalSeverityTotal - 100);
+  
+  // Generate causes
+  const causes = {
+    lightning: Math.round(20 + Math.random() * 30),
+    human: Math.round(40 + Math.random() * 30),
+    unknown: Math.round(10 + Math.random() * 20)
+  };
+  
+  // Normalize causes to 100%
+  const causesTotal = causes.lightning + causes.human + causes.unknown;
+  causes.lightning = Math.round((causes.lightning / causesTotal) * 100);
+  causes.human = Math.round((causes.human / causesTotal) * 100);
+  causes.unknown = Math.round((causes.unknown / causesTotal) * 100);
+  
+  // Adjust to ensure total is 100%
+  const finalCausesTotal = causes.lightning + causes.human + causes.unknown;
+  if (finalCausesTotal < 100) causes.lightning += (100 - finalCausesTotal);
+  if (finalCausesTotal > 100) causes.lightning -= (finalCausesTotal - 100);
+  
+  // Create yearly incidents data
+  const yearly_incidents = locationData.map(item => ({
+    year: item.year as number,
+    incidents: item.incidents as number
+  }));
+  
+  return {
+    total_incidents,
+    largest_fire_acres,
+    average_fire_size_acres,
+    yearly_incidents,
+    severity_distribution,
+    causes
+  };
+}

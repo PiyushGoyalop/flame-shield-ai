@@ -1,0 +1,29 @@
+
+location,average_co2_mt,peak_co2_mt,seasonal_variation
+California,18.2,34.6,High
+Oregon,12.5,19.8,Medium
+Washington,11.9,17.2,Medium
+Colorado,14.3,22.5,Medium
+Arizona,16.7,28.9,High
+Nevada,15.4,24.7,Medium
+Utah,13.8,19.6,Low
+Idaho,9.7,15.3,Medium
+Montana,8.6,14.2,Medium
+Wyoming,10.2,16.1,Medium
+New Mexico,14.9,26.5,High
+Texas,19.5,32.1,High
+Florida,12.7,19.3,Low
+New York,22.4,37.8,Medium
+Illinois,18.9,27.4,Medium
+Michigan,16.2,24.8,Medium
+Ohio,17.8,26.2,Medium
+Pennsylvania,19.1,28.5,Medium
+Georgia,15.6,23.4,Low
+North Carolina,14.8,20.7,Low
+South Carolina,13.9,19.2,Low
+Virginia,15.7,22.8,Low
+Tennessee,14.2,20.5,Low
+Kentucky,15.3,21.9,Low
+Alabama,14.6,21.2,Low
+Mississippi,13.8,20.1,Low
+Louisiana,17.9,26.8,Medium
