@@ -44,4 +44,15 @@ export interface PredictionData {
   pm2_5?: number;
   pm10?: number;
   historic_data?: HistoricData;
+  vegetation_index?: {
+    ndvi: number; // Normalized Difference Vegetation Index (0-1)
+    evi: number;  // Enhanced Vegetation Index (0-1)
+  };
+  land_cover?: {
+    forest_percent: number;
+    grassland_percent: number;
+    urban_percent: number;
+    water_percent: number;
+    barren_percent: number;
+  };
 }

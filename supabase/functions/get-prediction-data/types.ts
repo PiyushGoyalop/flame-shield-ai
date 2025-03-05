@@ -46,4 +46,15 @@ export interface PredictionData {
   air_quality_index?: number;
   pm2_5?: number;
   pm10?: number;
+  vegetation_index?: {
+    ndvi: number;
+    evi: number;
+  };
+  land_cover?: {
+    forest_percent: number;
+    grassland_percent: number;
+    urban_percent: number;
+    water_percent: number;
+    barren_percent: number;
+  };
 }

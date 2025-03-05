@@ -1,45 +1,31 @@
-
-import { Card, CardContent } from "@/components/ui/card";
 import { LocationDisplay } from "./LocationDisplay";
 import { MainStats } from "./MainStats";
-import { RiskIndicator } from "./RiskIndicator";
-import { WeatherStats } from "./WeatherStats";
-import { Precautions } from "./Precautions";
 import { HistoricDataDisplay } from "./HistoricDataDisplay";
+import { Precautions } from "./Precautions";
 import { PredictionData } from "@/types/prediction";
+import { EarthEngineDataDisplay } from "./EarthEngineDataDisplay";
 
-interface PredictionResultProps {
-  result: PredictionData;
-}
-
-export function PredictionResult({ result }: PredictionResultProps) {
+export function PredictionResult({ result }: { result: PredictionData }) {
   return (
-    <div className="mt-8 space-y-4">
-      <h2 className="text-xl font-medium">Prediction Result</h2>
-      
-      <LocationDisplay 
-        location={result.location} 
-        lat={result.latitude} 
-        lon={result.longitude} 
+    <div className="mt-8">
+      <LocationDisplay location={result.location} latitude={result.latitude} longitude={result.longitude} />
+      <MainStats 
+        probability={result.probability} 
+        co2Level={result.co2Level} 
+        temperature={result.temperature} 
+        humidity={result.humidity} 
+        droughtIndex={result.droughtIndex}
+        airQualityIndex={result.air_quality_index}
+        pm2_5={result.pm2_5}
+        pm10={result.pm10}
       />
       
-      <Card className="border-wildfire-200 hover:border-wildfire-300 transition-all duration-300">
-        <CardContent className="p-5">
-          <RiskIndicator probability={result.probability} />
-          <MainStats 
-            probability={result.probability} 
-            co2Level={result.co2Level} 
-            airQualityIndex={result.air_quality_index} 
-          />
-          <WeatherStats 
-            temperature={result.temperature} 
-            humidity={result.humidity} 
-            droughtIndex={result.droughtIndex} 
-            pm25={result.pm2_5} 
-            pm10={result.pm10} 
-          />
-        </CardContent>
-      </Card>
+      {(result.vegetation_index || result.land_cover) && (
+        <EarthEngineDataDisplay 
+          vegetationIndex={result.vegetation_index} 
+          landCover={result.land_cover} 
+        />
+      )}
       
       {result.historic_data && (
         <HistoricDataDisplay data={result.historic_data} />

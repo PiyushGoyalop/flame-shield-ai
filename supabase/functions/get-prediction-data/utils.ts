@@ -49,15 +49,19 @@ export function calculateWildfireProbability(
   airQualityIndex: number,
   pm2_5: number,
   lat: number, 
-  lon: number
+  lon: number,
+  vegetationIndex?: { ndvi: number, evi: number },
+  landCover?: { forest_percent: number, grassland_percent: number }
 ): number {
   // Weight factors by importance
-  const tempWeight = 0.25;
-  const humidityWeight = 0.2;
-  const droughtWeight = 0.3;
-  const co2Weight = 0.1;
-  const aqiWeight = 0.1;
+  const tempWeight = 0.2;
+  const humidityWeight = 0.15;
+  const droughtWeight = 0.25;
+  const co2Weight = 0.05;
+  const aqiWeight = 0.05;
   const pm25Weight = 0.05;
+  const vegetationWeight = 0.15; // New: vegetation factor
+  const landCoverWeight = 0.1;   // New: land cover factor
   
   // Normalize each factor to a 0-1 scale
   const tempFactor = Math.max(0, Math.min(1, (temperature - 5) / 30)); // 0 at 5°C, 1 at 35°C
@@ -71,6 +75,28 @@ export function calculateWildfireProbability(
   // PM2.5 normalization (typically 0-500 scale for AQI)
   const pm25Factor = Math.max(0, Math.min(1, pm2_5 / 100));
   
+  // Vegetation factor - NDVI around 0.6-0.8 indicates dense vegetation (more fuel)
+  // Lower values (0.1-0.3) indicate sparse vegetation (less fuel)
+  let vegetationFactor = 0.5; // Default middle value
+  if (vegetationIndex) {
+    // Higher NDVI generally means more fuel for fires
+    // But very high values might indicate green, moist vegetation which is less prone to burning
+    const ndvi = vegetationIndex.ndvi;
+    if (ndvi > 0.7) vegetationFactor = 0.7; // Very dense but possibly moist vegetation
+    else if (ndvi > 0.5) vegetationFactor = 0.9; // Ideal fuel condition - dense but potentially dry
+    else if (ndvi > 0.3) vegetationFactor = 0.7; // Moderate vegetation
+    else if (ndvi > 0.1) vegetationFactor = 0.4; // Sparse vegetation
+    else vegetationFactor = 0.2; // Very little vegetation
+  }
+  
+  // Land cover factor - forests and grasslands provide more fuel
+  let landCoverFactor = 0.5; // Default middle value
+  if (landCover) {
+    // Calculate based on forest and grassland percentages (main fuel sources)
+    const fuelPercentage = (landCover.forest_percent + landCover.grassland_percent) / 100;
+    landCoverFactor = Math.min(1, fuelPercentage);
+  }
+  
   // Check if location is in high-risk latitude band (most wildfires occur between 30-50 degrees)
   const latAbs = Math.abs(lat);
   const isHighRiskLatitude = (latAbs >= 30 && latAbs <= 50) ? 1.3 : 1.0;
@@ -82,7 +108,9 @@ export function calculateWildfireProbability(
     droughtFactor * droughtWeight +
     co2Factor * co2Weight +
     aqiFactor * aqiWeight +
-    pm25Factor * pm25Weight
+    pm25Factor * pm25Weight +
+    vegetationFactor * vegetationWeight +
+    landCoverFactor * landCoverWeight
   ) * 100 * isHighRiskLatitude;
   
   // Cap at 95%
