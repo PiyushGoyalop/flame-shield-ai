@@ -1,13 +1,17 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
 
 const AuthRedirect = () => {
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "reset_password">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,18 +43,7 @@ const AuthRedirect = () => {
           }, 3000);
         } else if (type === "recovery") {
           // This is a password reset
-          setStatus("success");
-          
-          toast({
-            title: "Password reset link verified",
-            description: "You can now set a new password for your account.",
-          });
-          
-          // After 3 seconds, redirect to a password reset page
-          // For now, we'll redirect to sign in
-          setTimeout(() => {
-            navigate("/signin");
-          }, 3000);
+          setStatus("reset_password");
         } else if (hashParams.has("access_token")) {
           // This is a successful authentication redirect
           setStatus("success");
@@ -78,63 +71,80 @@ const AuthRedirect = () => {
   }, [navigate, location, toast]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardContent className="pt-6 pb-8 px-8">
-          <div className="flex flex-col items-center text-center gap-4">
-            {status === "loading" && (
-              <>
-                <Loader2 size={40} className="text-wildfire-600 animate-spin" />
-                <h1 className="text-2xl font-semibold text-gray-800">Processing...</h1>
-                <p className="text-gray-600">
-                  Please wait while we validate your authentication.
-                </p>
-              </>
-            )}
+    <div className="min-h-screen flex flex-col">
+      <Nav />
+      
+      <main className="flex-grow flex items-center justify-center py-12">
+        <Card className="w-full max-w-md">
+          {status === "reset_password" ? (
+            <>
+              <CardHeader className="text-center">
+                <AuthHeader 
+                  title="Reset Your Password" 
+                  description="Enter a new password for your account"
+                />
+              </CardHeader>
+              <CardContent>
+                <PasswordResetForm />
+              </CardContent>
+            </>
+          ) : (
+            <CardContent className="pt-6 pb-8 px-8">
+              <div className="flex flex-col items-center text-center gap-4">
+                {status === "loading" && (
+                  <>
+                    <Loader2 size={40} className="text-wildfire-600 animate-spin" />
+                    <h1 className="text-2xl font-semibold text-gray-800">Processing...</h1>
+                    <p className="text-gray-600">
+                      Please wait while we validate your authentication.
+                    </p>
+                  </>
+                )}
 
-            {status === "success" && (
-              <>
-                <CheckCircle size={40} className="text-green-600" />
-                <h1 className="text-2xl font-semibold text-gray-800">Success!</h1>
-                <p className="text-gray-600 mb-4">
-                  {location.search.includes("type=email_confirmation") 
-                    ? "Your email has been confirmed." 
-                    : location.search.includes("type=recovery")
-                      ? "Your password reset request has been verified."
-                      : "You have been successfully authenticated."}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Redirecting you automatically...
-                </p>
-                <Button
-                  className="mt-2"
-                  onClick={() => navigate(
-                    location.search.includes("type=email_confirmation") || 
-                    location.search.includes("type=recovery") 
-                      ? "/signin" 
-                      : "/"
-                  )}
-                >
-                  Continue Now
-                </Button>
-              </>
-            )}
+                {status === "success" && (
+                  <>
+                    <CheckCircle size={40} className="text-green-600" />
+                    <h1 className="text-2xl font-semibold text-gray-800">Success!</h1>
+                    <p className="text-gray-600 mb-4">
+                      {location.search.includes("type=email_confirmation") 
+                        ? "Your email has been confirmed." 
+                        : "You have been successfully authenticated."}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Redirecting you automatically...
+                    </p>
+                    <Button
+                      className="mt-2"
+                      onClick={() => navigate(
+                        location.search.includes("type=email_confirmation") 
+                          ? "/signin" 
+                          : "/"
+                      )}
+                    >
+                      Continue Now
+                    </Button>
+                  </>
+                )}
 
-            {status === "error" && (
-              <>
-                <AlertCircle size={40} className="text-red-600" />
-                <h1 className="text-2xl font-semibold text-gray-800">Error</h1>
-                <p className="text-gray-600 mb-4">
-                  {errorMessage || "Something went wrong with the authentication process."}
-                </p>
-                <Button onClick={() => navigate("/signin")}>
-                  Return to Sign In
-                </Button>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                {status === "error" && (
+                  <>
+                    <AlertCircle size={40} className="text-red-600" />
+                    <h1 className="text-2xl font-semibold text-gray-800">Error</h1>
+                    <p className="text-gray-600 mb-4">
+                      {errorMessage || "Something went wrong with the authentication process."}
+                    </p>
+                    <Button onClick={() => navigate("/signin")}>
+                      Return to Sign In
+                    </Button>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
