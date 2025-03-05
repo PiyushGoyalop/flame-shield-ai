@@ -3,10 +3,19 @@ import { AlertCircle, Phone, ExternalLink, Shield } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface PrecautionsProps {
-  riskLevel: 'low' | 'moderate' | 'high';
+  probability: number;
 }
 
-export function Precautions({ riskLevel }: PrecautionsProps) {
+export function Precautions({ probability }: PrecautionsProps) {
+  // Determine risk level based on probability
+  const getRiskLevel = () => {
+    if (probability < 33) return 'low';
+    if (probability < 66) return 'moderate';
+    return 'high';
+  };
+  
+  const riskLevel = getRiskLevel();
+  
   return (
     <div className="mt-4 space-y-4">
       <h3 className="font-medium text-lg flex items-center gap-2">

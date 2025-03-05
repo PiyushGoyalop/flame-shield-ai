@@ -3,7 +3,7 @@ import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { PredictionFormCard } from "./prediction/PredictionFormCard";
 import { LocationSelector } from "./prediction/LocationSelector";
-import { PredictionResult } from "./prediction/PredictionResult";
+import { PredictionResult, PredictionResultData } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,21 +17,6 @@ interface HistoricData {
     year: number;
     incidents: number;
   }[];
-}
-
-interface PredictionResult {
-  location: string;
-  probability: number;
-  co2Level: number;
-  temperature: number;
-  humidity: number;
-  droughtIndex: number;
-  latitude?: number;
-  longitude?: number;
-  air_quality_index?: number;
-  pm2_5?: number;
-  pm10?: number;
-  historic_data?: HistoricData;
 }
 
 const getLocationSeed = (location: string): number => {
@@ -79,7 +64,7 @@ const getMockPredictionData = (location: string) => {
 
 export function PredictionForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [result, setResult] = useState<PredictionResultData | null>(null);
   const [location, setLocation] = useState<string>("");
   const [apiMode, setApiMode] = useState<boolean>(true);
   const { toast } = useToast();
