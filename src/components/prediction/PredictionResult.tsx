@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { LocationDisplay } from "./LocationDisplay";
 import { MainStats } from "./MainStats";
 import { HistoricDataDisplay } from "./HistoricDataDisplay";
@@ -8,18 +9,9 @@ import { EarthEngineDataDisplay } from "./EarthEngineDataDisplay";
 import { Card, CardContent } from "@/components/ui/card";
 import { RiskIndicator } from "./RiskIndicator";
 
-export function PredictionResult({ result }: { result: PredictionData }) {
-  // Safeguard against null or undefined result
-  if (!result) {
-    return (
-      <div className="mt-8 p-4 text-center">
-        <p>No prediction data available. Please try again.</p>
-      </div>
-    );
-  }
-
-  // Transform data to ensure compatibility with PredictionData type
-  const displayData = {
+// Helper function to transform data with default values
+const transformPredictionData = (result: PredictionData) => {
+  return {
     location: result.location || "Unknown Location",
     latitude: result.latitude || 0,
     longitude: result.longitude || 0,
@@ -32,6 +24,25 @@ export function PredictionResult({ result }: { result: PredictionData }) {
     pm2_5: result.pm2_5 || 0,
     pm10: result.pm10 || 0
   };
+};
+
+// Memoize the component to prevent unnecessary re-renders
+export const PredictionResult = memo(function PredictionResult({ 
+  result 
+}: { 
+  result: PredictionData 
+}) {
+  // Safeguard against null or undefined result
+  if (!result) {
+    return (
+      <div className="mt-8 p-4 text-center">
+        <p>No prediction data available. Please try again.</p>
+      </div>
+    );
+  }
+
+  // Transform data to ensure compatibility with PredictionData type
+  const displayData = transformPredictionData(result);
 
   return (
     <div className="mt-8 space-y-6">
@@ -72,4 +83,4 @@ export function PredictionResult({ result }: { result: PredictionData }) {
       <Precautions probability={displayData.probability} />
     </div>
   );
-}
+});

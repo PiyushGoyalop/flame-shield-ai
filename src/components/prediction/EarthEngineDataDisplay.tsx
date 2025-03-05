@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { VegetationIndicesDisplay } from "./VegetationIndicesDisplay";
@@ -19,7 +20,11 @@ interface EarthEngineDataProps {
   };
 }
 
-export function EarthEngineDataDisplay({ vegetationIndex, landCover }: EarthEngineDataProps) {
+// Memoize the component to prevent unnecessary re-renders
+export const EarthEngineDataDisplay = memo(function EarthEngineDataDisplay({ 
+  vegetationIndex, 
+  landCover 
+}: EarthEngineDataProps) {
   if (!vegetationIndex && !landCover) {
     return null;
   }
@@ -43,4 +48,4 @@ export function EarthEngineDataDisplay({ vegetationIndex, landCover }: EarthEngi
       </CardContent>
     </Card>
   );
-}
+});

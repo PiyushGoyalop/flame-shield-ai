@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "react-router-dom";
@@ -25,17 +25,38 @@ export function Nav() {
 
   // Handle scroll effect with debounce
   useEffect(() => {
+    // Threshold to determine when the header should change appearance
+    const scrollThreshold = 10;
+    
+    // Optimized scroll handler with debounce logic
+    let ticking = false;
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > scrollThreshold);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     
     // Use passive listener to improve performance
     window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Initial check
+    handleScroll();
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Check if a link is active
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = useCallback((path: string) => location.pathname === path, [location.pathname]);
+  
+  // Toggle mobile menu with memoized callback
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+  }, []);
 
   return (
     <header
@@ -55,7 +76,8 @@ export function Nav() {
           variant="ghost"
           size="icon"
           className={`md:hidden ${isScrolled ? "text-wildfire-800" : "text-white"}`}
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onClick={toggleMobileMenu}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
@@ -65,3 +87,6 @@ export function Nav() {
     </header>
   );
 }
+
+// Use memo to prevent unnecessary re-renders
+export default memo(Nav);
