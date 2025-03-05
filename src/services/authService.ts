@@ -32,19 +32,17 @@ export const signInWithEmail = async (email: string, password: string) => {
 export const signUpWithEmail = async (
   email: string, 
   password: string, 
-  name: string, 
-  mobile: string,
+  name: string,
   redirectUrl: string
 ) => {
-  console.log("Signing up with:", { email, name, mobile });
+  console.log("Signing up with:", { email, name });
   
   const { error, data } = await supabase.auth.signUp({ 
     email, 
     password,
     options: {
       data: {
-        name,
-        mobile
+        name
       },
       emailRedirectTo: redirectUrl
     }
@@ -59,7 +57,7 @@ export const signUpWithEmail = async (
 /**
  * Updates user profile in the database
  */
-export const updateUserProfile = async (userId: string, updates: { name?: string; mobile?: string }) => {
+export const updateUserProfile = async (userId: string, updates: { name?: string }) => {
   console.log("Updating profile for user:", userId, "with data:", updates);
   
   const { error } = await supabase

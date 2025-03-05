@@ -17,7 +17,7 @@ interface AuthContextProps {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, mobile: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
 }
@@ -73,11 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, mobile: string) => {
+  const signUp = async (email: string, password: string, name: string) => {
     try {
       const redirectUrl = getRedirectUrl();
       
-      await signUpWithEmail(email, password, name, mobile, redirectUrl);
+      await signUpWithEmail(email, password, name, redirectUrl);
       
       // Show a specific toast for email confirmation
       toast({

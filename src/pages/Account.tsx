@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
@@ -16,7 +15,6 @@ const Account = () => {
   const [userData, setUserData] = useState({
     name: "",
     email: "",
-    mobile: "",
   });
   const [predictions, setPredictions] = useState<any[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -48,7 +46,7 @@ const Account = () => {
       // Try from profiles table first
       const { data, error } = await supabase
         .from('profiles')
-        .select('name, email, mobile')
+        .select('name, email')
         .eq('id', user.id)
         .maybeSingle();
         
@@ -66,13 +64,11 @@ const Account = () => {
         setUserData({
           name: userData.name || '',
           email: user.email || '',
-          mobile: userData.mobile || '',
         });
       } else {
         setUserData({
           name: data.name || '',
           email: data.email || user.email || '',
-          mobile: data.mobile || '',
         });
       }
     } catch (error: any) {

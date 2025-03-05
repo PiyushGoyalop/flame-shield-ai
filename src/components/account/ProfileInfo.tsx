@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ interface ProfileInfoProps {
   userData: {
     name: string;
     email: string;
-    mobile: string;
   };
   onRefresh: () => void;
 }
@@ -19,38 +19,18 @@ interface ProfileInfoProps {
 export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(userData.name);
-  const [mobile, setMobile] = useState(userData.mobile || "");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Handle mobile number input validation
-  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow digits and limit to 10 characters
-    const onlyDigits = value.replace(/\D/g, "").slice(0, 10);
-    setMobile(onlyDigits);
-  };
-
   const handleSave = async () => {
     if (!user) return;
-    
-    // Validate mobile number is 10 digits or empty
-    if (mobile && mobile.length !== 10) {
-      toast({
-        title: "Invalid mobile number",
-        description: "Please enter a valid 10-digit Indian mobile number",
-        variant: "destructive"
-      });
-      return;
-    }
     
     setIsLoading(true);
     
     try {
       await updateUserProfile(user.id, {
-        name,
-        mobile: mobile || null
+        name
       });
       
       toast({
@@ -74,7 +54,6 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
   
   const handleCancel = () => {
     setName(userData.name);
-    setMobile(userData.mobile || "");
     setIsEditing(false);
   };
 
@@ -114,20 +93,6 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
               />
               <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="mobile">Mobile Number</Label>
-              <Input
-                id="mobile"
-                type="tel"
-                value={mobile}
-                onChange={handleMobileChange}
-                placeholder="10-digit mobile number"
-                disabled={isLoading}
-                maxLength={10}
-                inputMode="numeric"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Enter 10-digit number without country code</p>
-            </div>
             <div className="flex gap-2 pt-4">
               <Button 
                 variant="default" 
@@ -155,10 +120,6 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
             <div>
               <label className="text-sm font-medium text-muted-foreground">Email</label>
               <p className="mt-1">{userData.email}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Mobile Number</label>
-              <p className="mt-1">{userData.mobile || "Not provided"}</p>
             </div>
           </>
         )}

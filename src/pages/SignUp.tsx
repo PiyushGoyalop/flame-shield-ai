@@ -20,7 +20,6 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [mobile, setMobile] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isSignedUp, setIsSignedUp] = useState(false);
@@ -28,32 +27,14 @@ const SignUp = () => {
   const { toast } = useToast();
   const { signUp } = useAuth();
 
-  // Handle mobile number input validation
-  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow digits and limit to 10 characters
-    const onlyDigits = value.replace(/\D/g, "").slice(0, 10);
-    setMobile(onlyDigits);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
-    if (!name || !email || !password || !confirmPassword || !mobile) {
+    if (!name || !email || !password || !confirmPassword) {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate mobile number is 10 digits
-    if (mobile.length !== 10) {
-      toast({
-        title: "Invalid mobile number",
-        description: "Please enter a valid 10-digit Indian mobile number",
         variant: "destructive",
       });
       return;
@@ -80,7 +61,7 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, name, mobile);
+      await signUp(email, password, name);
       setIsSignedUp(true);
       // We don't navigate away - we show the email confirmation notice
     } catch (error) {
@@ -133,22 +114,6 @@ const SignUp = () => {
                       disabled={isLoading}
                       required
                     />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile">Mobile Number</Label>
-                    <Input
-                      id="mobile"
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobile}
-                      onChange={handleMobileChange}
-                      disabled={isLoading}
-                      required
-                      maxLength={10}
-                      inputMode="numeric"
-                    />
-                    <p className="text-xs text-muted-foreground">Enter 10-digit mobile number without country code</p>
                   </div>
                   
                   <div className="space-y-2">
