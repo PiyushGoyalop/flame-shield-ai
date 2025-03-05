@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +145,9 @@ export function PredictionForm() {
       setResult(predictionData);
       
       console.log("Saving prediction to api_predictions table for user:", user.id);
-      const { error: insertError } = await supabase.from('api_predictions').insert({
+      
+      // Create the insert object with only the fields that exist in the database
+      const insertData = {
         user_id: user.id,
         location: predictionData.location,
         latitude: predictionData.latitude,
@@ -157,7 +160,9 @@ export function PredictionForm() {
         air_quality_index: predictionData.air_quality_index,
         pm2_5: predictionData.pm2_5,
         pm10: predictionData.pm10
-      });
+      };
+      
+      const { error: insertError } = await supabase.from('api_predictions').insert(insertData);
       
       if (insertError) {
         console.error("Error saving prediction:", insertError);

@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       api_predictions: {
         Row: {
+          air_quality_index: number | null
           co2_level: number | null
           created_at: string
           drought_index: number | null
@@ -19,12 +20,15 @@ export type Database = {
           latitude: number | null
           location: string
           longitude: number | null
+          pm10: number | null
+          pm2_5: number | null
           probability: number | null
           temperature: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          air_quality_index?: number | null
           co2_level?: number | null
           created_at?: string
           drought_index?: number | null
@@ -33,12 +37,15 @@ export type Database = {
           latitude?: number | null
           location: string
           longitude?: number | null
+          pm10?: number | null
+          pm2_5?: number | null
           probability?: number | null
           temperature?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          air_quality_index?: number | null
           co2_level?: number | null
           created_at?: string
           drought_index?: number | null
@@ -47,6 +54,8 @@ export type Database = {
           latitude?: number | null
           location?: string
           longitude?: number | null
+          pm10?: number | null
+          pm2_5?: number | null
           probability?: number | null
           temperature?: number | null
           updated_at?: string
