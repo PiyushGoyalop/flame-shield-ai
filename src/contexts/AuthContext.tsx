@@ -19,7 +19,7 @@ interface AuthContextProps {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; session: Session | null }>;
   signOut: () => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
   sendPasswordResetEmail: (email: string) => Promise<void>;
@@ -84,17 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const redirectUrl = getRedirectUrl();
       
-      // Pass true to skip email verification - we'll handle this in the backend
-      await signUpWithEmail(email, password, name, redirectUrl, true);
+      const data = await signUpWithEmail(email, password, name, redirectUrl);
       
-      // Show success message
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to FlameShield AI!",
-      });
-
-      // Navigate to sign in page after successful signup
-      navigate('/signin');
+      return data;
     } catch (error: any) {
       console.error("Sign up error:", error);
       toast({

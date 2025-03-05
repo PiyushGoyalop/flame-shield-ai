@@ -14,6 +14,7 @@ import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { isStrongPassword } from "@/services/authService";
+import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -22,6 +23,7 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   
   // Password validation state
   const [passwordValidation, setPasswordValidation] = useState({
@@ -95,9 +97,15 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, name);
-      // On successful signup, the user will be automatically logged in
-      // and redirected to the home page (handled in AuthContext)
+      const data = await signUp(email, password, name);
+      
+      // Show email confirmation screen
+      setShowEmailConfirmation(true);
+      
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account.",
+      });
     } catch (error) {
       console.error("Signup error in component:", error);
       // Error already handled in signUp function
@@ -105,6 +113,24 @@ const SignUp = () => {
       setIsLoading(false);
     }
   };
+
+  if (showEmailConfirmation) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Nav />
+        <main className="flex-grow pt-28 pb-20">
+          <EmailConfirmation 
+            email={email} 
+            onResendEmail={() => {
+              const { resendConfirmationEmail } = useAuth();
+              resendConfirmationEmail(email);
+            }}
+          />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

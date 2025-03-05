@@ -28,14 +28,12 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 /**
  * Signs up a new user with email, password, and additional metadata
- * @param skipEmailVerification - If true, will not require email verification
  */
 export const signUpWithEmail = async (
   email: string, 
   password: string, 
   name: string,
-  redirectUrl: string,
-  skipEmailVerification: boolean = false
+  redirectUrl: string
 ) => {
   console.log("Signing up with:", { email, name });
   
@@ -59,13 +57,6 @@ export const signUpWithEmail = async (
   if (error) throw error;
   
   console.log("Sign up auth response:", data);
-  
-  // If we're skipping verification and the user needs confirmation,
-  // sign them in automatically
-  if (skipEmailVerification && data.user && !data.session) {
-    console.log("Auto signing in after signup");
-    await signInWithEmail(email, password);
-  }
   
   return data;
 };
