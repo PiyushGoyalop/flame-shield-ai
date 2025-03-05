@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { VegetationIndicesDisplay } from "./VegetationIndicesDisplay";
 import { LandCoverChart } from "./LandCoverChart";
-import { LandCoverStats } from "./LandCoverStats";
 import { VegetationRiskFactor } from "./VegetationRiskFactor";
 
 interface EarthEngineDataProps {
@@ -37,10 +36,7 @@ export function EarthEngineDataDisplay({ vegetationIndex, landCover }: EarthEngi
         {vegetationIndex && <VegetationIndicesDisplay vegetationIndex={vegetationIndex} />}
         
         {landCover && (
-          <>
-            <LandCoverChart landCover={landCover} />
-            <LandCoverStats landCover={landCover} />
-          </>
+          <LandCoverChart landCover={landCover} />
         )}
 
         <VegetationRiskFactor vegetationIndex={vegetationIndex} landCover={landCover} />
