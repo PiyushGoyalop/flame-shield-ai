@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +17,29 @@ interface HistoricData {
   yearly_incidents: {
     year: number;
     incidents: number;
+    severity?: {
+      low: number;
+      medium: number;
+      high: number;
+      extreme: number;
+    };
+    causes?: {
+      lightning: number;
+      human: number;
+      unknown: number;
+    };
   }[];
+  severity_distribution?: {
+    low: number;
+    medium: number;
+    high: number;
+    extreme: number;
+  };
+  causes?: {
+    lightning: number;
+    human: number;
+    unknown: number;
+  };
 }
 
 const getLocationSeed = (location: string): number => {
@@ -117,6 +140,9 @@ export function PredictionForm() {
           throw new Error("No data returned from prediction API");
         }
         
+        // Log the successful prediction API call
+        console.log("Prediction API response:", data);
+        
         const { data: historicResponse, error: historicError } = await supabase.functions.invoke('get-historic-wildfire-data', {
           body: { 
             location, 
@@ -130,15 +156,17 @@ export function PredictionForm() {
           // Continue without historic data, don't throw error
         }
         
+        // Log the historical data response
+        console.log("Historical data API response:", historicResponse);
+        
         if (historicResponse) {
           historicData = {
             total_incidents: historicResponse.total_incidents,
             largest_fire_acres: historicResponse.largest_fire_acres,
             average_fire_size_acres: historicResponse.average_fire_size_acres,
-            yearly_incidents: historicResponse.yearly_incidents.map(item => ({
-              year: item.year,
-              incidents: item.incidents
-            }))
+            yearly_incidents: historicResponse.yearly_incidents,
+            severity_distribution: historicResponse.severity_distribution,
+            causes: historicResponse.causes
           };
         }
         
