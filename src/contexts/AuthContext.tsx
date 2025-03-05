@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const redirectUrl = getRedirectUrl();
       
-      // Pass false to disable email confirmation requirement
-      await signUpWithEmail(email, password, name, redirectUrl, false);
+      // Pass true to skip email verification - we'll handle this in the backend
+      await signUpWithEmail(email, password, name, redirectUrl, true);
       
       // Show success message
       toast({

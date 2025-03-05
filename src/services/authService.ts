@@ -44,7 +44,7 @@ export const signUpWithEmail = async (
     throw new Error("Password must be at least 8 characters and include at least one uppercase letter, one number, and one special character.");
   }
   
-  // If skipping verification, we'll auto-sign them in after sign up
+  // Sign up the user
   const { error, data } = await supabase.auth.signUp({ 
     email, 
     password,
@@ -52,9 +52,7 @@ export const signUpWithEmail = async (
       data: {
         name
       },
-      emailRedirectTo: redirectUrl,
-      // Setting this to true will disable the email verification requirement
-      emailConfirmationless: skipEmailVerification
+      emailRedirectTo: redirectUrl
     }
   });
   
@@ -63,7 +61,7 @@ export const signUpWithEmail = async (
   console.log("Sign up auth response:", data);
   
   // If we're skipping verification and the user needs confirmation,
-  // sign them in automatically (this is just in case the emailConfirmationless option doesn't work)
+  // sign them in automatically
   if (skipEmailVerification && data.user && !data.session) {
     console.log("Auto signing in after signup");
     await signInWithEmail(email, password);
