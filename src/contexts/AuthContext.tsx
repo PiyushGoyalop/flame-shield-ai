@@ -72,6 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing up with:", { email, name, mobile });
       
+      // Determine redirect URL
+      const redirectUrl = `${window.location.origin}/auth-redirect`;
+      
       // Sign up with auth - setting redirectTo to ensure proper redirection after confirmation
       const { error, data } = await supabase.auth.signUp({ 
         email, 
@@ -81,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name,
             mobile // Make sure mobile is included in user_metadata
           },
-          emailRedirectTo: window.location.origin + '/signin' // Redirect to sign in page after confirmation
+          emailRedirectTo: redirectUrl // Redirect to our auth-redirect page
         }
       });
       
@@ -98,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: data.user.id,
               name,
               email,
-              mobile // Ensure mobile is explicitly included here
+              mobile
             }, { 
               onConflict: 'id' 
             });
@@ -131,11 +134,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendConfirmationEmail = async (email: string) => {
     try {
+      // Determine redirect URL
+      const redirectUrl = `${window.location.origin}/auth-redirect`;
+      
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: window.location.origin + '/signin'
+          emailRedirectTo: redirectUrl
         }
       });
       
