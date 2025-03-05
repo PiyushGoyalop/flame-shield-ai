@@ -6,8 +6,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PredictionData } from "@/types/prediction";
 import { getPredictionData, savePrediction } from "@/services/predictionService";
 
+// Define the CustomDataCache interface
+interface CustomDataCache {
+  wildfires: any[];
+  co2: any[];
+}
+
 // Cache for custom uploaded data
-const customDataCache: Record<string, any[]> = {
+const customDataCache: CustomDataCache = {
   wildfires: [],
   co2: []
 };

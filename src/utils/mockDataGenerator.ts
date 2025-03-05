@@ -1,4 +1,11 @@
+
 import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
+
+// Define the CustomDataCache interface to ensure consistency
+interface CustomDataCache {
+  wildfires: any[];
+  co2: any[];
+}
 
 const getLocationSeed = (location: string): number => {
   let hash = 0;
@@ -11,7 +18,7 @@ const getLocationSeed = (location: string): number => {
 
 export const getMockPredictionData = async (
   location: string, 
-  customData?: { wildfires: any[]; co2: any[] }
+  customData?: CustomDataCache
 ) => {
   const seed = getLocationSeed(location);
   
