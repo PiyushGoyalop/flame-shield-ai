@@ -7,12 +7,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "./nav/Logo";
 import { DesktopNav } from "./nav/DesktopNav";
 import { MobileNav } from "./nav/MobileNav";
+import { useFavicon } from "@/hooks/useFavicon";
 
 export function Nav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  
+  // Use the favicon hook to ensure favicon is properly set
+  useFavicon();
 
   // Close mobile menu when route changes
   useEffect(() => {
