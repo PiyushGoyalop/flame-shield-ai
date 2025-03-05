@@ -1,7 +1,0 @@
-
-{
-  "routes": [
-    { "src": "/auth-redirect", "dest": "/index.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
-}
