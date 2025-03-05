@@ -11,6 +11,7 @@ interface AuthContextProps {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, mobile: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing up with:", { email, name, mobile });
       
-      // Sign up with auth
+      // Sign up with auth - setting redirectTo to ensure proper redirection after confirmation
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -79,7 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: {
             name,
             mobile // Make sure mobile is included in user_metadata
-          }
+          },
+          emailRedirectTo: window.location.origin + '/signin' // Redirect to sign in page after confirmation
         }
       });
       
@@ -111,9 +113,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       
+      // Show a specific toast for email confirmation
       toast({
         title: "Account created",
-        description: "Your account has been created successfully.",
+        description: "A confirmation email has been sent. Please check your inbox and click the link to verify your email.",
       });
     } catch (error: any) {
       console.error("Sign up error:", error);
@@ -123,6 +126,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         variant: "destructive",
       });
       throw error;
+    }
+  };
+
+  const resendConfirmationEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: window.location.origin + '/signin'
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Confirmation email sent",
+        description: "Please check your inbox for the confirmation link.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error sending confirmation email",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -155,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signOut,
+      resendConfirmationEmail,
     }}>
       {children}
     </AuthContext.Provider>

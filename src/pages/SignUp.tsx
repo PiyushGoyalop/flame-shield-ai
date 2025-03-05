@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
+import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
@@ -22,6 +23,7 @@ const SignUp = () => {
   const [mobile, setMobile] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isSignedUp, setIsSignedUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signUp } = useAuth();
@@ -79,12 +81,8 @@ const SignUp = () => {
 
     try {
       await signUp(email, password, name, mobile);
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully. You're now signed in.",
-      });
-      // Navigate to the main page after successful signup
-      navigate("/account");
+      setIsSignedUp(true);
+      // We don't navigate away - we show the email confirmation notice
     } catch (error) {
       console.error("Signup error in component:", error);
       // Error already handled in signUp function
@@ -108,106 +106,110 @@ const SignUp = () => {
             </CardHeader>
             
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="10-digit mobile number"
-                    value={mobile}
-                    onChange={handleMobileChange}
-                    disabled={isLoading}
-                    required
-                    maxLength={10}
-                    inputMode="numeric"
-                  />
-                  <p className="text-xs text-muted-foreground">Enter 10-digit mobile number without country code</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <PasswordInput
-                    id="password"
-                    value={password}
-                    onChange={setPassword}
-                    disabled={isLoading}
-                    required={true}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <PasswordInput
-                    id="confirm-password"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
-                    disabled={isLoading}
-                    required={true}
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox 
-                    id="terms" 
-                    checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              {isSignedUp ? (
+                <EmailConfirmation email={email} />
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile">Mobile Number</Label>
+                    <Input
+                      id="mobile"
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={mobile}
+                      onChange={handleMobileChange}
+                      disabled={isLoading}
+                      required
+                      maxLength={10}
+                      inputMode="numeric"
+                    />
+                    <p className="text-xs text-muted-foreground">Enter 10-digit mobile number without country code</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <PasswordInput
+                      id="password"
+                      value={password}
+                      onChange={setPassword}
+                      disabled={isLoading}
+                      required={true}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <PasswordInput
+                      id="confirm-password"
+                      value={confirmPassword}
+                      onChange={setConfirmPassword}
+                      disabled={isLoading}
+                      required={true}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={acceptTerms}
+                      onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I accept the{" "}
+                      <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
+                        Privacy Policy
+                      </Link>
+                    </label>
+                  </div>
+                  
+                  <LoadingButton 
+                    isLoading={isLoading} 
+                    loadingText="Creating Account..."
+                    icon={<UserPlus className="h-4 w-4" />}
                   >
-                    I accept the{" "}
-                    <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
-                      Privacy Policy
+                    Create Account
+                  </LoadingButton>
+                  
+                  <div className="text-center text-sm text-muted-foreground mt-6">
+                    Already have an account?{" "}
+                    <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
+                      Sign in
                     </Link>
-                  </label>
-                </div>
-                
-                <LoadingButton 
-                  isLoading={isLoading} 
-                  loadingText="Creating Account..."
-                  icon={<UserPlus className="h-4 w-4" />}
-                >
-                  Create Account
-                </LoadingButton>
-                
-                <div className="text-center text-sm text-muted-foreground mt-6">
-                  Already have an account?{" "}
-                  <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
-                    Sign in
-                  </Link>
-                </div>
-              </form>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
         </div>
