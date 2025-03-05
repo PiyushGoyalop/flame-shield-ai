@@ -114,66 +114,80 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
             )}
 
             {(causesData.length > 0 || severityData.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 {causesData.length > 0 && (
-                  <div>
+                  <div className="h-[300px]">
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Causes</span>
                     </h4>
-                    <div className="h-60">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={causesData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {causesData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => [`${value} fires`, 'Count']} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={causesData}
+                          cx="50%"
+                          cy="45%"
+                          labelLine={true}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {causesData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value) => [`${value} fires`, 'Count']}
+                          contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '8px' }} 
+                        />
+                        <Legend 
+                          layout="horizontal" 
+                          verticalAlign="bottom" 
+                          align="center"
+                          wrapperStyle={{ paddingTop: '10px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 )}
                 
                 {severityData.length > 0 && (
-                  <div>
+                  <div className="h-[300px]">
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Severity</span>
                     </h4>
-                    <div className="h-60">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={severityData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                          >
-                            {severityData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => [`${value} fires`, 'Count']} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={severityData}
+                          cx="50%"
+                          cy="45%"
+                          labelLine={true}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        >
+                          {severityData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value) => [`${value} fires`, 'Count']}
+                          contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '8px' }} 
+                        />
+                        <Legend 
+                          layout="horizontal" 
+                          verticalAlign="bottom" 
+                          align="center"
+                          wrapperStyle={{ paddingTop: '10px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 )}
               </div>
