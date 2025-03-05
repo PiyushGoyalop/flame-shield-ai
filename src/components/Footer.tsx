@@ -93,10 +93,10 @@ export function Footer() {
               © {new Date().getFullYear()} Wildfire Analytics. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
+              <a href="/terms" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Terms
               </a>
-              <a href="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
+              <a href="/privacy" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Privacy
               </a>
               <a href="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
