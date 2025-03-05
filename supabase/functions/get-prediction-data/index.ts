@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
@@ -17,6 +18,24 @@ interface WeatherData {
   name: string;
 }
 
+interface AirPollutionData {
+  list: Array<{
+    main: {
+      aqi: number;
+    };
+    components: {
+      co: number;
+      no: number;
+      no2: number;
+      o3: number;
+      so2: number;
+      pm2_5: number;
+      pm10: number;
+      nh3: number;
+    };
+  }>;
+}
+
 interface PredictionData {
   location: string;
   latitude: number;
@@ -26,6 +45,9 @@ interface PredictionData {
   temperature: number;
   humidity: number;
   drought_index: number;
+  air_quality_index?: number;
+  pm2_5?: number;
+  pm10?: number;
 }
 
 const OPENWEATHER_API_KEY = Deno.env.get("OPENWEATHER_API_KEY") || "";
@@ -71,22 +93,31 @@ async function getWeatherData(lat: number, lon: number): Promise<WeatherData> {
   }
 }
 
-// Get CO2 data (Using a simple algorithm based on location since free CO2 APIs are limited)
-function getEstimatedCO2Level(lat: number, lon: number): number {
-  // Algorithm to estimate CO2 levels based on latitude/longitude
-  // In a real application, this would call an actual CO2 data API
-  // This is just a placeholder calculation
-  
-  // Higher CO2 near the equator (industrial zones) and lower near poles
-  const latFactor = Math.abs(lat) / 90; // 0 at equator, 1 at poles
-  const baseCO2 = 30; // base level in MT
-  
-  // Simple formula: lower CO2 as we move away from equator
-  // Add some randomness but keep it consistent for same coordinates
-  const hashSeed = (lat * 31 + lon * 17) % 10;
-  const randomFactor = hashSeed / 10;
-  
-  return Math.round((baseCO2 - (latFactor * 15) + randomFactor * 10) * 10) / 10;
+// Get air pollution data using coordinates
+async function getAirPollutionData(lat: number, lon: number): Promise<AirPollutionData> {
+  try {
+    const airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}`;
+    const response = await fetch(airPollutionUrl);
+    const data = await response.json();
+    
+    if (data && data.list && data.list.length > 0) {
+      return data;
+    } else {
+      throw new Error("Air pollution data not available");
+    }
+  } catch (error) {
+    console.error("Air Pollution API error:", error);
+    throw error;
+  }
+}
+
+// Convert CO to CO2 equivalent (approximate conversion for visualization)
+function convertCOToCO2Equivalent(coValue: number): number {
+  // CO values from OpenWeatherMap are in μg/m³
+  // Convert to a scale similar to our previous CO2 data (in MT)
+  // This is a simplified conversion for consistency in the UI
+  const scaleFactor = 0.2;
+  return Math.round((coValue * scaleFactor) * 10) / 10;
 }
 
 // Calculate drought index based on temperature and humidity
@@ -105,20 +136,30 @@ function calculateWildfireProbability(
   humidity: number, 
   droughtIndex: number, 
   co2Level: number,
+  airQualityIndex: number,
+  pm2_5: number,
   lat: number, 
   lon: number
 ): number {
   // Weight factors by importance
-  const tempWeight = 0.3;
-  const humidityWeight = 0.25;
-  const droughtWeight = 0.35;
+  const tempWeight = 0.25;
+  const humidityWeight = 0.2;
+  const droughtWeight = 0.3;
   const co2Weight = 0.1;
+  const aqiWeight = 0.1;
+  const pm25Weight = 0.05;
   
   // Normalize each factor to a 0-1 scale
   const tempFactor = Math.max(0, Math.min(1, (temperature - 5) / 30)); // 0 at 5°C, 1 at 35°C
   const humidityFactor = Math.max(0, Math.min(1, (100 - humidity) / 80)); // 0 at 100%, 1 at 20%
   const droughtFactor = droughtIndex / 100;
   const co2Factor = Math.max(0, Math.min(1, co2Level / 50));
+  
+  // Air quality index is 1-5, normalize to 0-1
+  const aqiFactor = Math.max(0, Math.min(1, (airQualityIndex - 1) / 4));
+  
+  // PM2.5 normalization (typically 0-500 scale for AQI)
+  const pm25Factor = Math.max(0, Math.min(1, pm2_5 / 100));
   
   // Check if location is in high-risk latitude band (most wildfires occur between 30-50 degrees)
   const latAbs = Math.abs(lat);
@@ -129,7 +170,9 @@ function calculateWildfireProbability(
     tempFactor * tempWeight +
     humidityFactor * humidityWeight +
     droughtFactor * droughtWeight +
-    co2Factor * co2Weight
+    co2Factor * co2Weight +
+    aqiFactor * aqiWeight +
+    pm25Factor * pm25Weight
   ) * 100 * isHighRiskLatitude;
   
   // Cap at 95%
@@ -172,8 +215,17 @@ serve(async (req) => {
     // Get weather data
     const weatherData = await getWeatherData(lat, lon);
     
-    // Get CO2 level
-    const co2Level = getEstimatedCO2Level(lat, lon);
+    // Get air pollution data
+    const airPollutionData = await getAirPollutionData(lat, lon);
+    
+    // Extract air quality values
+    const airQualityIndex = airPollutionData.list[0].main.aqi; // Air Quality Index (1-5)
+    const pm2_5 = airPollutionData.list[0].components.pm2_5;
+    const pm10 = airPollutionData.list[0].components.pm10;
+    const coValue = airPollutionData.list[0].components.co;
+    
+    // Convert CO to CO2 equivalent for consistency with previous implementation
+    const co2Level = convertCOToCO2Equivalent(coValue);
     
     // Calculate drought index
     const droughtIndex = calculateDroughtIndex(weatherData.main.temp, weatherData.main.humidity);
@@ -184,6 +236,8 @@ serve(async (req) => {
       weatherData.main.humidity,
       droughtIndex,
       co2Level,
+      airQualityIndex,
+      pm2_5,
       lat, 
       lon
     );
@@ -197,7 +251,10 @@ serve(async (req) => {
       co2_level: co2Level,
       temperature: weatherData.main.temp,
       humidity: weatherData.main.humidity,
-      drought_index: droughtIndex
+      drought_index: droughtIndex,
+      air_quality_index: airQualityIndex,
+      pm2_5: pm2_5,
+      pm10: pm10
     };
     
     return new Response(

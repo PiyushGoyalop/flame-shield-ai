@@ -18,44 +18,40 @@ interface PredictionResult {
   droughtIndex: number;
   latitude?: number;
   longitude?: number;
+  air_quality_index?: number;
+  pm2_5?: number;
+  pm10?: number;
 }
 
-// Deterministic "seed" function that generates consistent numbers for same locations
 const getLocationSeed = (location: string): number => {
-  // Convert string to a simple numeric hash
   let hash = 0;
   for (let i = 0; i < location.length; i++) {
     hash = ((hash << 5) - hash) + location.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
+    hash |= 0;
   }
-  return Math.abs(hash) / 2147483647; // Normalize between 0 and 1
+  return Math.abs(hash) / 2147483647;
 };
 
-// Location-based mock data generator
 const getMockPredictionData = (location: string) => {
   const seed = getLocationSeed(location);
   
-  // Use location characteristics for more realistic values
   const isHighRiskState = /california|arizona|nevada|colorado|oregon|washington|utah/.test(location.toLowerCase());
   const isCoastal = /beach|coast|ocean|bay|gulf|sea/.test(location.toLowerCase());
   const isForested = /forest|wood|pine|redwood|national park/.test(location.toLowerCase());
   const isUrban = /city|downtown|urban|metro/.test(location.toLowerCase());
   
-  // Base probability factors
   let baseProbability = 0;
   if (isHighRiskState) baseProbability += 40;
   if (isForested) baseProbability += 25;
   if (isCoastal) baseProbability -= 15;
   if (isUrban) baseProbability -= 10;
   
-  // Deterministic location-based randomization
-  const locationFactor = seed * 35; // Scale from 0-35
+  const locationFactor = seed * 35;
   
-  // Calculate prediction values
   const probability = Math.min(95, Math.max(5, baseProbability + locationFactor));
-  const temperature = 10 + (seed * 25); // Between 10°C and 35°C
-  const humidity = isCoastal ? 50 + (seed * 30) : 20 + (seed * 40); // Higher humidity for coastal areas
-  const co2Level = 5 + (seed * 40) + (isUrban ? 15 : 0); // Higher CO2 for urban areas
+  const temperature = 10 + (seed * 25);
+  const humidity = isCoastal ? 50 + (seed * 30) : 20 + (seed * 40);
+  const co2Level = 5 + (seed * 40) + (isUrban ? 15 : 0);
   const droughtIndex = isHighRiskState ? 80 - humidity : 60 - humidity;
   
   return {
@@ -64,6 +60,9 @@ const getMockPredictionData = (location: string) => {
     humidity: Math.round(humidity),
     co2Level: Math.round(co2Level * 10) / 10,
     droughtIndex: Math.round(Math.max(0, droughtIndex)),
+    air_quality_index: Math.round(seed * 100),
+    pm2_5: Math.round(seed * 10),
+    pm10: Math.round(seed * 15)
   };
 };
 
@@ -83,7 +82,6 @@ export function PredictionForm() {
   const handleSubmit = async () => {
     console.log("Submit prediction - current user:", user?.id);
     
-    // If user is not authenticated, redirect to sign in
     if (!user) {
       toast({
         title: "Authentication required",
@@ -109,7 +107,6 @@ export function PredictionForm() {
       let predictionData;
       
       if (apiMode) {
-        // Call the Supabase Edge Function
         const { data, error } = await supabase.functions.invoke('get-prediction-data', {
           body: { location }
         });
@@ -131,10 +128,12 @@ export function PredictionForm() {
           humidity: data.humidity,
           droughtIndex: data.drought_index,
           latitude: data.latitude,
-          longitude: data.longitude
+          longitude: data.longitude,
+          air_quality_index: data.air_quality_index,
+          pm2_5: data.pm2_5,
+          pm10: data.pm10
         };
       } else {
-        // Fallback to mock data if API is disabled
         const mockData = getMockPredictionData(location);
         predictionData = {
           location,
@@ -144,7 +143,6 @@ export function PredictionForm() {
       
       setResult(predictionData);
       
-      // Store prediction in Supabase
       console.log("Saving prediction to api_predictions table for user:", user.id);
       const { error: insertError } = await supabase.from('api_predictions').insert({
         user_id: user.id,
@@ -155,7 +153,10 @@ export function PredictionForm() {
         co2_level: predictionData.co2Level,
         temperature: predictionData.temperature,
         humidity: predictionData.humidity,
-        drought_index: predictionData.droughtIndex
+        drought_index: predictionData.droughtIndex,
+        air_quality_index: predictionData.air_quality_index,
+        pm2_5: predictionData.pm2_5,
+        pm10: predictionData.pm10
       });
       
       if (insertError) {
@@ -165,7 +166,6 @@ export function PredictionForm() {
       
       console.log("Prediction saved successfully");
       
-      // Show success toast
       toast({
         title: "Prediction Complete",
         description: `Analysis for ${predictionData.location} has been generated using ${apiMode ? 'real-time data' : 'simulation data'}.`,
@@ -173,7 +173,6 @@ export function PredictionForm() {
     } catch (error: any) {
       console.error("Error in prediction flow:", error);
       
-      // Switch to mock data mode if API fails
       if (apiMode) {
         setApiMode(false);
         toast({
@@ -182,7 +181,6 @@ export function PredictionForm() {
           variant: "destructive"
         });
         
-        // Retry with mock data
         handleSubmit();
       } else {
         toast({
