@@ -6,34 +6,10 @@ import { RiskIndicator } from "./RiskIndicator";
 import { WeatherStats } from "./WeatherStats";
 import { Precautions } from "./Precautions";
 import { HistoricDataDisplay } from "./HistoricDataDisplay";
-
-interface HistoricData {
-  total_incidents: number;
-  largest_fire_acres: number;
-  average_fire_size_acres: number;
-  yearly_incidents: {
-    year: number;
-    incidents: number;
-  }[];
-}
-
-export interface PredictionResultData {
-  location: string;
-  probability: number;
-  co2Level: number;
-  temperature: number;
-  humidity: number;
-  droughtIndex: number;
-  latitude?: number;
-  longitude?: number;
-  air_quality_index?: number;
-  pm2_5?: number;
-  pm10?: number;
-  historic_data?: HistoricData;
-}
+import { PredictionData } from "@/types/prediction";
 
 interface PredictionResultProps {
-  result: PredictionResultData;
+  result: PredictionData;
 }
 
 export function PredictionResult({ result }: PredictionResultProps) {

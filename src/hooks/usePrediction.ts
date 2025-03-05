@@ -1,0 +1,88 @@
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { PredictionData } from "@/types/prediction";
+import { getPredictionData, savePrediction } from "@/services/predictionService";
+
+export function usePrediction() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<PredictionData | null>(null);
+  const [location, setLocation] = useState<string>("");
+  const [apiMode, setApiMode] = useState<boolean>(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleLocationSelect = (selectedLocation: string) => {
+    setLocation(selectedLocation);
+  };
+
+  const handleSubmit = async () => {
+    console.log("Submit prediction - current user:", user?.id);
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to make a prediction",
+        variant: "destructive",
+      });
+      navigate("/signin?redirect=/predict");
+      return;
+    }
+
+    if (!location) {
+      toast({
+        title: "Location required",
+        description: "Please select a location to make a prediction",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const predictionData = await getPredictionData(location, apiMode);
+      setResult(predictionData);
+      
+      await savePrediction(user.id, predictionData);
+      
+      toast({
+        title: "Prediction Complete",
+        description: `Analysis for ${predictionData.location} has been generated using ${apiMode ? 'real-time data' : 'simulation data'}.`,
+      });
+    } catch (error: any) {
+      console.error("Error in prediction flow:", error);
+      
+      if (apiMode) {
+        setApiMode(false);
+        toast({
+          title: "API Connection Issue",
+          description: "Switching to simulation mode due to API issues. Your API key may be missing or invalid.",
+          variant: "destructive"
+        });
+        
+        handleSubmit();
+      } else {
+        toast({
+          title: "Error saving prediction",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    isLoading,
+    result,
+    location,
+    apiMode,
+    handleLocationSelect,
+    handleSubmit
+  };
+}
