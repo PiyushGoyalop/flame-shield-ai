@@ -114,7 +114,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10 mb-14">
                 {causesData.length > 0 && (
                   <div className="h-[480px] pt-4 pb-6">
-                    <h4 className="text-sm font-medium mb-8 flex items-center gap-1">
+                    <h4 className="text-sm font-medium mb-12 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Causes</span>
                     </h4>
@@ -154,7 +154,7 @@ export function HistoricDataDisplay({ data }: HistoricDataDisplayProps) {
                 
                 {severityData.length > 0 && (
                   <div className="h-[480px] pt-4 pb-6">
-                    <h4 className="text-sm font-medium mb-8 flex items-center gap-1">
+                    <h4 className="text-sm font-medium mb-12 flex items-center gap-1">
                       <PieChartIcon className="w-4 h-4" />
                       <span>Fire Severity</span>
                     </h4>
