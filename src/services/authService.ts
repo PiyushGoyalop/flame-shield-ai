@@ -57,6 +57,25 @@ export const signUpWithEmail = async (
 };
 
 /**
+ * Updates user profile in the database
+ */
+export const updateUserProfile = async (userId: string, updates: { name?: string; mobile?: string }) => {
+  console.log("Updating profile for user:", userId, "with data:", updates);
+  
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
+    
+  if (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
+  
+  return true;
+};
+
+/**
  * Resends a confirmation email to the user
  */
 export const resendConfirmationEmail = async (email: string, redirectUrl: string) => {

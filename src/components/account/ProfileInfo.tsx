@@ -1,12 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { updateUserProfile } from "@/services/authService";
 
 interface ProfileInfoProps {
   userData: {
@@ -49,15 +48,10 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name,
-          mobile: mobile || null
-        })
-        .eq('id', user.id);
-        
-      if (error) throw error;
+      await updateUserProfile(user.id, {
+        name,
+        mobile: mobile || null
+      });
       
       toast({
         title: "Profile updated",
@@ -67,6 +61,7 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
       setIsEditing(false);
       onRefresh();
     } catch (error: any) {
+      console.error("Error updating profile:", error);
       toast({
         title: "Update failed",
         description: error.message,
