@@ -9,7 +9,8 @@ import {
   signInWithEmail,
   signUpWithEmail,
   resendConfirmationEmail as resendEmail,
-  signOut as logOut
+  signOut as logOut,
+  resetPassword
 } from '@/services/authService';
 
 interface AuthContextProps {
@@ -20,6 +21,7 @@ interface AuthContextProps {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
+  sendPasswordResetEmail: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -77,12 +79,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const redirectUrl = getRedirectUrl();
       
-      await signUpWithEmail(email, password, name, redirectUrl);
+      // Pass false to disable email confirmation requirement
+      await signUpWithEmail(email, password, name, redirectUrl, false);
       
-      // Show a specific toast for email confirmation
+      // Show success message
       toast({
-        title: "Account created",
-        description: "A confirmation email has been sent. Please check your inbox and click the link to verify your email.",
+        title: "Account created successfully",
+        description: "Welcome to FlameShield AI!",
       });
     } catch (error: any) {
       console.error("Sign up error:", error);
@@ -108,6 +111,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast({
         title: "Error sending confirmation email",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const sendPasswordResetEmail = async (email: string) => {
+    try {
+      const redirectUrl = getRedirectUrl();
+      
+      await resetPassword(email, redirectUrl);
+      
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your inbox for the reset link.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error sending reset email",
         description: error.message,
         variant: "destructive",
       });
@@ -143,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resendConfirmationEmail,
+      sendPasswordResetEmail,
     }}>
       {children}
     </AuthContext.Provider>

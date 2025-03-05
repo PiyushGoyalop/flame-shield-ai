@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
-import { UserPlus } from "lucide-react";
+import { UserPlus, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
-import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 import { useAuth } from "@/contexts/AuthContext";
+import { isStrongPassword } from "@/services/authService";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -22,10 +22,35 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [isSignedUp, setIsSignedUp] = useState(false);
+  
+  // Password validation state
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    special: false
+  });
+  
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
+  
+  // If user is already logged in, redirect to home page
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+  
+  // Check password strength as the user types
+  useEffect(() => {
+    setPasswordValidation({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    });
+  }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +73,15 @@ const SignUp = () => {
       });
       return;
     }
+    
+    if (!isStrongPassword(password)) {
+      toast({
+        title: "Password is not strong enough",
+        description: "Please ensure your password meets all the requirements",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!acceptTerms) {
       toast({
@@ -62,8 +96,8 @@ const SignUp = () => {
 
     try {
       await signUp(email, password, name);
-      setIsSignedUp(true);
-      // We don't navigate away - we show the email confirmation notice
+      // On successful signup, the user will be automatically logged in
+      // and redirected to the home page (handled in AuthContext)
     } catch (error) {
       console.error("Signup error in component:", error);
       // Error already handled in signUp function
@@ -87,94 +121,129 @@ const SignUp = () => {
             </CardHeader>
             
             <CardContent>
-              {isSignedUp ? (
-                <EmailConfirmation email={email} />
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <PasswordInput
+                    id="password"
+                    value={password}
+                    onChange={setPassword}
+                    disabled={isLoading}
+                    required={true}
+                  />
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
-                      required
-                    />
+                  {/* Password strength indicators */}
+                  <div className="mt-2 text-xs space-y-1">
+                    <p className="font-medium text-gray-700">Password must include:</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="flex items-center">
+                        {passwordValidation.length ? 
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" /> : 
+                          <XCircle className="h-3 w-3 text-red-500 mr-1" />}
+                        <span className={passwordValidation.length ? "text-green-600" : "text-gray-600"}>
+                          At least 8 characters
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        {passwordValidation.uppercase ? 
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" /> : 
+                          <XCircle className="h-3 w-3 text-red-500 mr-1" />}
+                        <span className={passwordValidation.uppercase ? "text-green-600" : "text-gray-600"}>
+                          One uppercase letter
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        {passwordValidation.number ? 
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" /> : 
+                          <XCircle className="h-3 w-3 text-red-500 mr-1" />}
+                        <span className={passwordValidation.number ? "text-green-600" : "text-gray-600"}>
+                          One number
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        {passwordValidation.special ? 
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" /> : 
+                          <XCircle className="h-3 w-3 text-red-500 mr-1" />}
+                        <span className={passwordValidation.special ? "text-green-600" : "text-gray-600"}>
+                          One special character
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <PasswordInput
-                      id="password"
-                      value={password}
-                      onChange={setPassword}
-                      disabled={isLoading}
-                      required={true}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <PasswordInput
-                      id="confirm-password"
-                      value={confirmPassword}
-                      onChange={setConfirmPassword}
-                      disabled={isLoading}
-                      required={true}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 pt-2">
-                    <Checkbox 
-                      id="terms" 
-                      checked={acceptTerms}
-                      onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-                    />
-                    <label
-                      htmlFor="terms"
-                      className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      I accept the{" "}
-                      <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
-                        Terms of Service
-                      </Link>{" "}
-                      and{" "}
-                      <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
-                        Privacy Policy
-                      </Link>
-                    </label>
-                  </div>
-                  
-                  <LoadingButton 
-                    isLoading={isLoading} 
-                    loadingText="Creating Account..."
-                    icon={<UserPlus className="h-4 w-4" />}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <PasswordInput
+                    id="confirm-password"
+                    value={confirmPassword}
+                    onChange={setConfirmPassword}
+                    disabled={isLoading}
+                    required={true}
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Create Account
-                  </LoadingButton>
-                  
-                  <div className="text-center text-sm text-muted-foreground mt-6">
-                    Already have an account?{" "}
-                    <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
-                      Sign in
+                    I accept the{" "}
+                    <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
+                      Privacy Policy
                     </Link>
-                  </div>
-                </form>
-              )}
+                  </label>
+                </div>
+                
+                <LoadingButton 
+                  isLoading={isLoading} 
+                  loadingText="Creating Account..."
+                  icon={<UserPlus className="h-4 w-4" />}
+                >
+                  Create Account
+                </LoadingButton>
+                
+                <div className="text-center text-sm text-muted-foreground mt-6">
+                  Already have an account?{" "}
+                  <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
+                    Sign in
+                  </Link>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -16,9 +17,17 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, user, sendPasswordResetEmail } = useAuth();
+
+  // If user is already logged in, redirect to home page
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +56,24 @@ const SignIn = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address to receive a password reset link",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      await sendPasswordResetEmail(email);
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -71,7 +98,7 @@ const SignIn = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || isSendingReset}
                     required
                   />
                 </div>
@@ -79,9 +106,14 @@ const SignIn = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="password">Password</Label>
-                    <Link to="/forgot-password" className="text-xs text-wildfire-600 hover:text-wildfire-800">
-                      Forgot password?
-                    </Link>
+                    <button 
+                      type="button"
+                      onClick={handleForgotPassword}
+                      disabled={isSendingReset || !email}
+                      className="text-xs text-wildfire-600 hover:text-wildfire-800 disabled:opacity-50"
+                    >
+                      {isSendingReset ? "Sending..." : "Forgot password?"}
+                    </button>
                   </div>
                   <PasswordInput 
                     id="password"

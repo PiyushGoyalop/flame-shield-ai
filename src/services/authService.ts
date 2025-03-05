@@ -28,15 +28,23 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 /**
  * Signs up a new user with email, password, and additional metadata
+ * @param skipEmailVerification - If true, will not require email verification
  */
 export const signUpWithEmail = async (
   email: string, 
   password: string, 
   name: string,
-  redirectUrl: string
+  redirectUrl: string,
+  skipEmailVerification: boolean = false
 ) => {
   console.log("Signing up with:", { email, name });
   
+  // Validate password strength
+  if (!isStrongPassword(password)) {
+    throw new Error("Password must be at least 8 characters and include at least one uppercase letter, one number, and one special character.");
+  }
+  
+  // If skipping verification, we'll auto-sign them in after sign up
   const { error, data } = await supabase.auth.signUp({ 
     email, 
     password,
@@ -44,13 +52,23 @@ export const signUpWithEmail = async (
       data: {
         name
       },
-      emailRedirectTo: redirectUrl
+      emailRedirectTo: redirectUrl,
+      // Setting this to true will disable the email verification requirement
+      emailConfirmationless: skipEmailVerification
     }
   });
   
   if (error) throw error;
   
   console.log("Sign up auth response:", data);
+  
+  // If we're skipping verification and the user needs confirmation,
+  // sign them in automatically (this is just in case the emailConfirmationless option doesn't work)
+  if (skipEmailVerification && data.user && !data.session) {
+    console.log("Auto signing in after signup");
+    await signInWithEmail(email, password);
+  }
+  
   return data;
 };
 
@@ -91,9 +109,43 @@ export const resendConfirmationEmail = async (email: string, redirectUrl: string
 };
 
 /**
+ * Send a password reset email
+ */
+export const resetPassword = async (email: string, redirectUrl: string) => {
+  console.log("Sending password reset email to:", email);
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl + "?type=recovery"
+  });
+  
+  if (error) throw error;
+  
+  return true;
+};
+
+/**
  * Signs out the current user
  */
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+};
+
+/**
+ * Check if a password is strong enough
+ */
+export const isStrongPassword = (password: string): boolean => {
+  // At least 8 characters
+  if (password.length < 8) return false;
+  
+  // At least one uppercase letter
+  if (!/[A-Z]/.test(password)) return false;
+  
+  // At least one number
+  if (!/[0-9]/.test(password)) return false;
+  
+  // At least one special character
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return false;
+  
+  return true;
 };

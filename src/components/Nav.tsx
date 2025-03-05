@@ -21,7 +21,7 @@ export function Nav() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out py-4 px-6 md:px-8 bg-wildfire-800 text-white"
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out py-4 px-6 md:px-8 bg-gradient-to-r from-wildfire-800 via-wildfire-700 to-wildfire-800"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex flex-col items-start gap-0 transform hover:scale-105 transition-transform">
