@@ -24,7 +24,7 @@ export function FireCausesPieChart({ data }: FireCausesPieChartProps) {
   if (causesData.length === 0) return null;
 
   return (
-    <div className="h-[480px] pt-4 pb-6">
+    <div className="h-[400px] pt-4 pb-6">
       <h4 className="text-sm font-medium mb-12 flex items-center gap-1">
         <PieChartIcon className="w-4 h-4" />
         <span>Fire Causes</span>
@@ -36,8 +36,7 @@ export function FireCausesPieChart({ data }: FireCausesPieChartProps) {
             cx="50%"
             cy="40%"
             labelLine={true}
-            outerRadius={130}
-            innerRadius={50}
+            outerRadius={100}
             fill="#8884d8"
             dataKey="value"
             nameKey="name"
@@ -56,7 +55,7 @@ export function FireCausesPieChart({ data }: FireCausesPieChartProps) {
             layout="horizontal" 
             verticalAlign="bottom" 
             align="center"
-            wrapperStyle={{ paddingTop: '60px', paddingBottom: '30px' }}
+            wrapperStyle={{ paddingTop: '40px', paddingBottom: '20px' }}
           />
         </PieChart>
       </ResponsiveContainer>
