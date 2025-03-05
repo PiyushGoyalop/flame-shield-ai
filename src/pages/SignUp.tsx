@@ -26,6 +26,14 @@ const SignUp = () => {
   const { toast } = useToast();
   const { signUp } = useAuth();
 
+  // Handle mobile number input validation
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits and limit to 10 characters
+    const onlyDigits = value.replace(/\D/g, "").slice(0, 10);
+    setMobile(onlyDigits);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -34,6 +42,16 @@ const SignUp = () => {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate mobile number is 10 digits
+    if (mobile.length !== 10) {
+      toast({
+        title: "Invalid mobile number",
+        description: "Please enter a valid 10-digit Indian mobile number",
         variant: "destructive",
       });
       return;
@@ -121,12 +139,15 @@ const SignUp = () => {
                   <Input
                     id="mobile"
                     type="tel"
-                    placeholder="+1 (555) 555-5555"
+                    placeholder="10-digit mobile number"
                     value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
+                    onChange={handleMobileChange}
                     disabled={isLoading}
                     required
+                    maxLength={10}
+                    inputMode="numeric"
                   />
+                  <p className="text-xs text-muted-foreground">Enter 10-digit mobile number without country code</p>
                 </div>
                 
                 <div className="space-y-2">

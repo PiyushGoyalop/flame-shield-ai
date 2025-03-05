@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             name,
-            mobile
+            mobile // Make sure mobile is included in user_metadata
           }
         }
       });
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log("Sign up auth response:", data);
       
-      // If successful, manually create a profiles entry (as a fallback)
+      // If successful, manually create or update a profiles entry
       if (data?.user) {
         try {
           const { error: profileError } = await supabase
@@ -96,13 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: data.user.id,
               name,
               email,
-              mobile
+              mobile // Ensure mobile is explicitly included here
+            }, { 
+              onConflict: 'id' 
             });
           
           if (profileError) {
             console.error("Error creating profile:", profileError);
           } else {
-            console.log("Profile created successfully");
+            console.log("Profile created successfully with mobile:", mobile);
           }
         } catch (profileErr) {
           console.error("Profile creation error:", profileErr);

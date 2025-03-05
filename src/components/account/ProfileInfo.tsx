@@ -25,8 +25,26 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Handle mobile number input validation
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits and limit to 10 characters
+    const onlyDigits = value.replace(/\D/g, "").slice(0, 10);
+    setMobile(onlyDigits);
+  };
+
   const handleSave = async () => {
     if (!user) return;
+    
+    // Validate mobile number is 10 digits or empty
+    if (mobile && mobile.length !== 10) {
+      toast({
+        title: "Invalid mobile number",
+        description: "Please enter a valid 10-digit Indian mobile number",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsLoading(true);
     
@@ -107,10 +125,13 @@ export function ProfileInfo({ userData, onRefresh }: ProfileInfoProps) {
                 id="mobile"
                 type="tel"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="Enter your mobile number"
+                onChange={handleMobileChange}
+                placeholder="10-digit mobile number"
                 disabled={isLoading}
+                maxLength={10}
+                inputMode="numeric"
               />
+              <p className="text-xs text-muted-foreground mt-1">Enter 10-digit number without country code</p>
             </div>
             <div className="flex gap-2 pt-4">
               <Button 
