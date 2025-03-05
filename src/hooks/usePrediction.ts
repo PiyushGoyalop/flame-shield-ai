@@ -6,17 +6,37 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PredictionData } from "@/types/prediction";
 import { getPredictionData, savePrediction } from "@/services/predictionService";
 
+// Cache for custom uploaded data
+const customDataCache: Record<string, any[]> = {
+  wildfires: [],
+  co2: []
+};
+
 export function usePrediction() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PredictionData | null>(null);
   const [location, setLocation] = useState<string>("");
   const [apiMode, setApiMode] = useState<boolean>(true);
+  const [usingCustomData, setUsingCustomData] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
+  };
+
+  const handleCustomDataUpload = (data: any[], type: "wildfires" | "co2") => {
+    customDataCache[type] = data;
+    setUsingCustomData(true);
+    
+    if (apiMode) {
+      setApiMode(false);
+      toast({
+        title: "Switched to Simulation Mode",
+        description: "Using your custom data for predictions",
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -44,14 +64,16 @@ export function usePrediction() {
     setIsLoading(true);
 
     try {
-      const predictionData = await getPredictionData(location, apiMode);
+      const predictionData = await getPredictionData(location, apiMode, usingCustomData ? customDataCache : undefined);
       setResult(predictionData);
       
       await savePrediction(user.id, predictionData);
       
       toast({
         title: "Prediction Complete",
-        description: `Analysis for ${predictionData.location} has been generated using ${apiMode ? 'real-time data' : 'simulation data'}.`,
+        description: `Analysis for ${predictionData.location} has been generated using ${
+          apiMode ? 'real-time data' : (usingCustomData ? 'your custom dataset' : 'simulation data')
+        }.`,
       });
     } catch (error: any) {
       console.error("Error in prediction flow:", error);
@@ -91,6 +113,7 @@ export function usePrediction() {
     location,
     apiMode,
     handleLocationSelect,
-    handleSubmit
+    handleSubmit,
+    handleCustomDataUpload
   };
 }

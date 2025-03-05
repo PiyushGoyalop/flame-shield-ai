@@ -1,4 +1,3 @@
-
 import { findMatchingLocation, getCO2EmissionsData, getHistoricWildfireData } from "./dataLoader";
 
 const getLocationSeed = (location: string): number => {
@@ -10,12 +9,23 @@ const getLocationSeed = (location: string): number => {
   return Math.abs(hash) / 2147483647;
 };
 
-export const getMockPredictionData = async (location: string) => {
+export const getMockPredictionData = async (
+  location: string, 
+  customData?: { wildfires: any[]; co2: any[] }
+) => {
   const seed = getLocationSeed(location);
   
-  // Load real-world datasets
-  const wildfireData = await getHistoricWildfireData();
-  const co2Data = await getCO2EmissionsData();
+  // Load datasets - either from custom uploaded data or from the default files
+  const wildfireData = customData?.wildfires?.length 
+    ? customData.wildfires 
+    : await getHistoricWildfireData();
+    
+  const co2Data = customData?.co2?.length 
+    ? customData.co2 
+    : await getCO2EmissionsData();
+  
+  console.log("Using wildfire data:", wildfireData.length, "records");
+  console.log("Using CO2 data:", co2Data.length, "records");
   
   // Try to find matching locations in our datasets
   const matchingWildfireLocation = findMatchingLocation(wildfireData, location);
@@ -123,7 +133,6 @@ export const getMockPredictionData = async (location: string) => {
   };
 };
 
-// Generate historic data based on the real dataset
 function generateHistoricData(wildfireData: any[], location: string) {
   const locationData = wildfireData.filter(item => (item.location as string) === location);
   

@@ -5,7 +5,10 @@ import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { usePrediction } from "@/hooks/usePrediction";
-import { Info } from "lucide-react";
+import { Info, Upload } from "lucide-react";
+import { useState } from "react";
+import { CSVUploader } from "./prediction/CSVUploader";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 export function PredictionForm() {
   const {
@@ -14,8 +17,11 @@ export function PredictionForm() {
     location,
     apiMode,
     handleLocationSelect,
-    handleSubmit
+    handleSubmit,
+    handleCustomDataUpload
   } = usePrediction();
+  
+  const [showUploader, setShowUploader] = useState(false);
 
   return (
     <div className="max-w-md w-full mx-auto">
@@ -49,6 +55,22 @@ export function PredictionForm() {
             >
               {isLoading ? "Analyzing..." : "Predict Risk"}
             </Button>
+            
+            <Collapsible open={showUploader} onOpenChange={setShowUploader}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center w-full justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <Upload className="h-3 w-3" />
+                  {showUploader ? "Hide Custom Data Upload" : "Upload Custom Dataset"}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CSVUploader onDataUploaded={handleCustomDataUpload} />
+              </CollapsibleContent>
+            </Collapsible>
           </div>
           
           {result && <PredictionResult result={result} />}
