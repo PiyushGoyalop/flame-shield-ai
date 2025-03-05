@@ -6,7 +6,12 @@ export const useRedirectUrl = () => {
   const getRedirectUrl = () => {
     // Get the current origin - works in development, production, or Vercel
     const origin = window.location.origin;
-    return `${origin}/auth-redirect`;
+    
+    // Log the redirect URL for debugging
+    const redirectUrl = `${origin}/auth-redirect`;
+    console.log("Generated redirect URL:", redirectUrl);
+    
+    return redirectUrl;
   };
 
   return { getRedirectUrl };

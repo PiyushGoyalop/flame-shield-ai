@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export function PasswordResetForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   // Password validation state
@@ -64,6 +65,28 @@ export function PasswordResetForm() {
       // Log before attempting the update to help with debugging
       console.log("Attempting to update password");
       
+      // Get access token from URL if available
+      const searchParams = new URLSearchParams(location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      let accessToken = hashParams.get("access_token");
+      
+      // If we have an access token in the URL, use it to set the session
+      if (accessToken) {
+        console.log("Found access token in URL, setting session");
+        
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: hashParams.get("refresh_token") || "",
+        });
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
+      }
+      
+      // Update the password
       const { error } = await supabase.auth.updateUser({ password });
       
       if (error) {

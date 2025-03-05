@@ -13,6 +13,7 @@ import { Footer } from "@/components/Footer";
 const AuthRedirect = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error" | "reset_password">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -30,6 +31,7 @@ const AuthRedirect = () => {
         if (type === "email_confirmation") {
           // This is an email confirmation
           setStatus("success");
+          setSuccessMessage("Your email has been confirmed successfully!");
           
           // Show a toast notification to inform the user
           toast({
@@ -43,14 +45,16 @@ const AuthRedirect = () => {
           }, 3000);
         } else if (type === "recovery") {
           // This is a password reset
+          console.log("Recovery mode detected, showing password reset form");
           setStatus("reset_password");
         } else if (hashParams.has("access_token")) {
           // This is a successful authentication redirect
           setStatus("success");
+          setSuccessMessage("Authentication successful!");
           
           toast({
             title: "Authentication successful",
-            description: "You can now sign in.",
+            description: "You have been signed in.",
           });
           
           // Redirect to home page immediately
@@ -106,9 +110,7 @@ const AuthRedirect = () => {
                     <CheckCircle size={40} className="text-green-600" />
                     <h1 className="text-2xl font-semibold text-gray-800">Success!</h1>
                     <p className="text-gray-600 mb-4">
-                      {location.search.includes("type=email_confirmation") 
-                        ? "Your email has been confirmed." 
-                        : "You have been successfully authenticated."}
+                      {successMessage || "You have been successfully authenticated."}
                     </p>
                     <p className="text-sm text-gray-500">
                       Redirecting you automatically...
