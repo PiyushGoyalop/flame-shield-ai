@@ -1,6 +1,5 @@
 
 import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface MainStatsProps {
@@ -60,103 +59,106 @@ export function MainStats({
         </CardContent>
       </Card>
       
-      {/* Tabbed detailed statistics */}
-      <Tabs defaultValue="environment" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-2">
-          <TabsTrigger value="environment">Environment</TabsTrigger>
-          <TabsTrigger value="weather">Weather</TabsTrigger>
-          <TabsTrigger value="air">Air Quality</TabsTrigger>
-        </TabsList>
+      {/* Display all three sections side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Environment Stats */}
+        <Card className="border-wildfire-100">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+              <Leaf className="h-4 w-4 text-green-600" />
+              <span>Environment</span>
+            </h3>
+            
+            <div className="flex justify-between items-center">
+              <span className="flex items-center gap-2 text-sm">
+                <Cloud className="h-4 w-4 text-wildfire-600" /> 
+                <span>CO₂ Levels</span>
+              </span>
+              <span className="font-semibold">{co2Level} MT</span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="flex items-center gap-2 text-sm">
+                <Cloud className="h-4 w-4 text-orange-600" /> 
+                <span>Drought Index</span>
+              </span>
+              <span className="font-semibold">{droughtIndex.toFixed(1)}</span>
+            </div>
+          </CardContent>
+        </Card>
         
-        {/* Environment Tab */}
-        <TabsContent value="environment" className="mt-0">
-          <Card className="border-wildfire-100">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Cloud className="h-4 w-4 text-wildfire-600" /> 
-                  <span>CO₂ Levels</span>
-                </span>
-                <span className="font-semibold">{co2Level} MT</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Cloud className="h-4 w-4 text-orange-600" /> 
-                  <span>Drought Index</span>
-                </span>
-                <span className="font-semibold">{droughtIndex.toFixed(1)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Weather Stats */}
+        <Card className="border-wildfire-100">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+              <Cloud className="h-4 w-4 text-blue-600" />
+              <span>Weather</span>
+            </h3>
+            
+            <div className="flex justify-between items-center">
+              <span className="flex items-center gap-2 text-sm">
+                <Thermometer className="h-4 w-4 text-red-500" /> 
+                <span>Temperature</span>
+              </span>
+              <span className="font-semibold">{temperature}°C</span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="flex items-center gap-2 text-sm">
+                <Droplets className="h-4 w-4 text-blue-500" /> 
+                <span>Humidity</span>
+              </span>
+              <span className="font-semibold">{humidity}%</span>
+            </div>
+          </CardContent>
+        </Card>
         
-        {/* Weather Tab */}
-        <TabsContent value="weather" className="mt-0">
-          <Card className="border-wildfire-100">
-            <CardContent className="p-4 space-y-3">
+        {/* Air Quality Stats */}
+        <Card className="border-wildfire-100">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+              <Wind className="h-4 w-4 text-purple-600" />
+              <span>Air Quality</span>
+            </h3>
+            
+            {airQualityIndex && (
               <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Thermometer className="h-4 w-4 text-red-500" /> 
-                  <span>Temperature</span>
+                <span className="flex items-center gap-2 text-sm">
+                  <Wind className="h-4 w-4 text-purple-500" /> 
+                  <span>Air Quality Index</span>
                 </span>
-                <span className="font-semibold">{temperature}°C</span>
+                <span className="font-semibold">{airQualityIndex} AQI</span>
               </div>
-              
+            )}
+            
+            {pm2_5 && (
               <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Droplets className="h-4 w-4 text-blue-500" /> 
-                  <span>Humidity</span>
+                <span className="flex items-center gap-2 text-sm">
+                  <Cloud className="h-4 w-4 text-indigo-500" /> 
+                  <span>PM2.5</span>
                 </span>
-                <span className="font-semibold">{humidity}%</span>
+                <span className="font-semibold">{pm2_5}</span>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Air Quality Tab */}
-        <TabsContent value="air" className="mt-0">
-          <Card className="border-wildfire-100">
-            <CardContent className="p-4 space-y-3">
-              {airQualityIndex && (
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Wind className="h-4 w-4 text-purple-500" /> 
-                    <span>Air Quality Index</span>
-                  </span>
-                  <span className="font-semibold">{airQualityIndex} AQI</span>
-                </div>
-              )}
-              
-              {pm2_5 && (
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Cloud className="h-4 w-4 text-indigo-500" /> 
-                    <span>PM2.5</span>
-                  </span>
-                  <span className="font-semibold">{pm2_5}</span>
-                </div>
-              )}
-              
-              {pm10 && (
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Cloud className="h-4 w-4 text-blue-500" /> 
-                    <span>PM10</span>
-                  </span>
-                  <span className="font-semibold">{pm10}</span>
-                </div>
-              )}
-              
-              {!airQualityIndex && !pm2_5 && !pm10 && (
-                <div className="text-center py-2 text-sm text-muted-foreground">
-                  No air quality data available for this location
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            )}
+            
+            {pm10 && (
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-sm">
+                  <Cloud className="h-4 w-4 text-blue-500" /> 
+                  <span>PM10</span>
+                </span>
+                <span className="font-semibold">{pm10}</span>
+              </div>
+            )}
+            
+            {!airQualityIndex && !pm2_5 && !pm10 && (
+              <div className="text-center py-2 text-sm text-muted-foreground">
+                No air quality data available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

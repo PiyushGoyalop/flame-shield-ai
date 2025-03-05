@@ -57,9 +57,7 @@ export function usePrediction() {
       
       toast({
         title: "Prediction Complete",
-        description: `Analysis for ${predictionData.location} has been generated using ${
-          apiMode ? 'real-time data' : 'simulation data'
-        }.`,
+        description: `Analysis for ${predictionData.location} has been generated.`,
       });
     } catch (error: any) {
       console.error("Error in prediction flow:", error);
@@ -72,7 +70,7 @@ export function usePrediction() {
         setApiMode(false);
         toast({
           title: "API Connection Issue",
-          description: `Switching to simulation mode due to API issues. ${errorDetails || errorMessage}`,
+          description: `Switching to simulation mode. ${errorDetails || errorMessage}`,
           variant: "destructive"
         });
         
@@ -97,7 +95,6 @@ export function usePrediction() {
     isLoading,
     result,
     location,
-    apiMode,
     handleLocationSelect,
     handleSubmit
   };
