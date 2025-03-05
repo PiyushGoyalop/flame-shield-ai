@@ -42,23 +42,39 @@ export const signUpWithEmail = async (
     throw new Error("Password must be at least 8 characters and include at least one uppercase letter, one number, and one special character.");
   }
   
-  // Sign up the user
-  const { error, data } = await supabase.auth.signUp({ 
-    email, 
-    password,
-    options: {
-      data: {
-        name
-      },
-      emailRedirectTo: redirectUrl
+  try {
+    // Sign up the user
+    const { error, data } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          name
+        },
+        emailRedirectTo: redirectUrl
+      }
+    });
+    
+    if (error) {
+      // Check if the error is because the email already exists
+      if (error.message.includes('Email already exists') || 
+          error.message.includes('already registered') || 
+          error.message.includes('unique_user_email')) {
+        throw new Error("An account with this email already exists. Please sign in instead.");
+      }
+      throw error;
     }
-  });
-  
-  if (error) throw error;
-  
-  console.log("Sign up auth response:", data);
-  
-  return data;
+    
+    console.log("Sign up auth response:", data);
+    
+    return data;
+  } catch (error: any) {
+    // Handle the custom exception from the trigger function
+    if (error.message.includes('Email already exists')) {
+      throw new Error("An account with this email already exists. Please sign in instead.");
+    }
+    throw error;
+  }
 };
 
 /**
