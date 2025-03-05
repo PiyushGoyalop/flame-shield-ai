@@ -17,17 +17,17 @@ export function PredictionResult({ result }: { result: PredictionData }) {
     );
   }
 
-  // Transform data to ensure compatibility
+  // Transform data to ensure compatibility with both naming conventions
   const displayData = {
     location: result.location || "Unknown Location",
     latitude: result.latitude || 0,
     longitude: result.longitude || 0,
     probability: result.probability || 0,
-    co2Level: result.co2Level || 0, // Use property name that matches the type definition
+    co2Level: result.co2Level || result.co2_level || 0,
     temperature: result.temperature || 0,
     humidity: result.humidity || 0,
-    droughtIndex: result.droughtIndex || 0, // Use property name that matches the type definition
-    airQualityIndex: result.air_quality_index || 0, // Use property name that matches the type definition
+    droughtIndex: result.droughtIndex || result.drought_index || 0,
+    airQualityIndex: result.air_quality_index || result.airQualityIndex || 0,
     pm2_5: result.pm2_5 || 0,
     pm10: result.pm10 || 0
   };
