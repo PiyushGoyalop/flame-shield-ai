@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Leaf, PieChart as PieChartIcon, Mountain, Building, Droplets, Sand } from "lucide-react";
+import { Leaf, PieChart as PieChartIcon, Mountain, Building, Droplets, CircleDashed } from "lucide-react";
 
 interface EarthEngineDataProps {
   vegetationIndex?: {
@@ -154,7 +154,7 @@ export function EarthEngineDataDisplay({ vegetationIndex, landCover }: EarthEngi
               <span className="text-sm font-semibold">{landCover.water_percent}%</span>
             </div>
             <div className="flex flex-col items-center p-2 rounded-lg border">
-              <Sand className="w-4 h-4 text-stone-400 mb-1" />
+              <CircleDashed className="w-4 h-4 text-stone-400 mb-1" />
               <span className="text-xs text-center">Barren</span>
               <span className="text-sm font-semibold">{landCover.barren_percent}%</span>
             </div>

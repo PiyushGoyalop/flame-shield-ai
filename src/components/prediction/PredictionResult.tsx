@@ -1,3 +1,4 @@
+
 import { LocationDisplay } from "./LocationDisplay";
 import { MainStats } from "./MainStats";
 import { HistoricDataDisplay } from "./HistoricDataDisplay";
@@ -8,7 +9,11 @@ import { EarthEngineDataDisplay } from "./EarthEngineDataDisplay";
 export function PredictionResult({ result }: { result: PredictionData }) {
   return (
     <div className="mt-8">
-      <LocationDisplay location={result.location} latitude={result.latitude} longitude={result.longitude} />
+      <LocationDisplay 
+        location={result.location} 
+        latitude={result.latitude} 
+        longitude={result.longitude} 
+      />
       <MainStats 
         probability={result.probability} 
         co2Level={result.co2Level} 
