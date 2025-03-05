@@ -12,9 +12,12 @@ export type Database = {
       api_predictions: {
         Row: {
           air_quality_index: number | null
+          barren_percent: number | null
           co2_level: number | null
           created_at: string
           drought_index: number | null
+          forest_percent: number | null
+          grassland_percent: number | null
           humidity: number | null
           id: string
           latitude: number | null
@@ -25,13 +28,20 @@ export type Database = {
           probability: number | null
           temperature: number | null
           updated_at: string
+          urban_percent: number | null
           user_id: string
+          vegetation_evi: number | null
+          vegetation_ndvi: number | null
+          water_percent: number | null
         }
         Insert: {
           air_quality_index?: number | null
+          barren_percent?: number | null
           co2_level?: number | null
           created_at?: string
           drought_index?: number | null
+          forest_percent?: number | null
+          grassland_percent?: number | null
           humidity?: number | null
           id?: string
           latitude?: number | null
@@ -42,13 +52,20 @@ export type Database = {
           probability?: number | null
           temperature?: number | null
           updated_at?: string
+          urban_percent?: number | null
           user_id: string
+          vegetation_evi?: number | null
+          vegetation_ndvi?: number | null
+          water_percent?: number | null
         }
         Update: {
           air_quality_index?: number | null
+          barren_percent?: number | null
           co2_level?: number | null
           created_at?: string
           drought_index?: number | null
+          forest_percent?: number | null
+          grassland_percent?: number | null
           humidity?: number | null
           id?: string
           latitude?: number | null
@@ -59,7 +76,11 @@ export type Database = {
           probability?: number | null
           temperature?: number | null
           updated_at?: string
+          urban_percent?: number | null
           user_id?: string
+          vegetation_evi?: number | null
+          vegetation_ndvi?: number | null
+          water_percent?: number | null
         }
         Relationships: []
       }
