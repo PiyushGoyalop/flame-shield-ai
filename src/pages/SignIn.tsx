@@ -1,14 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
 import { Mail } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { AuthHeader } from "@/components/auth/AuthHeader";
+import { AuthLayout } from "@/components/layouts/AuthLayout";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +17,7 @@ const SignIn = () => {
   const [isSendingReset, setIsSendingReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, user, sendPasswordResetEmail } = useAuth();
+  const { signIn: signInUser, user, sendPasswordResetEmail } = useAuth();
 
   // If user is already logged in, redirect to home page
   useEffect(() => {
@@ -45,7 +42,7 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      await signInUser(email, password);
       console.log("Sign in successful, navigating to home page");
       navigate('/');
     } catch (error) {
@@ -75,77 +72,61 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Nav />
-      
-      <main className="flex-grow pt-28 pb-20">
-        <div className="max-w-md mx-auto px-6 md:px-8">
-          <Card className="border-wildfire-100 shadow-elevation">
-            <CardHeader className="text-center">
-              <AuthHeader 
-                title="Sign In" 
-                description="Access your wildfire prediction history and saved locations" 
-              />
-            </CardHeader>
-            
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading || isSendingReset}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <button 
-                      type="button"
-                      onClick={handleForgotPassword}
-                      disabled={isSendingReset || !email}
-                      className="text-xs text-wildfire-600 hover:text-wildfire-800 disabled:opacity-50"
-                    >
-                      {isSendingReset ? "Sending..." : "Forgot password?"}
-                    </button>
-                  </div>
-                  <PasswordInput 
-                    id="password"
-                    value={password}
-                    onChange={setPassword}
-                    disabled={isLoading}
-                    required={true}
-                  />
-                </div>
-                
-                <LoadingButton 
-                  isLoading={isLoading} 
-                  loadingText="Signing In..."
-                  icon={<Mail className="h-4 w-4" />}
-                >
-                  Sign In with Email
-                </LoadingButton>
-                
-                <div className="text-center text-sm text-muted-foreground mt-6">
-                  Don't have an account?{" "}
-                  <Link to="/signup" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
-                    Sign up
-                  </Link>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+    <AuthLayout 
+      title="Sign In" 
+      description="Access your wildfire prediction history and saved locations"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading || isSendingReset}
+            required
+          />
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="password">Password</Label>
+            <button 
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={isSendingReset || !email}
+              className="text-xs text-wildfire-600 hover:text-wildfire-800 disabled:opacity-50"
+            >
+              {isSendingReset ? "Sending..." : "Forgot password?"}
+            </button>
+          </div>
+          <PasswordInput 
+            id="password"
+            value={password}
+            onChange={setPassword}
+            disabled={isLoading}
+            required={true}
+          />
+        </div>
+        
+        <LoadingButton 
+          isLoading={isLoading} 
+          loadingText="Signing In..."
+          icon={<Mail className="h-4 w-4" />}
+        >
+          Sign In with Email
+        </LoadingButton>
+        
+        <div className="text-center text-sm text-muted-foreground mt-6">
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
+            Sign up
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
   );
 };
 

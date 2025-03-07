@@ -9,16 +9,24 @@ interface AuthLayoutProps {
   children: ReactNode;
   title: string;
   description: string;
+  cardClassName?: string;
+  contentClassName?: string;
 }
 
-export function AuthLayout({ children, title, description }: AuthLayoutProps) {
+export function AuthLayout({ 
+  children, 
+  title, 
+  description, 
+  cardClassName = "border-wildfire-100 shadow-elevation",
+  contentClassName = ""
+}: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
       
       <main className="flex-grow pt-28 pb-20">
         <div className="max-w-md mx-auto px-6 md:px-8">
-          <Card className="border-wildfire-100 shadow-elevation">
+          <Card className={cardClassName}>
             <CardHeader className="text-center">
               <AuthHeader 
                 title={title} 
@@ -26,7 +34,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
               />
             </CardHeader>
             
-            <CardContent>
+            <CardContent className={contentClassName}>
               {children}
             </CardContent>
           </Card>

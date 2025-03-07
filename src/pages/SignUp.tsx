@@ -39,14 +39,12 @@ const SignUp = () => {
 
   if (showEmailConfirmation) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <AuthLayout 
-          title="Check Your Email" 
-          description="We've sent you a verification link"
-        >
-          <EmailConfirmation email={email} />
-        </AuthLayout>
-      </div>
+      <AuthLayout 
+        title="Check Your Email" 
+        description="We've sent you a verification link"
+      >
+        <EmailConfirmation email={email} />
+      </AuthLayout>
     );
   }
 
