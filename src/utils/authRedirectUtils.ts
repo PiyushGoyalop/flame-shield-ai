@@ -38,6 +38,36 @@ export const processAuthRedirect = async (
       };
     }
     
+    // If this is a password reset link, prioritize setting up the session
+    if (type === "recovery" || token || (queryParams.has("type") && queryParams.get("type") === "recovery")) {
+      console.log("Recovery mode detected, showing password reset form");
+      
+      // Try to set the session if we have an access token
+      if (accessToken) {
+        try {
+          console.log("Found access token in URL for password reset, setting session");
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || "",
+          });
+          
+          if (error) {
+            console.error("Error setting session with access token:", error);
+          } else {
+            console.log("Session set successfully with access token");
+          }
+        } catch (sessionError) {
+          console.error("Exception when setting session:", sessionError);
+        }
+      }
+      
+      return {
+        status: "reset_password",
+        errorMessage: "",
+        successMessage: ""
+      };
+    }
+    
     // Handle token cases
     if (type === "email_confirmation" || hasConfirmation) {
       // This is an email confirmation
@@ -56,38 +86,6 @@ export const processAuthRedirect = async (
         status: "success",
         successMessage: "Your email has been confirmed successfully!",
         errorMessage: ""
-      };
-    } 
-    else if (type === "recovery" || token || (accessToken && queryParams.has("type"))) {
-      // This is a password reset flow
-      console.log("Recovery mode detected, showing password reset form");
-      
-      // If we have an access token, try to set the session
-      if (accessToken) {
-        console.log("Found access token in URL for password reset");
-        try {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || "",
-          });
-          
-          if (error) {
-            console.error("Error setting session with access token:", error);
-          } else {
-            console.log("Session set successfully with access token");
-          }
-        } catch (sessionError) {
-          console.error("Exception when setting session:", sessionError);
-        }
-      } 
-      else if (token) {
-        console.log("Found token in URL parameters for password reset:", token);
-      }
-      
-      return {
-        status: "reset_password",
-        errorMessage: "",
-        successMessage: ""
       };
     } 
     else if (accessToken) {
