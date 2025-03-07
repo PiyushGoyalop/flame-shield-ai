@@ -27,84 +27,116 @@ const AuthRedirect = () => {
         const hashParams = new URLSearchParams(hash.substring(1));
         const queryParams = new URLSearchParams(location.search);
         
-        // Full URL logging for debugging purposes
+        // Log the full details for debugging
         console.log("Processing auth redirect at:", window.location.href);
         console.log("URL Hash:", hash);
+        console.log("Hash params:", Object.fromEntries(hashParams.entries()));
         console.log("Query params:", Object.fromEntries(queryParams.entries()));
+        console.log("URL path:", location.pathname);
         
         // Check for type parameter which indicates email confirmation or recovery
         const type = queryParams.get("type");
+        const token = queryParams.get("token");
+        const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token") || queryParams.get("refresh_token");
+        const error = queryParams.get("error");
+        const errorDescription = queryParams.get("error_description");
         
-        if (type === "email_confirmation") {
+        // Handle error case first
+        if (error) {
+          console.error("Auth error from URL:", error, errorDescription);
+          setStatus("error");
+          setErrorMessage(errorDescription || `Authentication error: ${error}`);
+          return;
+        }
+        
+        // Handle token cases
+        if (type === "email_confirmation" || queryParams.has("confirmation")) {
           // This is an email confirmation
+          console.log("Email confirmation detected");
           setStatus("success");
           setSuccessMessage("Your email has been confirmed successfully!");
           
-          // Show a toast notification to inform the user
+          // Show a toast notification
           toast({
             title: "Email confirmed successfully",
             description: "You can now sign in to your account.",
           });
           
-          // After 3 seconds, redirect to sign in
-          setTimeout(() => {
-            navigate("/signin");
-          }, 3000);
-        } else if (type === "recovery" || queryParams.get("token")) {
+          // After 2 seconds, redirect to sign in
+          setTimeout(() => navigate("/signin"), 2000);
+        } 
+        else if (type === "recovery" || token || (accessToken && queryParams.has("type"))) {
           // This is a password reset flow
           console.log("Recovery mode detected, showing password reset form");
           setStatus("reset_password");
           
-          // Check if there's an access token in the URL (either in hash or query params)
-          const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
-          const token = queryParams.get("token");
-          
+          // If we have an access token, try to set the session
           if (accessToken) {
             console.log("Found access token in URL for password reset");
-            
             try {
               const { error } = await supabase.auth.setSession({
                 access_token: accessToken,
-                refresh_token: hashParams.get("refresh_token") || "",
+                refresh_token: refreshToken || "",
               });
               
               if (error) {
                 console.error("Error setting session with access token:", error);
-                // Still show the reset form as we'll handle this in the form component
               } else {
                 console.log("Session set successfully with access token");
               }
             } catch (sessionError) {
               console.error("Exception when setting session:", sessionError);
-              // Continue to show the reset form and handle errors there
             }
-          } else if (token) {
+          } 
+          else if (token) {
             console.log("Found token in URL parameters for password reset:", token);
-          } else {
-            console.log("No token found, but recovery mode is set - proceeding with reset form");
           }
-        } else if (hashParams.has("access_token")) {
-          // This is a successful authentication redirect
-          setStatus("success");
-          setSuccessMessage("Authentication successful!");
+        } 
+        else if (accessToken) {
+          // This is a successful sign-in or other auth flow with a token
+          console.log("Access token found - successful authentication");
           
-          toast({
-            title: "Authentication successful",
-            description: "You have been signed in.",
-          });
-          
-          // Redirect to home page immediately
-          navigate("/");
-        } else {
-          // If we don't have an access token or confirmation, something went wrong
+          // Try to set the session with the access token
+          try {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || "",
+            });
+            
+            if (error) {
+              console.error("Error setting session with access token:", error);
+              setStatus("error");
+              setErrorMessage("Failed to set authentication session: " + error.message);
+            } else {
+              console.log("Session set successfully with access token");
+              setStatus("success");
+              setSuccessMessage("Authentication successful!");
+              
+              toast({
+                title: "Authentication successful",
+                description: "You have been signed in.",
+              });
+              
+              // Redirect to home page after successful sign-in
+              setTimeout(() => navigate("/"), 1000);
+            }
+          } catch (sessionError: any) {
+            console.error("Exception when setting session:", sessionError);
+            setStatus("error");
+            setErrorMessage(sessionError.message || "An error occurred while setting your session");
+          }
+        } 
+        else {
+          // If we don't have any recognized parameters, show an error
           console.log("No valid authentication parameters found in URL");
           setStatus("error");
-          setErrorMessage("Invalid redirect. No authentication information found in URL.");
+          setErrorMessage("Invalid authentication link. No authentication information found in the URL.");
         }
       } catch (error: any) {
         console.error("Auth redirect error:", error);
         setStatus("error");
-        setErrorMessage(error.message || "An unexpected error occurred");
+        setErrorMessage(error.message || "An unexpected error occurred during authentication");
       }
     };
 

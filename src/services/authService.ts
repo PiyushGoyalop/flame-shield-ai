@@ -1,4 +1,3 @@
-
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -123,13 +122,23 @@ export const resetPassword = async (email: string, redirectUrl: string) => {
   // Ensure the redirectUrl doesn't have any trailing slash that could cause issues
   const cleanRedirectUrl = redirectUrl.replace(/\/$/, '');
   
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${cleanRedirectUrl}?type=recovery`
-  });
-  
-  if (error) throw error;
-  
-  return true;
+  try {
+    // Log more details about the request
+    console.log(`Making resetPasswordForEmail call with email: ${email} and redirectTo: ${cleanRedirectUrl}?type=recovery`);
+    
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${cleanRedirectUrl}?type=recovery`
+    });
+    
+    console.log("Reset password response:", { data, error });
+    
+    if (error) throw error;
+    
+    return true;
+  } catch (error) {
+    console.error("Error in resetPassword function:", error);
+    throw error;
+  }
 };
 
 /**
