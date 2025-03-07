@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
-import { AuthRedirectStates } from "@/components/auth/AuthRedirectStates";
+import { LoadingState, SuccessState, ErrorState } from "@/components/auth/AuthRedirectStates";
 import { processAuthRedirect, AuthRedirectStatus } from "@/utils/authRedirectUtils";
 import { extractTokensFromUrl } from "@/utils/authTokenUtils";
 
@@ -57,11 +57,11 @@ const AuthRedirect = () => {
           <PasswordResetForm />
         </div>
       ) : (
-        <AuthRedirectStates 
-          status={status} 
-          errorMessage={errorMessage} 
-          successMessage={successMessage} 
-        />
+        <>
+          {status === "loading" && <LoadingState />}
+          {status === "success" && <SuccessState message={successMessage} />}
+          {status === "error" && <ErrorState message={errorMessage} />}
+        </>
       )}
     </div>
   );
