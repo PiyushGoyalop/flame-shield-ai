@@ -88,7 +88,7 @@ const NotFound = () => {
         <p className="text-xl text-gray-600 mb-6">Oops! Page not found</p>
         
         {isAuthLink && (
-          <Alert variant="warning" className="mb-6 bg-amber-50 border-amber-200">
+          <Alert variant="default" className="mb-6 bg-amber-50 border-amber-200">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800">
               <p className="mb-2">
