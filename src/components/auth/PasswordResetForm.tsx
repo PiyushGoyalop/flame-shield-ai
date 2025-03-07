@@ -45,15 +45,36 @@ export function PasswordResetForm() {
     return validation.length && validation.uppercase && validation.number && validation.special;
   };
 
-  // Check if we have a session when the component mounts
+  // Check if we have a session when the component mounts and extract tokens from URL
   useEffect(() => {
-    const checkSession = async () => {
+    const checkSessionAndTokens = async () => {
+      console.log("Checking session and tokens for password reset form");
+      
+      // Log the full URL for debugging
+      console.log("Current URL at password reset form:", window.location.href);
+      
+      // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
       console.log("Current session on password reset form:", session ? "Session exists" : "No session");
+      
+      // Extract tokens from URL
+      const searchParams = new URLSearchParams(location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      const token = searchParams.get("token");
+      const accessToken = hashParams.get("access_token");
+      
+      if (token) {
+        console.log("Found token parameter for password reset");
+      } else if (accessToken) {
+        console.log("Found access token in URL hash");
+      } else {
+        console.log("No token found in URL parameters or hash");
+      }
     };
     
-    checkSession();
-  }, []);
+    checkSessionAndTokens();
+  }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,9 +103,43 @@ export function PasswordResetForm() {
       let accessToken = hashParams.get("access_token");
       const token = searchParams.get("token");
       
-      // If we have an access token in the URL, use it to set the session
-      if (accessToken) {
-        console.log("Found access token in URL, setting session");
+      // First approach: If we have a token parameter (common for password reset links)
+      if (token) {
+        console.log("Using token parameter for password reset:", token);
+        
+        // Verify the recovery token first
+        try {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery'
+          });
+          
+          if (verifyError) {
+            console.error("Error verifying recovery token:", verifyError);
+            // Continue anyway as some versions of Supabase might not need this step
+          } else {
+            console.log("Recovery token verified successfully");
+          }
+        } catch (verifyError) {
+          console.log("Error in token verification, but continuing with password update:", verifyError);
+          // Continue with password update attempt
+        }
+        
+        // Now try to update the password
+        const { error } = await supabase.auth.updateUser({ 
+          password,
+        });
+        
+        if (error) {
+          console.error("Error updating password with token:", error);
+          throw error;
+        }
+        
+        console.log("Password update successful with token parameter");
+      }
+      // Second approach: If we have an access token in the URL, use it to set the session
+      else if (accessToken) {
+        console.log("Using access token from URL for password reset");
         
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -95,22 +150,21 @@ export function PasswordResetForm() {
           console.error("Session error:", sessionError);
           throw sessionError;
         }
-      } 
-      // If we have a token parameter but no access_token (common for password reset links)
-      else if (token) {
-        console.log("Found token parameter for password reset, using updateUser with token");
-        // This approach works better with the token parameter from email links
-        const { error } = await supabase.auth.updateUser({ 
-          password,
-        });
+        
+        // After setting the session, update the password
+        const { error } = await supabase.auth.updateUser({ password });
         
         if (error) {
-          console.error("Error updating password with token:", error);
+          console.error("Error updating password with access token:", error);
           throw error;
         }
+        
+        console.log("Password update successful with access token");
       }
-      // Standard password update using current session
+      // Third approach: Standard password update using current session
       else {
+        console.log("Using current session for password update");
+        
         // Update the password
         const { error } = await supabase.auth.updateUser({ password });
         
@@ -118,9 +172,9 @@ export function PasswordResetForm() {
           console.error("Supabase error:", error);
           throw error;
         }
+        
+        console.log("Password update successful with current session");
       }
-      
-      console.log("Password update successful");
       
       toast({
         title: "Password updated successfully",

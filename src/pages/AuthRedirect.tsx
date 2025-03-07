@@ -27,6 +27,8 @@ const AuthRedirect = () => {
         const hashParams = new URLSearchParams(hash.substring(1));
         const queryParams = new URLSearchParams(location.search);
         
+        // Full URL logging for debugging purposes
+        console.log("Processing auth redirect at:", window.location.href);
         console.log("URL Hash:", hash);
         console.log("Query params:", Object.fromEntries(queryParams.entries()));
         
@@ -48,41 +50,38 @@ const AuthRedirect = () => {
           setTimeout(() => {
             navigate("/signin");
           }, 3000);
-        } else if (type === "recovery") {
-          // This is a password reset
+        } else if (type === "recovery" || queryParams.get("token")) {
+          // This is a password reset flow
           console.log("Recovery mode detected, showing password reset form");
           setStatus("reset_password");
           
           // Check if there's an access token in the URL (either in hash or query params)
           const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
+          const token = queryParams.get("token");
           
-          if (!accessToken) {
-            console.log("No access token found in URL, checking for type/token combination");
+          if (accessToken) {
+            console.log("Found access token in URL for password reset");
             
-            // For password reset links, Supabase sometimes sends a token parameter
-            const token = queryParams.get("token");
-            
-            if (token) {
-              console.log("Found token in URL parameters:", token);
+            try {
+              const { error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: hashParams.get("refresh_token") || "",
+              });
               
-              // Attempt to verify the recovery token
-              try {
-                const { error } = await supabase.auth.verifyOtp({
-                  token_hash: token,
-                  type: 'recovery'
-                });
-                
-                if (error) {
-                  console.error("Error verifying recovery token:", error);
-                  throw error;
-                }
-                
-                console.log("Recovery token verified successfully");
-              } catch (error) {
-                console.error("Error processing recovery token:", error);
-                // Continue showing the reset form anyway, auth state will be checked there
+              if (error) {
+                console.error("Error setting session with access token:", error);
+                // Still show the reset form as we'll handle this in the form component
+              } else {
+                console.log("Session set successfully with access token");
               }
+            } catch (sessionError) {
+              console.error("Exception when setting session:", sessionError);
+              // Continue to show the reset form and handle errors there
             }
+          } else if (token) {
+            console.log("Found token in URL parameters for password reset:", token);
+          } else {
+            console.log("No token found, but recovery mode is set - proceeding with reset form");
           }
         } else if (hashParams.has("access_token")) {
           // This is a successful authentication redirect
@@ -98,11 +97,12 @@ const AuthRedirect = () => {
           navigate("/");
         } else {
           // If we don't have an access token or confirmation, something went wrong
+          console.log("No valid authentication parameters found in URL");
           setStatus("error");
-          setErrorMessage("Invalid redirect. No authentication information found.");
+          setErrorMessage("Invalid redirect. No authentication information found in URL.");
         }
       } catch (error: any) {
-        console.error("Redirect error:", error);
+        console.error("Auth redirect error:", error);
         setStatus("error");
         setErrorMessage(error.message || "An unexpected error occurred");
       }
