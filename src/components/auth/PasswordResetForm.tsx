@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,16 @@ export function PasswordResetForm() {
     return validation.length && validation.uppercase && validation.number && validation.special;
   };
 
+  // Check if we have a session when the component mounts
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session on password reset form:", session ? "Session exists" : "No session");
+    };
+    
+    checkSession();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -70,6 +80,7 @@ export function PasswordResetForm() {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       
       let accessToken = hashParams.get("access_token");
+      const token = searchParams.get("token");
       
       // If we have an access token in the URL, use it to set the session
       if (accessToken) {
@@ -84,14 +95,29 @@ export function PasswordResetForm() {
           console.error("Session error:", sessionError);
           throw sessionError;
         }
+      } 
+      // If we have a token parameter but no access_token (common for password reset links)
+      else if (token) {
+        console.log("Found token parameter for password reset, using updateUser with token");
+        // This approach works better with the token parameter from email links
+        const { error } = await supabase.auth.updateUser({ 
+          password,
+        });
+        
+        if (error) {
+          console.error("Error updating password with token:", error);
+          throw error;
+        }
       }
-      
-      // Update the password
-      const { error } = await supabase.auth.updateUser({ password });
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
+      // Standard password update using current session
+      else {
+        // Update the password
+        const { error } = await supabase.auth.updateUser({ password });
+        
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
       }
       
       console.log("Password update successful");
@@ -152,4 +178,4 @@ export function PasswordResetForm() {
       </Button>
     </form>
   );
-}
+};

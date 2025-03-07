@@ -9,6 +9,7 @@ import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const AuthRedirect = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error" | "reset_password">("loading");
@@ -21,9 +22,13 @@ const AuthRedirect = () => {
   useEffect(() => {
     const handleRedirect = async () => {
       try {
-        // Get the hash parameters from the URL
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // Get the hash parameters and query parameters from the URL
+        const hash = window.location.hash;
+        const hashParams = new URLSearchParams(hash.substring(1));
         const queryParams = new URLSearchParams(location.search);
+        
+        console.log("URL Hash:", hash);
+        console.log("Query params:", Object.fromEntries(queryParams.entries()));
         
         // Check for type parameter which indicates email confirmation or recovery
         const type = queryParams.get("type");
@@ -47,6 +52,38 @@ const AuthRedirect = () => {
           // This is a password reset
           console.log("Recovery mode detected, showing password reset form");
           setStatus("reset_password");
+          
+          // Check if there's an access token in the URL (either in hash or query params)
+          const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
+          
+          if (!accessToken) {
+            console.log("No access token found in URL, checking for type/token combination");
+            
+            // For password reset links, Supabase sometimes sends a token parameter
+            const token = queryParams.get("token");
+            
+            if (token) {
+              console.log("Found token in URL parameters:", token);
+              
+              // Attempt to verify the recovery token
+              try {
+                const { error } = await supabase.auth.verifyOtp({
+                  token_hash: token,
+                  type: 'recovery'
+                });
+                
+                if (error) {
+                  console.error("Error verifying recovery token:", error);
+                  throw error;
+                }
+                
+                console.log("Recovery token verified successfully");
+              } catch (error) {
+                console.error("Error processing recovery token:", error);
+                // Continue showing the reset form anyway, auth state will be checked there
+              }
+            }
+          }
         } else if (hashParams.has("access_token")) {
           // This is a successful authentication redirect
           setStatus("success");
