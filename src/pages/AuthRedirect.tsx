@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { LoadingState, SuccessState, ErrorState } from "@/components/auth/AuthRedirectStates";
@@ -12,6 +12,7 @@ const AuthRedirect = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -22,7 +23,23 @@ const AuthRedirect = () => {
       const { type, token } = extractTokensFromUrl();
       const queryParams = new URLSearchParams(window.location.search);
       
-      if (type === "recovery" || queryParams.get("type") === "recovery" || token) {
+      // Log detailed information about what we detected
+      console.log("Auth redirect detected:", { 
+        type, 
+        hasToken: !!token,
+        queryType: queryParams.get("type"),
+        search: location.search, 
+        hash: location.hash
+      });
+      
+      // Check for password reset flow using multiple methods
+      if (
+        type === "recovery" || 
+        queryParams.get("type") === "recovery" || 
+        token || 
+        location.hash.includes("type=recovery") ||
+        location.search.includes("type=recovery")
+      ) {
         console.log("Detected password reset flow, showing reset form");
         setStatus("reset_password");
         return;
@@ -42,7 +59,7 @@ const AuthRedirect = () => {
     };
 
     handleAuthRedirect();
-  }, [navigate, toast]);
+  }, [navigate, toast, location]);
 
   return (
     <div className="container mx-auto py-10 max-w-md">

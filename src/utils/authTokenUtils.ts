@@ -20,10 +20,27 @@ export const extractTokensFromUrl = (): {
   // Parse query (?) parameters - commonly used for recovery tokens
   const queryParams = new URLSearchParams(window.location.search);
   
+  // Debug logs
+  console.log("Extracting tokens from URL:", {
+    hash: hash ? "[hash content present]" : "[no hash]",
+    search: window.location.search || "[no search params]"
+  });
+  
+  // Look for token in both query params and hash
+  const token = queryParams.get("token") || hashParams.get("token");
+  
+  // Look for type in both query params and hash
+  const type = queryParams.get("type") || hashParams.get("type");
+  
+  // Special handling for recovery type (password reset)
+  const isRecovery = type === "recovery" || 
+                    queryParams.has("type") && queryParams.get("type") === "recovery" ||
+                    hashParams.has("type") && hashParams.get("type") === "recovery";
+  
   // Extract tokens from URL
   return {
-    // Token from query param (used in password reset flows)
-    token: queryParams.get("token"),
+    // Token from query param or hash (used in password reset flows)
+    token: token,
     
     // Access token from hash (used in OAuth and some email flows)
     accessToken: hashParams.get("access_token"),
@@ -31,8 +48,7 @@ export const extractTokensFromUrl = (): {
     // Refresh token from hash
     refreshToken: hashParams.get("refresh_token"),
     
-    // Auth type - can come from either location
-    type: queryParams.get("type") || hashParams.get("type"),
+    // Auth type with special handling for recovery
+    type: isRecovery ? "recovery" : type,
   };
 };
-

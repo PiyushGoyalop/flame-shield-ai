@@ -123,11 +123,12 @@ export const resetPassword = async (email: string, redirectUrl: string) => {
   const cleanRedirectUrl = redirectUrl.replace(/\/$/, '');
   
   try {
-    // Log more details about the request
-    console.log(`Making resetPasswordForEmail call with email: ${email} and redirectTo: ${cleanRedirectUrl}?type=recovery`);
+    // Add type=recovery to the redirect URL to ensure the reset form shows up
+    const fullRedirectUrl = `${cleanRedirectUrl}?type=recovery`;
+    console.log(`Making resetPasswordForEmail call with email: ${email} and redirectTo: ${fullRedirectUrl}`);
     
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${cleanRedirectUrl}?type=recovery`
+      redirectTo: fullRedirectUrl
     });
     
     console.log("Reset password response:", { data, error });

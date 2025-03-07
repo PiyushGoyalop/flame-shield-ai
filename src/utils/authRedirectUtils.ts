@@ -28,6 +28,15 @@ export const processAuthRedirect = async (
     const errorDescription = queryParams.get("error_description");
     const hasConfirmation = queryParams.has("confirmation");
     
+    // Debug log all parameters we're checking
+    console.log("Auth redirect parameters:", {
+      token, accessToken, refreshToken, type,
+      errorFromURL: error,
+      errorDescription,
+      hasConfirmation,
+      queryParams: Object.fromEntries(queryParams.entries())
+    });
+    
     // Handle error case first
     if (error) {
       console.error("Auth error from URL:", error, errorDescription);

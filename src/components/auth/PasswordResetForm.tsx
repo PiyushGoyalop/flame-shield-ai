@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { PasswordInput } from "./PasswordInput";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { PasswordMatchCheck } from "./PasswordMatchCheck";
 import { usePasswordValidation } from "@/hooks/usePasswordValidation";
+import { extractTokensFromUrl } from "@/utils/authTokenUtils";
 
 export function PasswordResetForm() {
   const [password, setPassword] = useState("");
@@ -17,6 +18,7 @@ export function PasswordResetForm() {
   const [error, setError] = useState<string | null>(null);
   const [showMatchError, setShowMatchError] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { validation, updateValidation, isPasswordValid } = usePasswordValidation();
 
@@ -46,56 +48,44 @@ export function PasswordResetForm() {
     try {
       console.log("Attempting to update password");
       
-      // Get the current URL parameters to check for token information
-      const hash = window.location.hash;
-      const searchParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(hash.substring(1));
+      // Extract tokens from URL to handle different Supabase auth flows
+      const { token: recoveryToken } = extractTokensFromUrl();
+      const searchParams = new URLSearchParams(location.search);
+      const hashParams = new URLSearchParams(location.hash.substring(1));
       
-      // Check if we have an access token in the URL
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const token = searchParams.get("token");
-      
-      console.log("Reset password info:", { 
-        hasAccessToken: !!accessToken, 
-        hasToken: !!token 
+      // Detailed logging for debugging
+      console.log("Password reset info:", { 
+        recoveryToken,
+        query: Object.fromEntries(searchParams.entries()),
+        hash: Object.fromEntries(hashParams.entries()),
+        url: window.location.href
       });
       
-      // If we have an access token, set the session first
-      if (accessToken) {
-        console.log("Setting session with access token");
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || "",
-        });
-        
-        if (sessionError) {
-          console.error("Error setting session:", sessionError);
-          throw sessionError;
-        }
-      }
+      // Try multiple strategies to successfully reset the password
       
-      // If we have a recovery token, verify it first
-      if (token) {
-        console.log("Verifying recovery token");
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: token,
+      // 1. First try: Use updateUser directly if we're already authenticated
+      let updateResult = await supabase.auth.updateUser({ password });
+      
+      // If that fails and we have a token, try the recovery flow
+      if (updateResult.error && recoveryToken) {
+        console.log("Direct update failed, trying recovery flow with token");
+        
+        // 2. Second try: Verify the recovery token
+        const verifyResult = await supabase.auth.verifyOtp({
+          token_hash: recoveryToken,
           type: 'recovery'
         });
         
-        if (verifyError) {
-          console.error("Error verifying token:", verifyError);
-          // Continue anyway, as some versions of Supabase don't require this step
-        }
+        console.log("Verify token result:", verifyResult);
+        
+        // 3. Third try: Update password again after verification
+        updateResult = await supabase.auth.updateUser({ password });
       }
       
-      // Now update the password
-      console.log("Updating password");
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      
-      if (updateError) {
-        console.error("Error updating password:", updateError);
-        throw updateError;
+      // Check final result
+      if (updateResult.error) {
+        console.error("Error updating password:", updateResult.error);
+        throw updateResult.error;
       }
       
       console.log("Password updated successfully");
