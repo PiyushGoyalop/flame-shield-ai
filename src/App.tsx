@@ -38,7 +38,7 @@ const App = () => (
             <Route path="/auth-redirect" element={<AuthRedirect />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            {/* Replace NotFound with a redirect to AuthRedirect for auth-related routes or home for others */}
+            {/* Redirect all unknown routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,6 @@ import { PasswordInput } from "./PasswordInput";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { PasswordMatchCheck } from "./PasswordMatchCheck";
 import { usePasswordValidation } from "@/hooks/usePasswordValidation";
-import { extractTokensFromUrl, logTokenInfo } from "@/utils/authTokenUtils";
 
 export function PasswordResetForm() {
   const [password, setPassword] = useState("");
@@ -17,7 +16,6 @@ export function PasswordResetForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMatchError, setShowMatchError] = useState(false);
-  const [sessionSetAttempted, setSessionSetAttempted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { validation, updateValidation, isPasswordValid } = usePasswordValidation();
@@ -28,56 +26,6 @@ export function PasswordResetForm() {
     setPassword(newPassword);
     updateValidation(newPassword);
   };
-
-  // Check for tokens and attempt to set session when component mounts
-  useEffect(() => {
-    const initializePasswordReset = async () => {
-      console.log("Initializing password reset form");
-      logTokenInfo();
-      
-      // Try to set the session from URL tokens
-      const { token, accessToken, refreshToken } = extractTokensFromUrl();
-      
-      if (accessToken) {
-        console.log("Setting session with access token from URL");
-        try {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || ""
-          });
-          
-          if (error) {
-            console.error("Failed to set session:", error);
-          } else {
-            console.log("Session set successfully:", data.session?.user?.id);
-          }
-        } catch (err) {
-          console.error("Error setting session:", err);
-        }
-      } else if (token) {
-        console.log("Found token parameter:", token);
-        try {
-          // Verify the token first
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery'
-          });
-          
-          if (error) {
-            console.error("Error verifying recovery token:", error);
-          } else {
-            console.log("Recovery token verified successfully");
-          }
-        } catch (err) {
-          console.error("Error verifying token:", err);
-        }
-      }
-      
-      setSessionSetAttempted(true);
-    };
-    
-    initializePasswordReset();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +45,60 @@ export function PasswordResetForm() {
 
     try {
       console.log("Attempting to update password");
-      await resetPassword(password);
+      
+      // Get the current URL parameters to check for token information
+      const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(hash.substring(1));
+      
+      // Check if we have an access token in the URL
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const token = searchParams.get("token");
+      
+      console.log("Reset password info:", { 
+        hasAccessToken: !!accessToken, 
+        hasToken: !!token 
+      });
+      
+      // If we have an access token, set the session first
+      if (accessToken) {
+        console.log("Setting session with access token");
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || "",
+        });
+        
+        if (sessionError) {
+          console.error("Error setting session:", sessionError);
+          throw sessionError;
+        }
+      }
+      
+      // If we have a recovery token, verify it first
+      if (token) {
+        console.log("Verifying recovery token");
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: 'recovery'
+        });
+        
+        if (verifyError) {
+          console.error("Error verifying token:", verifyError);
+          // Continue anyway, as some versions of Supabase don't require this step
+        }
+      }
+      
+      // Now update the password
+      console.log("Updating password");
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      
+      if (updateError) {
+        console.error("Error updating password:", updateError);
+        throw updateError;
+      }
+      
+      console.log("Password updated successfully");
       
       toast({
         title: "Password updated successfully",
@@ -113,16 +114,6 @@ export function PasswordResetForm() {
       setIsSubmitting(false);
     }
   };
-
-  // If session setup is still in progress, show loading state
-  if (!sessionSetAttempted) {
-    return (
-      <div className="flex flex-col items-center justify-center space-y-4 py-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wildfire-600"></div>
-        <p className="text-sm text-muted-foreground">Setting up password reset...</p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -164,119 +155,4 @@ export function PasswordResetForm() {
       </Button>
     </form>
   );
-};
-
-// Helper function to try different methods for resetting the password
-async function resetPassword(password: string) {
-  const { token, accessToken, refreshToken } = extractTokensFromUrl();
-  
-  console.log("Reset password called with token params:", { 
-    hasToken: !!token, 
-    hasAccessToken: !!accessToken 
-  });
-  
-  // First approach: If we have a token parameter (common for password reset links)
-  if (token) {
-    console.log("Using token parameter for password reset:", token);
-    
-    // First try to update with just the password
-    try {
-      const { error } = await supabase.auth.updateUser({ password });
-      
-      if (error) {
-        console.error("Error updating password with token:", error);
-        throw error;
-      }
-      
-      console.log("Password update successful with token parameter");
-      return;
-    } catch (updateError) {
-      console.error("Error in first update attempt:", updateError);
-      
-      // If that fails, try verifying the token first and then updating
-      try {
-        console.log("Trying token verification before password update");
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'recovery'
-        });
-        
-        if (verifyError) {
-          console.error("Error verifying recovery token:", verifyError);
-          throw verifyError;
-        }
-        
-        console.log("Token verified, now updating password");
-        const { error } = await supabase.auth.updateUser({ password });
-        
-        if (error) {
-          console.error("Error updating password after token verification:", error);
-          throw error;
-        }
-        
-        console.log("Password update successful after token verification");
-        return;
-      } catch (verifyError) {
-        console.error("Complete failure in token-based reset:", verifyError);
-        throw verifyError;
-      }
-    }
-  }
-  
-  // Second approach: If we have an access token in the URL, use it to set the session
-  if (accessToken) {
-    console.log("Using access token from URL for password reset");
-    
-    try {
-      // Try to set the session with the access token
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || "",
-      });
-      
-      if (sessionError) {
-        console.error("Session error:", sessionError);
-        throw sessionError;
-      }
-      
-      console.log("Session set successfully, now updating password");
-      
-      // After setting the session, update the password
-      const { error } = await supabase.auth.updateUser({ password });
-      
-      if (error) {
-        console.error("Error updating password with access token:", error);
-        throw error;
-      }
-      
-      console.log("Password update successful with access token");
-      return;
-    } catch (error) {
-      console.error("Complete failure in access-token-based reset:", error);
-      throw error;
-    }
-  }
-  
-  // Third approach: Standard password update using current session
-  console.log("Attempting password update with current session");
-  
-  // Get the current session to check if we have one
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session) {
-    console.error("No active session found for password reset");
-    throw new Error("Authentication session is missing. Please use the password reset link from your email again.");
-  }
-  
-  console.log("Using current session for password update");
-  
-  // Update the password
-  const { error } = await supabase.auth.updateUser({ password });
-  
-  if (error) {
-    console.error("Supabase error:", error);
-    throw error;
-  }
-  
-  console.log("Password update successful with current session");
 }
