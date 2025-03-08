@@ -10,8 +10,8 @@ export const useRedirectUrl = () => {
     // Create a proper redirect URL with no trailing slash
     const cleanOrigin = origin.replace(/\/$/, '');
     
-    // Use the root URL as the redirect since AuthRedirect has been removed
-    const redirectUrl = cleanOrigin;
+    // Use the /verify route for email verification
+    const redirectUrl = `${cleanOrigin}/verify`;
     
     console.log("Generated authentication redirect URL:", redirectUrl);
     
