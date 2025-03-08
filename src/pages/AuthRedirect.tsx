@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { LoadingState, SuccessState, ErrorState } from "@/components/auth/AuthRedirectStates";
 import { processAuthRedirect, AuthRedirectStatus } from "@/utils/authRedirectUtils";
 import { extractTokensFromUrl } from "@/utils/authTokenUtils";
@@ -19,33 +18,7 @@ const AuthRedirect = () => {
     const handleAuthRedirect = async () => {
       console.log("AuthRedirect - Current URL:", window.location.href);
       
-      // Check for recovery/reset password flow first since it needs special handling
-      const { type, token } = extractTokensFromUrl();
-      const queryParams = new URLSearchParams(window.location.search);
-      
-      // Log detailed information about what we detected
-      console.log("Auth redirect detected:", { 
-        type, 
-        hasToken: !!token,
-        queryType: queryParams.get("type"),
-        search: location.search, 
-        hash: location.hash
-      });
-      
-      // Check for password reset flow using multiple methods
-      if (
-        type === "recovery" || 
-        queryParams.get("type") === "recovery" || 
-        token || 
-        location.hash.includes("type=recovery") ||
-        location.search.includes("type=recovery")
-      ) {
-        console.log("Detected password reset flow, showing reset form");
-        setStatus("reset_password");
-        return;
-      }
-      
-      // For other auth flows, process with our utility
+      // For auth flows, process with our utility
       try {
         const result = await processAuthRedirect(navigate, toast);
         setStatus(result.status);
@@ -63,23 +36,9 @@ const AuthRedirect = () => {
 
   return (
     <div className="container mx-auto py-10 max-w-md">
-      {status === "reset_password" ? (
-        <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold">Reset Your Password</h1>
-            <p className="text-muted-foreground">
-              Please enter a new password for your account.
-            </p>
-          </div>
-          <PasswordResetForm />
-        </div>
-      ) : (
-        <>
-          {status === "loading" && <LoadingState />}
-          {status === "success" && <SuccessState message={successMessage} />}
-          {status === "error" && <ErrorState message={errorMessage} />}
-        </>
-      )}
+      {status === "loading" && <LoadingState />}
+      {status === "success" && <SuccessState message={successMessage} />}
+      {status === "error" && <ErrorState message={errorMessage} />}
     </div>
   );
 };

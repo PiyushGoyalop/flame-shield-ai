@@ -1,3 +1,4 @@
+
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -110,36 +111,6 @@ export const resendConfirmationEmail = async (email: string, redirectUrl: string
   });
   
   if (error) throw error;
-};
-
-/**
- * Send a password reset email
- */
-export const resetPassword = async (email: string, redirectUrl: string) => {
-  console.log("Sending password reset email to:", email);
-  console.log("Using redirect URL:", redirectUrl);
-  
-  // Ensure the redirectUrl doesn't have any trailing slash that could cause issues
-  const cleanRedirectUrl = redirectUrl.replace(/\/$/, '');
-  
-  try {
-    // Add type=recovery to the redirect URL to ensure the reset form shows up
-    const fullRedirectUrl = `${cleanRedirectUrl}?type=recovery`;
-    console.log(`Making resetPasswordForEmail call with email: ${email} and redirectTo: ${fullRedirectUrl}`);
-    
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: fullRedirectUrl
-    });
-    
-    console.log("Reset password response:", { data, error });
-    
-    if (error) throw error;
-    
-    return true;
-  } catch (error) {
-    console.error("Error in resetPassword function:", error);
-    throw error;
-  }
 };
 
 /**

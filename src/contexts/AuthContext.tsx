@@ -10,8 +10,7 @@ import {
   signInWithEmail,
   signUpWithEmail,
   resendConfirmationEmail as resendEmail,
-  signOut as logOut,
-  resetPassword
+  signOut as logOut
 } from '@/services/authService';
 
 interface AuthContextProps {
@@ -22,7 +21,6 @@ interface AuthContextProps {
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; session: Session | null }>;
   signOut: () => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
-  sendPasswordResetEmail: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -117,25 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const sendPasswordResetEmail = async (email: string) => {
-    try {
-      const redirectUrl = getRedirectUrl();
-      
-      await resetPassword(email, redirectUrl);
-      
-      toast({
-        title: "Password reset email sent",
-        description: "Please check your inbox for the reset link.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error sending reset email",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   const signOut = async () => {
     try {
       await logOut();
@@ -165,7 +144,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resendConfirmationEmail,
-      sendPasswordResetEmail,
     }}>
       {children}
     </AuthContext.Provider>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { extractTokensFromUrl } from "./authTokenUtils";
 
-export type AuthRedirectStatus = "loading" | "success" | "error" | "reset_password";
+export type AuthRedirectStatus = "loading" | "success" | "error";
 
 interface ProcessRedirectResult {
   status: AuthRedirectStatus;
@@ -43,36 +43,6 @@ export const processAuthRedirect = async (
       return {
         status: "error",
         errorMessage: errorDescription || `Authentication error: ${error}`,
-        successMessage: ""
-      };
-    }
-    
-    // If this is a password reset link, prioritize setting up the session
-    if (type === "recovery" || token || (queryParams.has("type") && queryParams.get("type") === "recovery")) {
-      console.log("Recovery mode detected, showing password reset form");
-      
-      // Try to set the session if we have an access token
-      if (accessToken) {
-        try {
-          console.log("Found access token in URL for password reset, setting session");
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || "",
-          });
-          
-          if (error) {
-            console.error("Error setting session with access token:", error);
-          } else {
-            console.log("Session set successfully with access token");
-          }
-        } catch (sessionError) {
-          console.error("Exception when setting session:", sessionError);
-        }
-      }
-      
-      return {
-        status: "reset_password",
-        errorMessage: "",
         successMessage: ""
       };
     }

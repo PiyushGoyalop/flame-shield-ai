@@ -14,10 +14,9 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSendingReset, setIsSendingReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn: signInUser, user, sendPasswordResetEmail } = useAuth();
+  const { signIn: signInUser, user } = useAuth();
 
   // If user is already logged in, redirect to home page
   useEffect(() => {
@@ -53,24 +52,6 @@ const SignIn = () => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address to receive a password reset link",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSendingReset(true);
-    try {
-      await sendPasswordResetEmail(email);
-    } finally {
-      setIsSendingReset(false);
-    }
-  };
-
   return (
     <AuthLayout 
       title="Sign In" 
@@ -85,23 +66,13 @@ const SignIn = () => {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading || isSendingReset}
+            disabled={isLoading}
             required
           />
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="password">Password</Label>
-            <button 
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={isSendingReset || !email}
-              className="text-xs text-wildfire-600 hover:text-wildfire-800 disabled:opacity-50"
-            >
-              {isSendingReset ? "Sending..." : "Forgot password?"}
-            </button>
-          </div>
+          <Label htmlFor="password">Password</Label>
           <PasswordInput 
             id="password"
             value={password}
