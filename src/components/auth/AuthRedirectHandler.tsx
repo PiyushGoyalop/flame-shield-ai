@@ -26,65 +26,84 @@ const AuthRedirectHandler = () => {
         console.log("Search params:", window.location.search);
         console.log("Hash fragment:", window.location.hash);
         
-        // Parse URL more carefully to extract all possible tokens
-        const queryParams = new URLSearchParams(location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const fullUrl = window.location.href;
+        // STRATEGY 1: Extract token from URL fragments
+        const extractTokenFromUrl = () => {
+          const url = window.location.href;
+          const queryParams = new URLSearchParams(location.search);
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          
+          // Try to find token in multiple locations
+          let token = queryParams.get('token') || hashParams.get('token');
+          
+          // If not found in standard places, try to extract from URL directly
+          if (!token && url.includes('token=')) {
+            try {
+              token = url.split('token=')[1].split('&')[0];
+              console.log("Extracted token from URL string:", token.substring(0, 10) + "...");
+            } catch (e) {
+              console.error("Error extracting token from URL:", e);
+            }
+          }
+          
+          return token;
+        };
         
-        // Try to find token in either location or directly in URL
-        const token = queryParams.get('token') || hashParams.get('token') || 
-                     (fullUrl.includes('token=') ? fullUrl.split('token=')[1].split('&')[0] : null);
+        // STRATEGY 2: Determine if this is a recovery/reset flow
+        const isRecoveryFlow = () => {
+          const url = window.location.href.toLowerCase();
+          const queryParams = new URLSearchParams(location.search);
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          
+          return (
+            queryParams.get('type') === 'recovery' ||
+            hashParams.get('type') === 'recovery' ||
+            url.includes('type=recovery') ||
+            url.includes('recovery=true') ||
+            url.includes('recovery') ||
+            url.includes('reset')
+          );
+        };
         
-        // Check for recovery type indicators in multiple places
-        const isRecovery = queryParams.get('type') === 'recovery' || 
-                          hashParams.get('type') === 'recovery' ||
-                          fullUrl.includes('type=recovery') ||
-                          fullUrl.includes('recovery=true');
+        // Extract token and check flow type
+        const token = extractTokenFromUrl();
+        const isRecovery = isRecoveryFlow();
         
         console.log("Extracted token:", token ? `Present (length: ${token.length})` : "Not present");
         console.log("Is recovery flow:", isRecovery);
         
-        // If we have a token and it's a recovery flow, handle it
+        // Force a specific path for recovery flows with tokens
         if (token && isRecovery) {
-          console.log("Valid recovery token identified, proceeding with reset flow");
+          console.log("RECOVERY FLOW DETECTED - Taking reset password path");
           
-          // Clear any existing tokens first
+          // Clear any previous tokens
           localStorage.removeItem('passwordResetToken');
           localStorage.removeItem('passwordResetInProgress');
           
-          // Store token in localStorage for the password reset flow
+          // Store token for the password reset page
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
-          console.log("Password reset token stored in localStorage");
-          console.log("Now redirecting to set-new-password page");
+          console.log("Stored reset token in localStorage");
+          console.log("Redirecting to password reset page...");
           
-          // Navigate to password reset page
+          // Force navigation with replacement to avoid history issues
           navigate('/set-new-password', { replace: true });
           return;
         }
         
-        // Catch-all for any URL containing indication of recovery
-        if (token && (fullUrl.toLowerCase().includes('recovery') || fullUrl.toLowerCase().includes('reset'))) {
-          console.log("Recovery scenario detected from URL keywords");
-          localStorage.setItem('passwordResetToken', token);
-          localStorage.setItem('passwordResetInProgress', 'true');
-          navigate('/set-new-password', { replace: true });
-          return;
-        }
-        
-        // Handle email verification - if we have a token but not a recovery flow
-        if (token && !isRecovery) {
-          console.log("Email verification token detected");
-          // We'll let Supabase handle the session refresh below
-        }
-        
-        // Check for an active session or refresh session with token
-        console.log("Attempting to refresh or get session");
+        // Fallback: Check if we have a session (for email verification or normal login flows)
+        console.log("Checking for active session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
+          toast({
+            title: "Authentication error",
+            description: "There was a problem with your authentication session",
+            variant: "destructive",
+          });
+          navigate('/signin', { replace: true });
+          return;
         }
         
         if (session) {
@@ -94,7 +113,7 @@ const AuthRedirectHandler = () => {
         }
         
         // No valid parameters and no session
-        console.log("No valid auth parameters or session");
+        console.log("No valid auth parameters or session found");
         toast({
           title: "Authentication error",
           description: "Invalid or missing authentication parameters",
@@ -111,10 +130,10 @@ const AuthRedirectHandler = () => {
         navigate('/signin', { replace: true });
       } finally {
         setIsProcessing(false);
+        processingRef.current = false; // Reset processing state for potential retries
       }
     };
 
-    // Execute immediately
     handleAuthRedirect();
   }, [location, navigate, toast]);
   

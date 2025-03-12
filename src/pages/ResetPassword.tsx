@@ -40,17 +40,19 @@ const ResetPassword = () => {
       
       // Get redirect URL specifically for password reset
       const redirectUrl = getRedirectUrl('reset-password');
-      console.log("Using password reset redirect URL:", redirectUrl);
+      console.log("[ResetPassword] Using password reset redirect URL:", redirectUrl);
       
       // IMPORTANT: Log the exact URL being used for debugging
-      console.log("Full reset password request data:", {
+      console.log("[ResetPassword] Full reset password request data:", {
         email,
         redirectTo: redirectUrl
       });
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
       });
+      
+      console.log("[ResetPassword] Reset password response:", { error, data });
       
       if (error) {
         throw error;
@@ -62,7 +64,7 @@ const ResetPassword = () => {
         description: "Check your email for the password reset link",
       });
     } catch (error: any) {
-      console.error("Reset password error:", error);
+      console.error("[ResetPassword] Reset password error:", error);
       toast({
         title: "Failed to send reset email",
         description: error.message,
