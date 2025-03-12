@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Predict from "./pages/Predict";
@@ -22,18 +23,28 @@ import Privacy from "./pages/Privacy";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // We need to preserve the hash fragment and query params when redirecting
+  // Create a separate component for auth redirect to use hooks
   const AuthRedirectHandler = () => {
-    console.log("Auth Redirect Handler called");
-    console.log("URL:", window.location.href);
-    console.log("Hash:", window.location.hash);
-    console.log("Search:", window.location.search);
+    const location = useLocation();
+    const navigate = useNavigate();
     
-    // Preserve the hash fragment and search params when redirecting
-    const redirectTo = `/set-new-password${window.location.search}${window.location.hash}`;
-    console.log("Redirecting to:", redirectTo);
+    useEffect(() => {
+      console.log("Auth Redirect Handler called");
+      console.log("URL:", window.location.href);
+      console.log("Hash:", window.location.hash);
+      console.log("Search:", window.location.search);
+      
+      // Preserve the hash fragment and search params when redirecting
+      const redirectTo = `/set-new-password${location.search}${location.hash}`;
+      console.log("Redirecting to:", redirectTo);
+      
+      // Use navigate instead of returning Navigate component
+      // This ensures the navigation happens after the component mounts
+      navigate(redirectTo, { replace: true });
+    }, [navigate, location.search, location.hash]);
     
-    return <Navigate to={redirectTo} replace />;
+    // Return null while redirecting to avoid flashing content
+    return null;
   };
 
   return (

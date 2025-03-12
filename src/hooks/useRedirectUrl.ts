@@ -10,7 +10,7 @@ export const useRedirectUrl = () => {
     // Create a proper redirect URL with no trailing slash
     const cleanOrigin = origin.replace(/\/$/, '');
     
-    // For password reset, we want to include special handling to ensure the tokens are preserved
+    // For password reset, use auth-redirect to ensure proper handling of tokens
     const route = type === 'reset-password' ? '/auth-redirect' : '/verify';
     
     // Build the redirect URL
