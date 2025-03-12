@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { AuthLayout } from "@/components/layouts/AuthLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ const SetNewPassword = () => {
   const [verificationStatus, setVerificationStatus] = useState<"success" | "error" | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,8 +24,10 @@ const SetNewPassword = () => {
         
         console.log("Current URL:", window.location.href);
         console.log("Verifying password reset token...");
+        console.log("Location hash:", location.hash);
+        console.log("Search params:", Object.fromEntries(searchParams.entries()));
         
-        // Extract hash parameters from URL if present
+        // First check hash parameters from URL if present (Supabase default behavior)
         const hashParams = location.hash 
           ? new URLSearchParams(location.hash.substring(1))
           : null;
@@ -58,7 +61,37 @@ const SetNewPassword = () => {
           }
         }
         
-        // If no hash params or not a recovery token, try refreshing the session
+        // If no hash params, check query parameters (may be used in some configurations)
+        const queryToken = searchParams.get('token');
+        const queryType = searchParams.get('type');
+        
+        if (queryToken && queryType === 'recovery') {
+          console.log("Found recovery token in query params");
+          try {
+            // Attempt to use the token from query params
+            const { error } = await supabase.auth.verifyOtp({
+              token_hash: queryToken,
+              type: 'recovery',
+            });
+            
+            if (error) {
+              console.error("Error verifying OTP:", error);
+              throw error;
+            }
+            
+            setVerificationStatus("success");
+            toast({
+              title: "Ready to reset password",
+              description: "Please enter your new password below.",
+            });
+            return;
+          } catch (e) {
+            console.error("Error with query token verification:", e);
+          }
+        }
+        
+        // If no specific tokens found, try refreshing the session
+        // This might work if the user has already been authenticated by Supabase
         const { error } = await supabase.auth.refreshSession();
         
         if (error) {
@@ -79,13 +112,18 @@ const SetNewPassword = () => {
       } catch (err) {
         console.error("Unexpected error during verification:", err);
         setVerificationStatus("error");
+        toast({
+          title: "Password reset failed",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setIsVerifying(false);
       }
     };
 
     verifyPasswordResetSession();
-  }, [toast, location.hash, location.search]);
+  }, [toast, location.hash, searchParams, location.search]);
 
   // Success state - show the password reset form
   const renderPasswordResetForm = () => (

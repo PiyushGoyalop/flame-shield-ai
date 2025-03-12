@@ -40,9 +40,12 @@ const App = () => (
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/set-new-password" element={<SetNewPassword />} />
+            {/* These are the static pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            {/* Redirect all unknown routes to home */}
+            {/* Handle the auth-redirect as a special case that redirects to set-new-password */}
+            <Route path="/auth-redirect" element={<Navigate to="/set-new-password" replace />} />
+            {/* Redirect all other unknown routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
