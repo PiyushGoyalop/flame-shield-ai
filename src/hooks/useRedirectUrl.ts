@@ -10,16 +10,16 @@ export const useRedirectUrl = () => {
     // Create a proper redirect URL with no trailing slash
     const cleanOrigin = origin.replace(/\/$/, '');
     
-    // For password reset, we need to ensure the correct path format
-    // This must match exactly what Supabase expects
+    // IMPORTANT: For password reset flows, we need a very specific format without query parameters
+    // This is critical to ensure Supabase properly redirects after password reset
     if (type === 'reset-password') {
-      // Using the exact format required by Supabase for password reset
+      // The exact path Supabase will append the token to - must be a direct path
       const redirectUrl = `${cleanOrigin}/auth-redirect`;
       console.log(`Generated ${type} redirect URL:`, redirectUrl);
       return redirectUrl;
     }
     
-    // For email verification, use the normal verification path
+    // For email verification
     const redirectUrl = `${cleanOrigin}/verify`;
     console.log(`Generated ${type} redirect URL:`, redirectUrl);
     return redirectUrl;

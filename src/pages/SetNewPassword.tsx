@@ -25,11 +25,11 @@ const SetNewPassword = () => {
         const token = localStorage.getItem('passwordResetToken');
         const resetInProgress = localStorage.getItem('passwordResetInProgress');
         
-        console.log("Reset token from localStorage:", token ? "Present" : "Not present");
+        console.log("Reset token from localStorage:", token ? "Present (length: " + token.length + ")" : "Not present");
         console.log("Reset in progress flag:", resetInProgress);
         
         if (!token || resetInProgress !== 'true') {
-          console.error("No reset token found in localStorage");
+          console.error("No valid reset token found in localStorage");
           setVerificationStatus("error");
           
           // Show toast and redirect if no token
@@ -43,6 +43,7 @@ const SetNewPassword = () => {
           localStorage.removeItem('passwordResetToken');
           localStorage.removeItem('passwordResetInProgress');
           
+          // Redirect to reset password page after a short delay
           setTimeout(() => {
             navigate('/reset-password', { replace: true });
           }, 2000);
@@ -51,7 +52,6 @@ const SetNewPassword = () => {
         }
         
         // We have a token, assume it's valid at this point
-        // The real validation will happen when user submits the form
         console.log("Password reset token found, proceeding with form");
         setVerificationStatus("success");
       } catch (err) {
@@ -74,7 +74,7 @@ const SetNewPassword = () => {
     verifyResetToken();
   }, [toast, navigate]);
 
-  // Clean up the localStorage when component unmounts or on success
+  // Clean up the localStorage when component unmounts
   useEffect(() => {
     return () => {
       if (verificationStatus === "error") {

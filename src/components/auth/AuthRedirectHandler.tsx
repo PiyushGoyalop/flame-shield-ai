@@ -19,7 +19,7 @@ const AuthRedirectHandler = () => {
     
     const handleAuthRedirect = async () => {
       try {
-        console.log("Auth Redirect Handler called");
+        console.log("Auth Redirect Handler activated");
         console.log("Full URL:", window.location.href);
         console.log("Search params:", window.location.search);
         
@@ -27,14 +27,14 @@ const AuthRedirectHandler = () => {
         const token = queryParams.get('token');
         const type = queryParams.get('type');
         
-        console.log("Extracted token:", token ? "Present" : "Not present");
+        console.log("Extracted token:", token ? "Present (length: " + token.length + ")" : "Not present");
         console.log("Extracted type:", type);
         
         // Handle password reset flow
         if (token && type === 'recovery') {
-          console.log("Valid recovery token found, token:", token);
+          console.log("Valid recovery token identified, proceeding with reset flow");
           
-          // Clear any existing tokens first
+          // Clear any existing tokens first to avoid stale state
           localStorage.removeItem('passwordResetToken');
           localStorage.removeItem('passwordResetInProgress');
           
@@ -42,15 +42,15 @@ const AuthRedirectHandler = () => {
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
-          // Direct navigation to set-new-password
-          console.log("Redirecting to set-new-password page");
+          // Important - use immediate navigation to set-new-password
+          console.log("Immediately redirecting to set-new-password page");
           navigate('/set-new-password', { replace: true });
           return;
         }
         
         // If we reach here without finding valid recovery parameters,
-        // default to checking for an active session
-        console.log("No specific auth parameters found, checking for session");
+        // check for an active session
+        console.log("No specific recovery parameters found, checking for session");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
@@ -80,10 +80,8 @@ const AuthRedirectHandler = () => {
       }
     };
 
-    // Add a small delay to ensure component is fully mounted
-    setTimeout(() => {
-      handleAuthRedirect();
-    }, 100);
+    // Execute immediately to capture the token as soon as possible
+    handleAuthRedirect();
   }, [location, navigate, toast]);
   
   return (
