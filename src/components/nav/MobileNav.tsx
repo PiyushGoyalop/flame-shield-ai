@@ -13,6 +13,9 @@ interface MobileNavProps {
 export function MobileNav({ isMobileMenuOpen, isActive, user }: MobileNavProps) {
   const navigate = useNavigate();
   
+  // Extract username from user metadata if available
+  const username = user?.user_metadata?.name || user?.email?.split('@')[0] || "Account";
+  
   if (!isMobileMenuOpen) return null;
 
   return (
@@ -38,7 +41,7 @@ export function MobileNav({ isMobileMenuOpen, isActive, user }: MobileNavProps) 
         {user ? (
           <Link to="/account" className="flex-1">
             <Button size="sm" className="w-full bg-wildfire-500 hover:bg-wildfire-600">
-              <UserCircle className="h-4 w-4 mr-1" /> Account
+              <UserCircle className="h-4 w-4 mr-1" /> {username}
             </Button>
           </Link>
         ) : (

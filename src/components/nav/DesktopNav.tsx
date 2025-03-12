@@ -11,6 +11,9 @@ interface DesktopNavProps {
 }
 
 export function DesktopNav({ isScrolled, isActive, user }: DesktopNavProps) {
+  // Extract username from user metadata if available
+  const username = user?.user_metadata?.name || user?.email?.split('@')[0] || "Account";
+
   return (
     <>
       <nav className="hidden md:flex items-center gap-8">
@@ -42,7 +45,7 @@ export function DesktopNav({ isScrolled, isActive, user }: DesktopNavProps) {
                 ? "bg-wildfire-600 hover:bg-wildfire-700 text-white"
                 : "bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"}`}
             >
-              <UserCircle className="h-4 w-4 mr-1" /> Account
+              <UserCircle className="h-4 w-4 mr-1" /> {username}
             </Button>
           </Link>
         ) : (
