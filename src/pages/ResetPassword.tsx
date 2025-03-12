@@ -34,6 +34,10 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
+      // Clear any existing reset tokens
+      localStorage.removeItem('passwordResetToken');
+      localStorage.removeItem('passwordResetInProgress');
+      
       // Get redirect URL for password reset
       const redirectUrl = getRedirectUrl('reset-password');
       console.log("Using password reset redirect URL:", redirectUrl);

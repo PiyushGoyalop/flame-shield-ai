@@ -17,49 +17,83 @@ const SetNewPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const verifySession = async () => {
+    const verifyResetToken = async () => {
       try {
         console.log("SetNewPassword component mounted");
-        console.log("Current URL:", window.location.href);
         
-        // Check if we have a valid session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Check if we have a reset token in localStorage
+        const token = localStorage.getItem('passwordResetToken');
+        const resetInProgress = localStorage.getItem('passwordResetInProgress');
         
-        if (sessionError) {
-          console.error("Error getting session:", sessionError);
+        console.log("Reset token from localStorage:", token ? "Present" : "Not present");
+        console.log("Reset in progress flag:", resetInProgress);
+        
+        if (!token || resetInProgress !== 'true') {
+          console.error("No reset token found");
+          setVerificationStatus("error");
+          return;
+        }
+        
+        // Try to verify the token
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery',
+          });
+          
+          if (error) {
+            console.error("Error verifying OTP:", error);
+            setVerificationStatus("error");
+            toast({
+              title: "Reset link invalid",
+              description: "Your password reset link is invalid or has expired.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          console.log("OTP verification successful");
+          setVerificationStatus("success");
+        } catch (error) {
+          console.error("Error in OTP verification:", error);
+          
+          // Even if OTP verification fails, check if we have a session
+          // as it might have been verified earlier
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session) {
+            console.log("Session found, proceeding with password reset");
+            setVerificationStatus("success");
+            return;
+          }
+          
           setVerificationStatus("error");
           toast({
-            title: "Reset link invalid",
-            description: "Your password reset link is invalid or has expired.",
+            title: "Reset link expired",
+            description: "Your password reset link has expired. Please request a new one.",
             variant: "destructive",
           });
-          return;
         }
-        
-        if (session) {
-          console.log("Valid session found for user:", session.user.id);
-          setVerificationStatus("success");
-          return;
-        }
-        
-        // If no session is found, redirect to reset password page
-        console.error("No active session found");
-        setVerificationStatus("error");
-        toast({
-          title: "Reset link expired",
-          description: "Your password reset link has expired. Please request a new one.",
-          variant: "destructive",
-        });
       } catch (err) {
-        console.error("Error in session verification:", err);
+        console.error("Error in reset token verification:", err);
         setVerificationStatus("error");
       } finally {
         setIsVerifying(false);
       }
     };
 
-    verifySession();
+    verifyResetToken();
   }, [toast, navigate]);
+
+  // Clean up the localStorage when component unmounts or on success
+  useEffect(() => {
+    return () => {
+      if (verificationStatus === "success" || verificationStatus === "error") {
+        localStorage.removeItem('passwordResetToken');
+        localStorage.removeItem('passwordResetInProgress');
+      }
+    };
+  }, [verificationStatus]);
 
   return (
     <AuthLayout 
