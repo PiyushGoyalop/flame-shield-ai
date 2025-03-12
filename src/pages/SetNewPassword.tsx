@@ -39,6 +39,10 @@ const SetNewPassword = () => {
             variant: "destructive",
           });
           
+          // Clean up any partial state
+          localStorage.removeItem('passwordResetToken');
+          localStorage.removeItem('passwordResetInProgress');
+          
           setTimeout(() => {
             navigate('/reset-password', { replace: true });
           }, 2000);
@@ -58,6 +62,10 @@ const SetNewPassword = () => {
           description: "Please try requesting a new password reset link",
           variant: "destructive",
         });
+        
+        // Clean up on error
+        localStorage.removeItem('passwordResetToken');
+        localStorage.removeItem('passwordResetInProgress');
       } finally {
         setIsVerifying(false);
       }

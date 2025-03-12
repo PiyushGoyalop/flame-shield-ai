@@ -30,18 +30,21 @@ const AuthRedirectHandler = () => {
         console.log("Extracted token:", token ? "Present" : "Not present");
         console.log("Extracted type:", type);
         
+        // Handle password reset flow
         if (token && type === 'recovery') {
-          console.log("Valid recovery token found");
+          console.log("Valid recovery token found, token:", token);
           
-          // Store token in localStorage for the password reset flow
+          // Clear any existing tokens first
+          localStorage.removeItem('passwordResetToken');
+          localStorage.removeItem('passwordResetInProgress');
+          
+          // Store new token in localStorage for the password reset flow
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
           // Direct navigation to set-new-password
-          setTimeout(() => {
-            console.log("Redirecting to set-new-password page");
-            navigate('/set-new-password', { replace: true });
-          }, 100);
+          console.log("Redirecting to set-new-password page");
+          navigate('/set-new-password', { replace: true });
           return;
         }
         
