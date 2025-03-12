@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthLayout } from "@/components/layouts/AuthLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ const SetNewPassword = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationStatus, setVerificationStatus] = useState<"success" | "error" | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,9 +21,44 @@ const SetNewPassword = () => {
       try {
         setIsVerifying(true);
         
+        console.log("Current URL:", window.location.href);
         console.log("Verifying password reset token...");
         
-        // Check the session
+        // Extract hash parameters from URL if present
+        const hashParams = location.hash 
+          ? new URLSearchParams(location.hash.substring(1))
+          : null;
+          
+        if (hashParams) {
+          console.log("Hash params found in URL");
+          // Access token might be in the hash fragment (#access_token=...)
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          const type = hashParams.get('type');
+          
+          if (accessToken && type === 'recovery') {
+            console.log("Found recovery token in URL hash");
+            // Set session with the tokens from hash
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
+            
+            if (error) {
+              console.error("Error setting session:", error);
+              throw error;
+            }
+            
+            setVerificationStatus("success");
+            toast({
+              title: "Ready to reset password",
+              description: "Please enter your new password below.",
+            });
+            return;
+          }
+        }
+        
+        // If no hash params or not a recovery token, try refreshing the session
         const { error } = await supabase.auth.refreshSession();
         
         if (error) {
@@ -49,7 +85,7 @@ const SetNewPassword = () => {
     };
 
     verifyPasswordResetSession();
-  }, [toast]);
+  }, [toast, location.hash, location.search]);
 
   // Success state - show the password reset form
   const renderPasswordResetForm = () => (
