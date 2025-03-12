@@ -1,12 +1,11 @@
 
 import { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const AuthRedirectHandler = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
   const { toast } = useToast();
@@ -70,7 +69,7 @@ const AuthRedirectHandler = () => {
     };
 
     handleAuthRedirect();
-  }, [location, navigate, toast]);
+  }, [navigate, toast]);
   
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">

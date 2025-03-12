@@ -10,8 +10,7 @@ export const useRedirectUrl = () => {
     // Create a proper redirect URL with no trailing slash
     const cleanOrigin = origin.replace(/\/$/, '');
     
-    // For both flows, we're now using auth-redirect to handle all cases consistently
-    // This gives us one place to properly handle all authentication redirects
+    // We're using auth-redirect to handle all authentication flows consistently
     const redirectUrl = `${cleanOrigin}/auth-redirect`;
     
     console.log(`Generated ${type} redirect URL:`, redirectUrl);
