@@ -26,19 +26,26 @@ const AuthRedirectHandler = () => {
         console.log("Search params:", window.location.search);
         console.log("Hash fragment:", window.location.hash);
         
-        // Extract token from URL - check both query params and hash fragment
+        // Parse URL more carefully to extract all possible tokens
         const queryParams = new URLSearchParams(location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const fullUrl = window.location.href;
         
-        // Try to find token in either location
-        const token = queryParams.get('token') || hashParams.get('token');
-        const type = queryParams.get('type') || hashParams.get('recovery') ? 'recovery' : hashParams.get('type');
+        // Try to find token in either location or directly in URL
+        const token = queryParams.get('token') || hashParams.get('token') || 
+                     (fullUrl.includes('token=') ? fullUrl.split('token=')[1].split('&')[0] : null);
+        
+        // Check for recovery type indicators in multiple places
+        const isRecovery = queryParams.get('type') === 'recovery' || 
+                          hashParams.get('type') === 'recovery' ||
+                          fullUrl.includes('type=recovery') ||
+                          fullUrl.includes('recovery=true');
         
         console.log("Extracted token:", token ? `Present (length: ${token.length})` : "Not present");
-        console.log("Extracted type:", type);
+        console.log("Is recovery flow:", isRecovery);
         
-        // Handle password reset flow
-        if (token && (type === 'recovery' || hashParams.has('type') === true)) {
+        // If we have a token and it's a recovery flow, handle it
+        if (token && isRecovery) {
           console.log("Valid recovery token identified, proceeding with reset flow");
           
           // Clear any existing tokens first
@@ -52,23 +59,33 @@ const AuthRedirectHandler = () => {
           console.log("Password reset token stored in localStorage");
           console.log("Now redirecting to set-new-password page");
           
-          // Force navigation to set-new-password page
+          // Navigate to password reset page
           navigate('/set-new-password', { replace: true });
           return;
         }
         
-        // If we have a token but no specific type, it might still be a recovery
-        if (token && !type && window.location.href.includes('recovery')) {
-          console.log("Recovery scenario detected from URL");
+        // Catch-all for any URL containing indication of recovery
+        if (token && (fullUrl.toLowerCase().includes('recovery') || fullUrl.toLowerCase().includes('reset'))) {
+          console.log("Recovery scenario detected from URL keywords");
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           navigate('/set-new-password', { replace: true });
           return;
         }
         
-        // Check for an active session if no recovery flow detected
-        console.log("No specific recovery parameters found, checking for session");
-        const { data: { session } } = await supabase.auth.getSession();
+        // Handle email verification - if we have a token but not a recovery flow
+        if (token && !isRecovery) {
+          console.log("Email verification token detected");
+          // We'll let Supabase handle the session refresh below
+        }
+        
+        // Check for an active session or refresh session with token
+        console.log("Attempting to refresh or get session");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+        }
         
         if (session) {
           console.log("Active session found - navigating to home");
