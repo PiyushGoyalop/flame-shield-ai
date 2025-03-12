@@ -27,62 +27,60 @@ const SetNewPassword = () => {
         console.log("Location hash:", location.hash);
         console.log("Search params:", Object.fromEntries(searchParams.entries()));
         
-        // First check hash parameters from URL if present (Supabase default behavior)
+        // Check for access token in hash fragment (Supabase's default method)
         const hashParams = location.hash 
           ? new URLSearchParams(location.hash.substring(1))
           : null;
           
-        if (hashParams) {
-          console.log("Hash params found in URL");
-          // Access token might be in the hash fragment (#access_token=...)
+        if (hashParams && hashParams.get('access_token')) {
+          console.log("Hash params found in URL with access token");
           const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
+          const refreshToken = hashParams.get('refresh_token') || '';
           const type = hashParams.get('type');
           
           if (accessToken && type === 'recovery') {
-            console.log("Found recovery token in URL hash");
-            // Set session with the tokens from hash
+            console.log("Recovery flow detected, setting session with tokens");
+            
             const { error } = await supabase.auth.setSession({
               access_token: accessToken,
-              refresh_token: refreshToken || '',
+              refresh_token: refreshToken,
             });
             
             if (error) {
-              console.error("Error setting session:", error);
+              console.error("Error setting session from hash params:", error);
               throw error;
             }
             
             setVerificationStatus("success");
             toast({
-              title: "Ready to reset password",
-              description: "Please enter your new password below.",
+              title: "Recovery link verified",
+              description: "Please set your new password below.",
             });
             return;
           }
         }
         
-        // If no hash params, check query parameters (may be used in some configurations)
+        // Check query parameters for token (alternative method)
         const queryToken = searchParams.get('token');
         const queryType = searchParams.get('type');
         
         if (queryToken && queryType === 'recovery') {
           console.log("Found recovery token in query params");
           try {
-            // Attempt to use the token from query params
             const { error } = await supabase.auth.verifyOtp({
               token_hash: queryToken,
               type: 'recovery',
             });
             
             if (error) {
-              console.error("Error verifying OTP:", error);
+              console.error("Error verifying OTP from query params:", error);
               throw error;
             }
             
             setVerificationStatus("success");
             toast({
-              title: "Ready to reset password",
-              description: "Please enter your new password below.",
+              title: "Recovery link verified",
+              description: "Please set your new password below.",
             });
             return;
           } catch (e) {
@@ -90,23 +88,30 @@ const SetNewPassword = () => {
           }
         }
         
-        // If no specific tokens found, try refreshing the session
-        // This might work if the user has already been authenticated by Supabase
-        const { error } = await supabase.auth.refreshSession();
+        // If we get here with no tokens found but redirected from auth-redirect,
+        // try to get the current session as a last resort
+        console.log("No tokens found in URL, attempting to refresh session");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Password reset verification error:", error);
-          setVerificationStatus("error");
-          toast({
-            title: "Password reset failed",
-            description: "Your link may be invalid or expired.",
-            variant: "destructive",
-          });
-        } else {
+        if (sessionError) {
+          console.error("Error getting session:", sessionError);
+          throw sessionError;
+        }
+        
+        if (session) {
+          console.log("Existing session found:", session.user.id);
           setVerificationStatus("success");
           toast({
             title: "Ready to reset password",
             description: "Please enter your new password below.",
+          });
+        } else {
+          console.error("No session found and no tokens in URL");
+          setVerificationStatus("error");
+          toast({
+            title: "Password reset link invalid",
+            description: "The link may be expired or invalid. Please request a new one.",
+            variant: "destructive",
           });
         }
       } catch (err) {
@@ -143,7 +148,10 @@ const SetNewPassword = () => {
         <p className="font-medium">Password reset link invalid</p>
         <p className="text-sm mt-1">The link may be invalid or expired.</p>
       </div>
-      <Button onClick={() => navigate("/signin")} className="mt-4">
+      <Button onClick={() => navigate("/reset-password")} className="mt-4 mr-2">
+        Try Again
+      </Button>
+      <Button onClick={() => navigate("/signin")} className="mt-4" variant="outline">
         Return to Sign In
       </Button>
     </div>

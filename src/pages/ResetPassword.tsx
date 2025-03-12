@@ -34,6 +34,8 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
+      // Use the auth-redirect URL which will handle redirecting to set-new-password
+      // This is critical for the password reset flow to work correctly
       const redirectUrl = getRedirectUrl('reset-password');
       console.log("Using password reset redirect URL:", redirectUrl);
       

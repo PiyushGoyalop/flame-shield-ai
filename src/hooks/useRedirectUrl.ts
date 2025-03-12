@@ -10,8 +10,9 @@ export const useRedirectUrl = () => {
     // Create a proper redirect URL with no trailing slash
     const cleanOrigin = origin.replace(/\/$/, '');
     
-    // Use the appropriate route based on the type
-    const route = type === 'reset-password' ? '/set-new-password' : '/verify';
+    // When using the reset-password type, we want to use the auth-redirect endpoint
+    // This ensures Supabase redirects to our special handler that can correctly process the tokens
+    const route = type === 'reset-password' ? '/auth-redirect' : '/verify';
     
     // Build the redirect URL
     const redirectUrl = `${cleanOrigin}${route}`;
