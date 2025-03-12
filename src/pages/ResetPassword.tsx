@@ -38,11 +38,11 @@ const ResetPassword = () => {
       localStorage.removeItem('passwordResetToken');
       localStorage.removeItem('passwordResetInProgress');
       
-      // Get redirect URL for password reset
+      // Get redirect URL specifically for password reset
       const redirectUrl = getRedirectUrl('reset-password');
       console.log("Using password reset redirect URL:", redirectUrl);
       
-      // Important: Log the exact URL being used for debugging
+      // IMPORTANT: Log the exact URL being used for debugging
       console.log("Full reset password request data:", {
         email,
         redirectTo: redirectUrl

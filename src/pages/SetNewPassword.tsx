@@ -43,11 +43,20 @@ const SetNewPassword = () => {
           localStorage.removeItem('passwordResetToken');
           localStorage.removeItem('passwordResetInProgress');
           
-          // Redirect to reset password page after a short delay
+          // Wait a bit before redirecting
           setTimeout(() => {
             navigate('/reset-password', { replace: true });
           }, 2000);
           
+          return;
+        }
+        
+        // Verify the token is a valid format (simple check)
+        if (token.length < 10) {
+          console.error("Token format appears invalid");
+          setVerificationStatus("error");
+          localStorage.removeItem('passwordResetToken');
+          localStorage.removeItem('passwordResetInProgress');
           return;
         }
         
@@ -77,6 +86,7 @@ const SetNewPassword = () => {
   // Clean up the localStorage when component unmounts
   useEffect(() => {
     return () => {
+      // Only clean up token if there was an error
       if (verificationStatus === "error") {
         localStorage.removeItem('passwordResetToken');
         localStorage.removeItem('passwordResetInProgress');

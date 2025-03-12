@@ -21,11 +21,15 @@ const AuthRedirectHandler = () => {
       try {
         console.log("Auth Redirect Handler activated");
         console.log("Full URL:", window.location.href);
+        console.log("URL path:", window.location.pathname);
         console.log("Search params:", window.location.search);
+        console.log("Hash fragment:", window.location.hash);
         
+        // Extract token from URL
+        // Supabase can put the token in either search params or hash fragment
         const queryParams = new URLSearchParams(location.search);
-        const token = queryParams.get('token');
-        const type = queryParams.get('type');
+        const token = queryParams.get('token') || new URLSearchParams(window.location.hash.replace('#', '?')).get('token');
+        const type = queryParams.get('type') || new URLSearchParams(window.location.hash.replace('#', '?')).get('type');
         
         console.log("Extracted token:", token ? "Present (length: " + token.length + ")" : "Not present");
         console.log("Extracted type:", type);
@@ -42,8 +46,11 @@ const AuthRedirectHandler = () => {
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
-          // Important - use immediate navigation to set-new-password
-          console.log("Immediately redirecting to set-new-password page");
+          // Log the reset status
+          console.log("Password reset token stored in localStorage");
+          console.log("Now redirecting to set-new-password page");
+          
+          // Important - use replace navigation for cleaner history
           navigate('/set-new-password', { replace: true });
           return;
         }
