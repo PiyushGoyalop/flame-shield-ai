@@ -19,44 +19,54 @@ const AuthRedirectHandler = () => {
     
     const handleAuthRedirect = async () => {
       try {
-        console.log("Auth Redirect Handler activated");
+        // Enhanced debugging
+        console.log("---------- AUTH REDIRECT HANDLER ----------");
         console.log("Full URL:", window.location.href);
         console.log("URL path:", window.location.pathname);
         console.log("Search params:", window.location.search);
         console.log("Hash fragment:", window.location.hash);
         
-        // Extract token from URL
-        // Supabase can put the token in either search params or hash fragment
+        // Extract token from URL - check both query params and hash fragment
         const queryParams = new URLSearchParams(location.search);
-        const token = queryParams.get('token') || new URLSearchParams(window.location.hash.replace('#', '?')).get('token');
-        const type = queryParams.get('type') || new URLSearchParams(window.location.hash.replace('#', '?')).get('type');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
-        console.log("Extracted token:", token ? "Present (length: " + token.length + ")" : "Not present");
+        // Try to find token in either location
+        const token = queryParams.get('token') || hashParams.get('token');
+        const type = queryParams.get('type') || hashParams.get('recovery') ? 'recovery' : hashParams.get('type');
+        
+        console.log("Extracted token:", token ? `Present (length: ${token.length})` : "Not present");
         console.log("Extracted type:", type);
         
         // Handle password reset flow
-        if (token && type === 'recovery') {
+        if (token && (type === 'recovery' || hashParams.has('type') === true)) {
           console.log("Valid recovery token identified, proceeding with reset flow");
           
-          // Clear any existing tokens first to avoid stale state
+          // Clear any existing tokens first
           localStorage.removeItem('passwordResetToken');
           localStorage.removeItem('passwordResetInProgress');
           
-          // Store new token in localStorage for the password reset flow
+          // Store token in localStorage for the password reset flow
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
-          // Log the reset status
           console.log("Password reset token stored in localStorage");
           console.log("Now redirecting to set-new-password page");
           
-          // Important - use replace navigation for cleaner history
+          // Force navigation to set-new-password page
           navigate('/set-new-password', { replace: true });
           return;
         }
         
-        // If we reach here without finding valid recovery parameters,
-        // check for an active session
+        // If we have a token but no specific type, it might still be a recovery
+        if (token && !type && window.location.href.includes('recovery')) {
+          console.log("Recovery scenario detected from URL");
+          localStorage.setItem('passwordResetToken', token);
+          localStorage.setItem('passwordResetInProgress', 'true');
+          navigate('/set-new-password', { replace: true });
+          return;
+        }
+        
+        // Check for an active session if no recovery flow detected
         console.log("No specific recovery parameters found, checking for session");
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -87,7 +97,7 @@ const AuthRedirectHandler = () => {
       }
     };
 
-    // Execute immediately to capture the token as soon as possible
+    // Execute immediately
     handleAuthRedirect();
   }, [location, navigate, toast]);
   
