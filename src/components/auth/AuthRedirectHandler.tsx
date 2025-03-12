@@ -21,7 +21,6 @@ const AuthRedirectHandler = () => {
       try {
         console.log("Auth Redirect Handler called");
         console.log("Full URL:", window.location.href);
-        console.log("Hash:", window.location.hash);
         console.log("Search params:", window.location.search);
         
         const queryParams = new URLSearchParams(location.search);
@@ -34,55 +33,54 @@ const AuthRedirectHandler = () => {
         if (token && type === 'recovery') {
           console.log("Valid recovery token found");
           
-          // For recovery flow, we'll set a session flag and redirect
+          // Store token in localStorage for the password reset flow
           localStorage.setItem('passwordResetToken', token);
           localStorage.setItem('passwordResetInProgress', 'true');
           
-          // Directly redirect to set-new-password
-          console.log("Redirecting to set-new-password page");
-          navigate('/set-new-password', { replace: true });
+          // Direct navigation to set-new-password
+          setTimeout(() => {
+            console.log("Redirecting to set-new-password page");
+            navigate('/set-new-password', { replace: true });
+          }, 100);
           return;
         }
         
         // If we reach here without finding valid recovery parameters,
-        // check if there's an active session that might have been established
+        // default to checking for an active session
+        console.log("No specific auth parameters found, checking for session");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // We have a session, this could be from a recovery verification
-          console.log("Session found, checking for password reset flag");
-          if (localStorage.getItem('passwordResetInProgress') === 'true') {
-            navigate('/set-new-password', { replace: true });
-            return;
-          }
-          
-          // Regular login - go to home
+          console.log("Active session found - navigating to home");
           navigate('/', { replace: true });
           return;
         }
         
-        // If no valid parameters and no session, go back to reset password
+        // No valid parameters and no session
         console.log("No valid auth parameters or session");
         toast({
-          title: "Invalid or expired link",
-          description: "The password reset link is invalid or has expired.",
+          title: "Authentication error",
+          description: "Invalid or missing authentication parameters",
           variant: "destructive",
         });
-        navigate('/reset-password', { replace: true });
+        navigate('/signin', { replace: true });
       } catch (error) {
         console.error("Error in auth redirect handler:", error);
         toast({
           title: "Authentication error",
-          description: "An unexpected error occurred. Please try again.",
+          description: "An unexpected error occurred during authentication",
           variant: "destructive",
         });
-        navigate('/reset-password', { replace: true });
+        navigate('/signin', { replace: true });
       } finally {
         setIsProcessing(false);
       }
     };
 
-    handleAuthRedirect();
+    // Add a small delay to ensure component is fully mounted
+    setTimeout(() => {
+      handleAuthRedirect();
+    }, 100);
   }, [location, navigate, toast]);
   
   return (

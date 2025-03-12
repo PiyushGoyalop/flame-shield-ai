@@ -29,54 +29,35 @@ const SetNewPassword = () => {
         console.log("Reset in progress flag:", resetInProgress);
         
         if (!token || resetInProgress !== 'true') {
-          console.error("No reset token found");
+          console.error("No reset token found in localStorage");
           setVerificationStatus("error");
+          
+          // Show toast and redirect if no token
+          toast({
+            title: "Reset link invalid",
+            description: "No valid password reset session found. Please request a new link.",
+            variant: "destructive",
+          });
+          
+          setTimeout(() => {
+            navigate('/reset-password', { replace: true });
+          }, 2000);
+          
           return;
         }
         
-        // Try to verify the token
-        try {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery',
-          });
-          
-          if (error) {
-            console.error("Error verifying OTP:", error);
-            setVerificationStatus("error");
-            toast({
-              title: "Reset link invalid",
-              description: "Your password reset link is invalid or has expired.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          console.log("OTP verification successful");
-          setVerificationStatus("success");
-        } catch (error) {
-          console.error("Error in OTP verification:", error);
-          
-          // Even if OTP verification fails, check if we have a session
-          // as it might have been verified earlier
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            console.log("Session found, proceeding with password reset");
-            setVerificationStatus("success");
-            return;
-          }
-          
-          setVerificationStatus("error");
-          toast({
-            title: "Reset link expired",
-            description: "Your password reset link has expired. Please request a new one.",
-            variant: "destructive",
-          });
-        }
+        // We have a token, assume it's valid at this point
+        // The real validation will happen when user submits the form
+        console.log("Password reset token found, proceeding with form");
+        setVerificationStatus("success");
       } catch (err) {
         console.error("Error in reset token verification:", err);
         setVerificationStatus("error");
+        toast({
+          title: "Error verifying reset link",
+          description: "Please try requesting a new password reset link",
+          variant: "destructive",
+        });
       } finally {
         setIsVerifying(false);
       }
@@ -88,7 +69,7 @@ const SetNewPassword = () => {
   // Clean up the localStorage when component unmounts or on success
   useEffect(() => {
     return () => {
-      if (verificationStatus === "success" || verificationStatus === "error") {
+      if (verificationStatus === "error") {
         localStorage.removeItem('passwordResetToken');
         localStorage.removeItem('passwordResetInProgress');
       }
