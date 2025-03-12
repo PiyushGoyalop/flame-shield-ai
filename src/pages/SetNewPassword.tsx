@@ -22,26 +22,28 @@ const SetNewPassword = () => {
       try {
         setIsVerifying(true);
         
+        // Debug logs
+        console.log("SetNewPassword component mounted");
         console.log("Current URL:", window.location.href);
-        console.log("Verifying password reset token...");
         console.log("Location hash:", location.hash);
+        console.log("Location search:", location.search);
         console.log("Search params:", Object.fromEntries(searchParams.entries()));
         
-        // Check for access token in hash fragment (Supabase's default method)
+        // 1. Check for hash parameters (Supabase's default method)
         const hashParams = location.hash 
           ? new URLSearchParams(location.hash.substring(1))
           : null;
           
         if (hashParams && hashParams.get('access_token')) {
-          console.log("Hash params found in URL with access token");
+          console.log("Found access_token in hash params");
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token') || '';
           const type = hashParams.get('type');
           
           if (accessToken && type === 'recovery') {
-            console.log("Recovery flow detected, setting session with tokens");
+            console.log("Recovery flow detected in hash, setting session with tokens");
             
-            const { error } = await supabase.auth.setSession({
+            const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken,
             });
@@ -51,6 +53,7 @@ const SetNewPassword = () => {
               throw error;
             }
             
+            console.log("Session set successfully from hash params:", data.session?.user?.id);
             setVerificationStatus("success");
             toast({
               title: "Recovery link verified",
@@ -60,7 +63,7 @@ const SetNewPassword = () => {
           }
         }
         
-        // Check query parameters for token (alternative method)
+        // 2. Check query parameters for token
         const queryToken = searchParams.get('token');
         const queryType = searchParams.get('type');
         
@@ -77,6 +80,7 @@ const SetNewPassword = () => {
               throw error;
             }
             
+            console.log("OTP verified successfully from query params");
             setVerificationStatus("success");
             toast({
               title: "Recovery link verified",
@@ -88,9 +92,35 @@ const SetNewPassword = () => {
           }
         }
         
-        // If we get here with no tokens found but redirected from auth-redirect,
-        // try to get the current session as a last resort
-        console.log("No tokens found in URL, attempting to refresh session");
+        // 3. Check for a special recovery token in URL parameters (another format)
+        const specialToken = searchParams.get('recovery_token') || searchParams.get('code');
+        if (specialToken) {
+          console.log("Found special recovery token in URL");
+          try {
+            // Try to use this token to verify the session
+            const { error } = await supabase.auth.verifyOtp({
+              token_hash: specialToken,
+              type: 'recovery',
+            });
+            
+            if (error) {
+              console.error("Error verifying special token:", error);
+            } else {
+              console.log("Special token verification successful");
+              setVerificationStatus("success");
+              toast({
+                title: "Recovery link verified",
+                description: "Please set your new password below.",
+              });
+              return;
+            }
+          } catch (e) {
+            console.error("Error with special token verification:", e);
+          }
+        }
+        
+        // 4. Try to get current session as a last resort
+        console.log("Checking for existing session");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -105,15 +135,17 @@ const SetNewPassword = () => {
             title: "Ready to reset password",
             description: "Please enter your new password below.",
           });
-        } else {
-          console.error("No session found and no tokens in URL");
-          setVerificationStatus("error");
-          toast({
-            title: "Password reset link invalid",
-            description: "The link may be expired or invalid. Please request a new one.",
-            variant: "destructive",
-          });
+          return;
         }
+        
+        // If we get here, no valid tokens were found
+        console.error("No valid tokens or session found");
+        setVerificationStatus("error");
+        toast({
+          title: "Password reset link invalid",
+          description: "The link may be expired or invalid. Please request a new one.",
+          variant: "destructive",
+        });
       } catch (err) {
         console.error("Unexpected error during verification:", err);
         setVerificationStatus("error");
