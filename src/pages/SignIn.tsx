@@ -80,14 +80,6 @@ const SignIn = () => {
             disabled={isLoading}
             required={true}
           />
-          <div className="text-right">
-            <Link 
-              to="/reset-password" 
-              className="text-sm text-wildfire-600 hover:text-wildfire-800"
-            >
-              Forgot password?
-            </Link>
-          </div>
         </div>
         
         <LoadingButton 

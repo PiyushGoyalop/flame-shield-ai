@@ -3,7 +3,7 @@
  * Returns the redirect URL for authentication
  */
 export const useRedirectUrl = () => {
-  const getRedirectUrl = (type: 'verification' | 'reset-password' = 'verification') => {
+  const getRedirectUrl = (type: 'verification' = 'verification') => {
     // Get the current origin
     const origin = window.location.origin;
     
