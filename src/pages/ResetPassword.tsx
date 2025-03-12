@@ -34,10 +34,15 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      // Use the auth-redirect URL which will handle redirecting to set-new-password
-      // This is critical for the password reset flow to work correctly
+      // Get redirect URL for password reset
       const redirectUrl = getRedirectUrl('reset-password');
       console.log("Using password reset redirect URL:", redirectUrl);
+      
+      // Important: Log the exact URL being used for debugging
+      console.log("Full reset password request:", {
+        email,
+        redirectUrl
+      });
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
