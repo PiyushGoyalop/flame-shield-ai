@@ -36,7 +36,7 @@ export function PredictionForm() {
                 <span className="text-sm text-muted-foreground">
                   {useRandomForest 
                     ? "Random Forest (more accurate)" 
-                    : "Formula-based (faster)"}
+                    : "Formula-based (simpler)"}
                 </span>
               </div>
               <Switch 

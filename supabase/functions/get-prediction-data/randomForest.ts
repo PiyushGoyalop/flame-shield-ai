@@ -35,109 +35,118 @@ class RandomForestModel {
   }
   
   private initializeTrees() {
-    // Create simplified decision trees
+    // Create simplified decision trees with more realistic weights
     for (let i = 0; i < this.numTrees; i++) {
       // Each tree has slightly different thresholds to simulate ensemble diversity
-      const randomFactor = 0.8 + (Math.random() * 0.4); // 0.8 to 1.2
+      // Reduced randomness for more consistency with formula-based approach
+      const randomFactor = 0.9 + (Math.random() * 0.2); // 0.9 to 1.1
       this.trees.push({
         // Temperature thresholds - higher temp increases risk
-        tempThreshold: 28 * randomFactor,
-        highTempContribution: 20 + (Math.random() * 10),
+        tempThreshold: 25 * randomFactor, // Lower threshold to match formula approach
+        highTempContribution: 18 + (Math.random() * 8),
         
         // Humidity thresholds - lower humidity increases risk
-        humidityThreshold: 40 * randomFactor,
-        lowHumidityContribution: 18 + (Math.random() * 8),
+        humidityThreshold: 45 * randomFactor, // Adjusted to match formula sensitivity
+        lowHumidityContribution: 16 + (Math.random() * 6),
         
         // Drought thresholds - higher drought index increases risk
-        droughtThreshold: 60 * randomFactor,
-        highDroughtContribution: 25 + (Math.random() * 10),
+        droughtThreshold: 55 * randomFactor,
+        highDroughtContribution: 22 + (Math.random() * 8),
         
         // Air quality thresholds
         aqiThreshold: 3 * randomFactor,
-        highAqiContribution: 8 + (Math.random() * 4),
+        highAqiContribution: 7 + (Math.random() * 3),
         
         // PM2.5 thresholds
-        pm25Threshold: 30 * randomFactor,
-        highPm25Contribution: 10 + (Math.random() * 5),
+        pm25Threshold: 25 * randomFactor,
+        highPm25Contribution: 8 + (Math.random() * 4),
         
         // Vegetation thresholds (NDVI)
         ndviLowThreshold: 0.3 * randomFactor,
         ndviHighThreshold: 0.6 * randomFactor,
-        optimalNdviContribution: 12 + (Math.random() * 5),
+        optimalNdviContribution: 10 + (Math.random() * 4),
         
         // Forest percent threshold
         forestThreshold: 40 * randomFactor,
-        highForestContribution: 12 + (Math.random() * 5),
+        highForestContribution: 10 + (Math.random() * 4),
         
         // Latitude range threshold (most wildfires occur between 30-50 degrees)
         isHighRiskLatitude: (lat: number) => {
           const absLat = Math.abs(lat);
           return (absLat >= 30 * randomFactor && absLat <= 50 * randomFactor);
         },
-        latitudeContribution: 8 + (Math.random() * 4)
+        latitudeContribution: 7 + (Math.random() * 3)
       });
     }
   }
   
   // Process data through a single tree
   private predictTree(tree: any, data: RandomForestInputData): number {
-    // Starting with a lower base probability to align better with formula-based approach
-    let probability = 30; 
+    // Starting with a base probability aligned with formula-based approach
+    let probability = 20; 
     
-    // Apply temperature rules
+    // Apply temperature rules with adjusted weight
     if (data.temperature > tree.tempThreshold) {
-      probability += tree.highTempContribution;
+      probability += tree.highTempContribution * (data.temperature / tree.tempThreshold) * 0.6;
     } else {
-      probability -= tree.highTempContribution / 2;
+      probability += (tree.highTempContribution / 3) * (data.temperature / tree.tempThreshold);
     }
     
-    // Apply humidity rules (lower humidity = higher risk)
+    // Apply humidity rules (lower humidity = higher risk) with adjusted weight
     if (data.humidity < tree.humidityThreshold) {
-      probability += tree.lowHumidityContribution;
+      probability += tree.lowHumidityContribution * ((tree.humidityThreshold - data.humidity) / tree.humidityThreshold) * 0.6;
     } else {
-      probability -= tree.lowHumidityContribution / 2;
+      probability -= (tree.lowHumidityContribution / 3) * (data.humidity / 100);
     }
     
-    // Apply drought rules
+    // Apply drought rules with more granular approach
     if (data.drought_index > tree.droughtThreshold) {
-      probability += tree.highDroughtContribution;
+      probability += tree.highDroughtContribution * (data.drought_index / 100) * 0.7;
+    } else {
+      probability += (tree.highDroughtContribution / 4) * (data.drought_index / 100);
     }
     
-    // Apply air quality rules
+    // Apply air quality rules with scaled impact
     if (data.air_quality_index > tree.aqiThreshold) {
-      probability += tree.highAqiContribution;
+      probability += tree.highAqiContribution * (data.air_quality_index / 5) * 0.5;
     }
     
-    // Apply PM2.5 rules
+    // Apply PM2.5 rules with scaled impact
     if (data.pm2_5 > tree.pm25Threshold) {
-      probability += tree.highPm25Contribution;
+      probability += tree.highPm25Contribution * (Math.min(data.pm2_5, 100) / 100) * 0.5;
     }
     
-    // Apply vegetation rules if available
+    // Apply vegetation rules if available with improved scaling
     if (data.ndvi !== undefined) {
       // Optimal NDVI for fires is mid-range (not too dry, not too wet)
       if (data.ndvi > tree.ndviLowThreshold && data.ndvi < tree.ndviHighThreshold) {
-        probability += tree.optimalNdviContribution;
+        probability += tree.optimalNdviContribution * 0.8;
+      } else if (data.ndvi <= tree.ndviLowThreshold) {
+        // Very dry areas have moderate risk
+        probability += (tree.optimalNdviContribution * 0.4);
+      } else {
+        // Very wet areas have low risk
+        probability += (tree.optimalNdviContribution * 0.2);
       }
     }
     
     // Apply forest coverage rules if available
     if (data.forest_percent !== undefined) {
-      if (data.forest_percent > tree.forestThreshold) {
-        probability += tree.highForestContribution;
-      }
+      probability += (tree.highForestContribution * (data.forest_percent / 100) * 0.6);
     }
     
-    // Apply latitude factor
+    // Apply grassland coverage if available
+    if (data.grassland_percent !== undefined) {
+      probability += ((tree.highForestContribution * 0.7) * (data.grassland_percent / 100) * 0.5);
+    }
+    
+    // Apply latitude factor more precisely
     if (tree.isHighRiskLatitude(data.latitude)) {
-      probability += tree.latitudeContribution;
+      probability += tree.latitudeContribution * 0.6;
     }
     
-    // Normalize the result to better align with formula-based approach
-    probability = probability * 0.85;
-    
-    // Cap probability and scale to 0-100
-    return Math.min(Math.max(probability, 0), 100);
+    // Cap and scale the probability to match formula-based approach
+    return Math.min(Math.max(probability, 0), 95);
   }
   
   // Get probability prediction using the Random Forest ensemble
@@ -149,8 +158,8 @@ class RandomForestModel {
     const sum = predictions.reduce((a, b) => a + b, 0);
     const average = sum / this.numTrees;
     
-    // Apply normalization to better align with formula-based approach
-    // Cap at 95% to reflect uncertainty
+    // Apply formula-based scaling to maintain consistency
+    // Formula model tends to give values in a similar range to our random forest now
     return Math.min(Math.round(average * 10) / 10, 95);
   }
   

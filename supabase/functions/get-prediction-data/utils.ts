@@ -1,3 +1,4 @@
+
 // CORS headers for cross-origin requests
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,7 +127,7 @@ export function calculateWildfireProbability(
     landCoverFactor * landCoverWeight
   ) * 100 * isHighRiskLatitude;
   
-  // Normalize to better align with Random Forest model
+  // Apply the same scaling as Random Forest for consistency
   probability = probability * 0.85;
   
   // Cap at 95%
