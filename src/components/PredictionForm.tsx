@@ -4,6 +4,7 @@ import { PredictionFormCard } from "./prediction/PredictionFormCard";
 import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
 import { usePrediction } from "@/hooks/usePrediction";
 import { useEffect } from "react";
 
@@ -12,8 +13,10 @@ export function PredictionForm() {
     isLoading,
     result,
     location,
+    useRandomForest,
     handleLocationSelect,
-    handleSubmit
+    handleSubmit,
+    toggleModel
   } = usePrediction();
 
   return (
@@ -26,6 +29,22 @@ export function PredictionForm() {
               isLoading={isLoading} 
               initialLocation={location}
             />
+            
+            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+              <div className="flex flex-col">
+                <span className="font-medium">Prediction Model</span>
+                <span className="text-sm text-muted-foreground">
+                  {useRandomForest 
+                    ? "Random Forest (more accurate)" 
+                    : "Formula-based (faster)"}
+                </span>
+              </div>
+              <Switch 
+                checked={useRandomForest}
+                onCheckedChange={toggleModel}
+                disabled={isLoading}
+              />
+            </div>
             
             <Button 
               onClick={() => handleSubmit()} 

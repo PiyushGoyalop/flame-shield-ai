@@ -8,6 +8,7 @@ import { PredictionData } from "@/types/prediction";
 import { EarthEngineDataDisplay } from "./EarthEngineDataDisplay";
 import { Card, CardContent } from "@/components/ui/card";
 import { RiskIndicator } from "./RiskIndicator";
+import { ModelInfo } from "./ModelInfo";
 
 // Helper function to transform data with default values
 const transformPredictionData = (result: PredictionData) => {
@@ -22,7 +23,9 @@ const transformPredictionData = (result: PredictionData) => {
     droughtIndex: result.droughtIndex || 0,
     air_quality_index: result.air_quality_index || 0,
     pm2_5: result.pm2_5 || 0,
-    pm10: result.pm10 || 0
+    pm10: result.pm10 || 0,
+    model_type: result.model_type || "formula_based",
+    feature_importance: result.feature_importance || {}
   };
 };
 
@@ -57,6 +60,11 @@ export const PredictionResult = memo(function PredictionResult({
       </Card>
       
       <RiskIndicator probability={displayData.probability} />
+      
+      <ModelInfo 
+        modelType={displayData.model_type}
+        featureImportance={displayData.feature_importance}
+      />
       
       <MainStats 
         probability={displayData.probability} 

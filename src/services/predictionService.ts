@@ -5,20 +5,25 @@ import { getMockPredictionData } from "@/utils/mockDataGenerator";
 
 export async function getPredictionData(
   location: string, 
-  apiMode: boolean
+  apiMode: boolean,
+  useRandomForest: boolean = false
 ): Promise<PredictionData> {
   if (!apiMode) {
     console.log("Using mock data for location:", location);
     const mockData = await getMockPredictionData(location);
     return {
       location,
+      model_type: useRandomForest ? "random_forest" : "formula_based",
       ...mockData
     };
   }
   
   // Call the Supabase function to get prediction data
   const { data, error } = await supabase.functions.invoke('get-prediction-data', {
-    body: { location }
+    body: { 
+      location,
+      useRandomForest 
+    }
   });
   
   if (error) {
@@ -104,7 +109,9 @@ export async function getPredictionData(
     pm10: data.pm10,
     historic_data: historicData,
     vegetation_index: vegetationIndex,
-    land_cover: landCover
+    land_cover: landCover,
+    model_type: data.model_type,
+    feature_importance: data.feature_importance
   };
 }
 
@@ -152,7 +159,8 @@ export async function savePrediction(userId: string, predictionData: PredictionD
       grassland_percent: predictionData.land_cover?.grassland_percent,
       urban_percent: predictionData.land_cover?.urban_percent,
       water_percent: predictionData.land_cover?.water_percent,
-      barren_percent: predictionData.land_cover?.barren_percent
+      barren_percent: predictionData.land_cover?.barren_percent,
+      model_type: predictionData.model_type || "formula_based"
     };
     
     const { error: insertError } = await supabase.from('api_predictions').insert(insertData);

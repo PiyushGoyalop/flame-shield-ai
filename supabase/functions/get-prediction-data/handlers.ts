@@ -1,3 +1,4 @@
+
 import { 
   RequestBody, 
   PredictionData, 
@@ -12,6 +13,11 @@ import {
   calculateWildfireProbability,
   OPENWEATHER_API_KEY
 } from "./utils.ts";
+import {
+  prepareInputData,
+  predictWildfireProbability,
+  explainPrediction
+} from "./randomForest.ts";
 import { 
   getCoordinates, 
   getWeatherData, 
@@ -21,7 +27,7 @@ import {
 // Main request handler
 export async function handleRequest(req: Request): Promise<Response> {
   try {
-    const { location } = await req.json() as RequestBody;
+    const { location, useRandomForest = false } = await req.json() as RequestBody;
     
     if (!location || location.trim() === "") {
       return new Response(
@@ -34,7 +40,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     }
     
     // Log the location received for debugging
-    console.log(`Processing prediction request for location: "${location}"`);
+    console.log(`Processing prediction request for location: "${location}" using ${useRandomForest ? "Random Forest" : "Formula-based"} model`);
     
     // Check if API key is available
     if (!OPENWEATHER_API_KEY) {
@@ -88,17 +94,27 @@ export async function handleRequest(req: Request): Promise<Response> {
       }
       
       // Process data and generate prediction
-      const predictionData = generatePrediction(
-        location, 
-        weatherData, 
-        airPollutionData, 
-        lat, 
-        lon, 
-        vegetationData, 
-        landCoverData
-      );
+      const predictionData = useRandomForest
+        ? generateRandomForestPrediction(
+            location, 
+            weatherData, 
+            airPollutionData, 
+            lat, 
+            lon, 
+            vegetationData, 
+            landCoverData
+          )
+        : generatePrediction(
+            location, 
+            weatherData, 
+            airPollutionData, 
+            lat, 
+            lon, 
+            vegetationData, 
+            landCoverData
+          );
       
-      console.log(`Prediction completed for ${location}: probability=${predictionData.probability}%`);
+      console.log(`Prediction completed for ${location}: probability=${predictionData.probability}% using ${predictionData.model_type} model`);
       
       return new Response(
         JSON.stringify(predictionData),
@@ -152,7 +168,67 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
 }
 
-// Process all data and generate prediction results
+// Process all data and generate prediction results using Random Forest
+function generateRandomForestPrediction(
+  location: string, 
+  weatherData: WeatherData, 
+  airPollutionData: AirPollutionData,
+  lat: number,
+  lon: number,
+  vegetationData?: { ndvi: number, evi: number },
+  landCoverData?: { forest_percent: number, grassland_percent: number }
+): PredictionData {
+  // Extract air quality values
+  const airQualityIndex = airPollutionData.list[0].main.aqi; // Air Quality Index (1-5)
+  const pm2_5 = airPollutionData.list[0].components.pm2_5;
+  const pm10 = airPollutionData.list[0].components.pm10;
+  const coValue = airPollutionData.list[0].components.co;
+  
+  // Convert CO to CO2 equivalent for consistency with previous implementation
+  const co2Level = convertCOToCO2Equivalent(coValue);
+  
+  // Calculate drought index
+  const droughtIndex = calculateDroughtIndex(weatherData.main.temp, weatherData.main.humidity);
+  
+  // Prepare data for Random Forest model
+  const inputData = prepareInputData(
+    weatherData,
+    airPollutionData,
+    droughtIndex,
+    co2Level,
+    lat,
+    lon,
+    vegetationData,
+    landCoverData
+  );
+  
+  // Calculate probability using Random Forest model
+  const probability = predictWildfireProbability(inputData);
+  
+  // Get feature importance for explainability
+  const featureImportance = explainPrediction();
+  
+  // Prepare prediction data
+  return {
+    location: weatherData.name || location,
+    latitude: lat,
+    longitude: lon,
+    probability: probability,
+    co2_level: co2Level,
+    temperature: weatherData.main.temp,
+    humidity: weatherData.main.humidity,
+    drought_index: droughtIndex,
+    air_quality_index: airQualityIndex,
+    pm2_5: pm2_5,
+    pm10: pm10,
+    vegetation_index: vegetationData,
+    land_cover: landCoverData,
+    model_type: "random_forest",
+    feature_importance: featureImportance
+  };
+}
+
+// Process all data and generate prediction results with formula-based approach
 function generatePrediction(
   location: string, 
   weatherData: WeatherData, 
@@ -205,6 +281,7 @@ function generatePrediction(
     pm2_5: pm2_5,
     pm10: pm10,
     vegetation_index: vegetationData,
-    land_cover: landCoverData
+    land_cover: landCoverData,
+    model_type: "formula_based"
   };
 }

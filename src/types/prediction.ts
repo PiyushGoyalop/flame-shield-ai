@@ -1,52 +1,27 @@
 
-export interface HistoricData {
-  total_incidents: number;
-  largest_fire_acres: number;
-  average_fire_size_acres: number;
-  yearly_incidents: {
-    year: number;
-    incidents: number;
-    severity?: {
-      low: number;
-      medium: number;
-      high: number;
-      extreme: number;
-    };
-    causes?: {
-      lightning: number;
-      human: number;
-      unknown: number;
-    };
-  }[];
-  severity_distribution?: {
-    low: number;
-    medium: number;
-    high: number;
-    extreme: number;
-  };
-  causes?: {
-    lightning: number;
-    human: number;
-    unknown: number;
-  };
-}
-
 export interface PredictionData {
   location: string;
   probability: number;
-  co2Level: number;
-  temperature: number;
-  humidity: number;
-  droughtIndex: number;
+  co2Level?: number;
+  temperature?: number;
+  humidity?: number;
+  droughtIndex?: number;
   latitude?: number;
   longitude?: number;
   air_quality_index?: number;
   pm2_5?: number;
   pm10?: number;
-  historic_data?: HistoricData;
+  historic_data?: {
+    total_incidents: number;
+    largest_fire_acres: number;
+    average_fire_size_acres: number;
+    yearly_incidents: { year: number; incidents: number }[];
+    severity_distribution: { severity: string; percentage: number }[];
+    causes: { cause: string; percentage: number }[];
+  };
   vegetation_index?: {
-    ndvi: number; // Normalized Difference Vegetation Index (0-1)
-    evi: number;  // Enhanced Vegetation Index (0-1)
+    ndvi: number;
+    evi: number;
   };
   land_cover?: {
     forest_percent: number;
@@ -55,4 +30,6 @@ export interface PredictionData {
     water_percent: number;
     barren_percent: number;
   };
+  model_type?: string;
+  feature_importance?: Record<string, number>;
 }

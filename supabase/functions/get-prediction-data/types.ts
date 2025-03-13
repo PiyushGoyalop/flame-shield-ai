@@ -2,6 +2,7 @@
 // Type definitions
 export interface RequestBody {
   location: string;
+  useRandomForest?: boolean;
 }
 
 export interface WeatherData {
@@ -57,4 +58,21 @@ export interface PredictionData {
     water_percent: number;
     barren_percent: number;
   };
+  model_type?: string;
+  feature_importance?: Record<string, number>;
+}
+
+export interface RandomForestInputData {
+  temperature: number;
+  humidity: number;
+  drought_index: number;
+  air_quality_index: number;
+  pm2_5: number;
+  co2_level: number;
+  latitude: number;
+  longitude: number;
+  ndvi?: number;
+  evi?: number;
+  forest_percent?: number;
+  grassland_percent?: number;
 }
