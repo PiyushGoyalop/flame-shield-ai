@@ -14,25 +14,14 @@ interface HistoricData {
   yearly_incidents: {
     year: number;
     incidents: number;
-    severity?: {
-      low: number;
-      medium: number;
-      high: number;
-      extreme: number;
-    };
-    causes?: {
-      lightning: number;
-      human: number;
-      unknown: number;
-    };
   }[];
-  severity_distribution?: {
+  severity_distribution: {
     low: number;
     medium: number;
     high: number;
     extreme: number;
   };
-  causes?: {
+  causes: {
     lightning: number;
     human: number;
     unknown: number;

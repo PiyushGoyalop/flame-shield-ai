@@ -11,13 +11,13 @@ export interface RequestBody {
 export interface YearlyIncident {
   year: number;
   incidents: number;
-  severity: {
+  severity?: {
     low: number;
     medium: number;
     high: number;
     extreme: number;
   };
-  causes: {
+  causes?: {
     lightning: number;
     human: number;
     unknown: number;

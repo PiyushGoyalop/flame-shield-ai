@@ -16,8 +16,17 @@ export interface PredictionData {
     largest_fire_acres: number;
     average_fire_size_acres: number;
     yearly_incidents: { year: number; incidents: number }[];
-    severity_distribution: { severity: string; percentage: number }[];
-    causes: { cause: string; percentage: number }[];
+    severity_distribution: {
+      low: number;
+      medium: number;
+      high: number;
+      extreme: number;
+    };
+    causes: {
+      lightning: number;
+      human: number;
+      unknown: number;
+    };
   };
   vegetation_index?: {
     ndvi: number;
