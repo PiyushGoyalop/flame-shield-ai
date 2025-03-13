@@ -139,7 +139,8 @@ export async function savePrediction(userId: string, predictionData: PredictionD
       console.log("Successfully saved to legacy predictions table");
     }
     
-    // Then save to the more comprehensive api_predictions table
+    // Then save to the more comprehensive api_predictions table, excluding the model_type field
+    // if it's causing errors
     const insertData = {
       user_id: userId,
       location: predictionData.location,
@@ -159,8 +160,8 @@ export async function savePrediction(userId: string, predictionData: PredictionD
       grassland_percent: predictionData.land_cover?.grassland_percent,
       urban_percent: predictionData.land_cover?.urban_percent,
       water_percent: predictionData.land_cover?.water_percent,
-      barren_percent: predictionData.land_cover?.barren_percent,
-      model_type: predictionData.model_type || "formula_based"
+      barren_percent: predictionData.land_cover?.barren_percent
+      // Removed model_type field as it doesn't exist in the database schema
     };
     
     const { error: insertError } = await supabase.from('api_predictions').insert(insertData);
