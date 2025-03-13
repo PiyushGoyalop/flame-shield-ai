@@ -66,15 +66,15 @@ export function calculateWildfireProbability(
   vegetationIndex?: { ndvi: number, evi: number },
   landCover?: { forest_percent: number, grassland_percent: number }
 ): number {
-  // Weight factors by importance
-  const tempWeight = 0.2;
-  const humidityWeight = 0.15;
-  const droughtWeight = 0.25;
-  const co2Weight = 0.05;
+  // Weight factors by importance - adjusted to better align with Random Forest
+  const tempWeight = 0.22;
+  const humidityWeight = 0.18;
+  const droughtWeight = 0.2;
+  const co2Weight = 0.04;
   const aqiWeight = 0.05;
-  const pm25Weight = 0.05;
-  const vegetationWeight = 0.15; // New: vegetation factor
-  const landCoverWeight = 0.1;   // New: land cover factor
+  const pm25Weight = 0.06;
+  const vegetationWeight = 0.09; // vegetation factor
+  const landCoverWeight = 0.08;   // land cover factor
   
   // Normalize each factor to a 0-1 scale
   const tempFactor = Math.max(0, Math.min(1, (temperature - 5) / 30)); // 0 at 5°C, 1 at 35°C
@@ -112,7 +112,7 @@ export function calculateWildfireProbability(
   
   // Check if location is in high-risk latitude band (most wildfires occur between 30-50 degrees)
   const latAbs = Math.abs(lat);
-  const isHighRiskLatitude = (latAbs >= 30 && latAbs <= 50) ? 1.3 : 1.0;
+  const isHighRiskLatitude = (latAbs >= 30 && latAbs <= 50) ? 1.1 : 1.0;
   
   // Calculate base probability
   let probability = (
@@ -125,6 +125,9 @@ export function calculateWildfireProbability(
     vegetationFactor * vegetationWeight +
     landCoverFactor * landCoverWeight
   ) * 100 * isHighRiskLatitude;
+  
+  // Normalize to better align with Random Forest model
+  probability = probability * 0.85;
   
   // Cap at 95%
   return Math.min(95, Math.round(probability * 100) / 100);

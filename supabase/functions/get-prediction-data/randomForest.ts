@@ -40,48 +40,49 @@ class RandomForestModel {
       // Each tree has slightly different thresholds to simulate ensemble diversity
       const randomFactor = 0.8 + (Math.random() * 0.4); // 0.8 to 1.2
       this.trees.push({
-        // Temperature thresholds
-        tempThreshold: 25 * randomFactor,
-        highTempContribution: 25 + (Math.random() * 10),
+        // Temperature thresholds - higher temp increases risk
+        tempThreshold: 28 * randomFactor,
+        highTempContribution: 20 + (Math.random() * 10),
         
-        // Humidity thresholds
+        // Humidity thresholds - lower humidity increases risk
         humidityThreshold: 40 * randomFactor,
-        lowHumidityContribution: 20 + (Math.random() * 10),
+        lowHumidityContribution: 18 + (Math.random() * 8),
         
-        // Drought thresholds
+        // Drought thresholds - higher drought index increases risk
         droughtThreshold: 60 * randomFactor,
-        highDroughtContribution: 30 + (Math.random() * 15),
+        highDroughtContribution: 25 + (Math.random() * 10),
         
         // Air quality thresholds
         aqiThreshold: 3 * randomFactor,
-        highAqiContribution: 10 + (Math.random() * 5),
+        highAqiContribution: 8 + (Math.random() * 4),
         
         // PM2.5 thresholds
         pm25Threshold: 30 * randomFactor,
-        highPm25Contribution: 12 + (Math.random() * 5),
+        highPm25Contribution: 10 + (Math.random() * 5),
         
         // Vegetation thresholds (NDVI)
         ndviLowThreshold: 0.3 * randomFactor,
         ndviHighThreshold: 0.6 * randomFactor,
-        optimalNdviContribution: 15 + (Math.random() * 5),
+        optimalNdviContribution: 12 + (Math.random() * 5),
         
         // Forest percent threshold
         forestThreshold: 40 * randomFactor,
-        highForestContribution: 15 + (Math.random() * 5),
+        highForestContribution: 12 + (Math.random() * 5),
         
         // Latitude range threshold (most wildfires occur between 30-50 degrees)
         isHighRiskLatitude: (lat: number) => {
           const absLat = Math.abs(lat);
           return (absLat >= 30 * randomFactor && absLat <= 50 * randomFactor);
         },
-        latitudeContribution: 10 + (Math.random() * 5)
+        latitudeContribution: 8 + (Math.random() * 4)
       });
     }
   }
   
   // Process data through a single tree
   private predictTree(tree: any, data: RandomForestInputData): number {
-    let probability = 40; // Base probability
+    // Starting with a lower base probability to align better with formula-based approach
+    let probability = 30; 
     
     // Apply temperature rules
     if (data.temperature > tree.tempThreshold) {
@@ -132,6 +133,9 @@ class RandomForestModel {
       probability += tree.latitudeContribution;
     }
     
+    // Normalize the result to better align with formula-based approach
+    probability = probability * 0.85;
+    
     // Cap probability and scale to 0-100
     return Math.min(Math.max(probability, 0), 100);
   }
@@ -145,7 +149,7 @@ class RandomForestModel {
     const sum = predictions.reduce((a, b) => a + b, 0);
     const average = sum / this.numTrees;
     
-    // Apply sigmoid scaling to better represent probabilities
+    // Apply normalization to better align with formula-based approach
     // Cap at 95% to reflect uncertainty
     return Math.min(Math.round(average * 10) / 10, 95);
   }
