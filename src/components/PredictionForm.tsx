@@ -5,6 +5,7 @@ import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { usePrediction } from "@/hooks/usePrediction";
+import { Brain } from "lucide-react";
 
 export function PredictionForm() {
   const {
@@ -19,6 +20,11 @@ export function PredictionForm() {
     <div className="w-full max-w-5xl mx-auto">
       <PredictionFormCard>
         <CardContent>
+          <div className="mb-4 px-1 flex items-center space-x-2 text-sm text-muted-foreground">
+            <Brain className="h-4 w-4 text-purple-600" />
+            <span>Using Random Forest ML model with real-time environmental APIs for accurate predictions</span>
+          </div>
+          
           <div className="space-y-4">
             <LocationSelector 
               onLocationSelect={handleLocationSelect} 

@@ -1,5 +1,5 @@
 
-// randomForest.ts - Main entry point for Random Forest functionality
+// randomForest.ts - Main entry point for advanced Random Forest functionality
 
 import { 
   WeatherData, 
