@@ -1,8 +1,14 @@
 
+import { useState } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
+import { Button } from "@/components/ui/button";
+import { Workflow } from "lucide-react";
 
 const About = () => {
+  const [showDiagrams, setShowDiagrams] = useState<boolean>(false);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -80,6 +86,24 @@ const About = () => {
               </p>
             </div>
           </div>
+          
+          {/* System Flow Diagrams Section */}
+          <div className="mt-16 mb-4 text-center">
+            <Button 
+              variant="outline" 
+              className="bg-white/50"
+              onClick={() => setShowDiagrams(!showDiagrams)}
+            >
+              <Workflow className="h-4 w-4 mr-2" />
+              {showDiagrams ? "Hide System Flow Diagrams" : "View System Flow Diagrams"}
+            </Button>
+          </div>
+          
+          {showDiagrams && (
+            <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <DiagramsDisplay />
+            </div>
+          )}
         </div>
       </main>
       
