@@ -17,7 +17,6 @@ export function usePrediction() {
   const [result, setResult] = useState<PredictionData | null>(null);
   const [location, setLocation] = useState<string>("");
   const [apiMode, setApiMode] = useState<boolean>(true);
-  const [useRandomForest, setUseRandomForest] = useState<boolean>(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -28,11 +27,6 @@ export function usePrediction() {
     const queryParams = new URLSearchParams(locationParams.search);
     const locationParam = queryParams.get("location");
     const autoSubmit = queryParams.get("autoSubmit");
-    const rfParam = queryParams.get("randomForest");
-    
-    if (rfParam === "true") {
-      setUseRandomForest(true);
-    }
     
     if (locationParam) {
       setLocation(locationParam);
@@ -50,14 +44,10 @@ export function usePrediction() {
     setLocation(selectedLocation);
   };
 
-  const toggleModel = () => {
-    setUseRandomForest(prev => !prev);
-  };
-
   const handleSubmit = async (locationOverride?: string) => {
     const locationToUse = locationOverride || location;
     console.log("Submit prediction - current user:", user?.id);
-    console.log("Using model:", useRandomForest ? "Random Forest" : "Formula-based");
+    console.log("Using model: Random Forest");
     
     if (!user) {
       toast({
@@ -81,14 +71,15 @@ export function usePrediction() {
     setIsLoading(true);
 
     try {
-      const predictionData = await getPredictionData(locationToUse, apiMode, useRandomForest);
+      // Always use Random Forest model (useRandomForest = true)
+      const predictionData = await getPredictionData(locationToUse, apiMode, true);
       setResult(predictionData);
       
       await savePrediction(user.id, predictionData);
       
       toast({
         title: "Prediction Complete",
-        description: `Analysis for ${predictionData.location} has been generated using ${predictionData.model_type === "random_forest" ? "Random Forest" : "formula-based"} model.`,
+        description: `Analysis for ${predictionData.location} has been generated using advanced Random Forest model.`,
       });
     } catch (error: any) {
       console.error("Error in prediction flow:", error);
@@ -126,9 +117,7 @@ export function usePrediction() {
     isLoading,
     result,
     location,
-    useRandomForest,
     handleLocationSelect,
-    handleSubmit,
-    toggleModel
+    handleSubmit
   };
 }

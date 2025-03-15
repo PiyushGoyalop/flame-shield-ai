@@ -1,28 +1,21 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PredictionData } from "@/types/prediction";
-import { getMockPredictionData } from "@/utils/mockDataGenerator";
 
 export async function getPredictionData(
   location: string, 
   apiMode: boolean,
-  useRandomForest: boolean = false
+  useRandomForest: boolean = true // Default parameter kept for backward compatibility
 ): Promise<PredictionData> {
+  // If API mode is off, throw an error since we now require API connections
   if (!apiMode) {
-    console.log("Using mock data for location:", location);
-    const mockData = await getMockPredictionData(location);
-    return {
-      location,
-      model_type: useRandomForest ? "random_forest" : "formula_based",
-      ...mockData
-    };
+    throw new Error("API connection is required for prediction. Please check your internet connection and try again.");
   }
   
-  // Call the Supabase function to get prediction data
+  // Call the Supabase function to get prediction data (always using Random Forest)
   const { data, error } = await supabase.functions.invoke('get-prediction-data', {
     body: { 
       location,
-      useRandomForest 
+      useRandomForest: true // Always true now
     }
   });
   

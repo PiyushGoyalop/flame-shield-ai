@@ -28,6 +28,12 @@ export function predictWildfireProbability(data: RandomForestInputData): number 
     drought_index: Math.max(Math.min(data.drought_index, 100), 0),
     // Normalize air quality index if outside expected range
     air_quality_index: Math.max(Math.min(data.air_quality_index, 5), 1),
+    // Normalize PM2.5 values if they are extreme
+    pm2_5: data.pm2_5 > 1000 ? 1000 : Math.max(data.pm2_5, 0),
+    // Add seasonal data for better predictions
+    month: new Date().getMonth() + 1, // 1-12
+    // Apply any special transformations needed for better predictions
+    ndvi: data.ndvi !== undefined ? Math.max(Math.min(data.ndvi, 1), -1) : undefined,
   };
   
   // Log processed data for debugging
