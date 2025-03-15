@@ -14,6 +14,6 @@ import {
 } from "./utils/predictionUtils.ts";
 
 // Export the functions with the same names as before to maintain compatibility
-export const prepareInputData as prepareInputData;
+export { prepareInputData };
 export const predictWildfireProbability = predict;
 export const explainPrediction = explain;
