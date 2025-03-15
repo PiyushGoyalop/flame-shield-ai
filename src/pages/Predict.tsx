@@ -1,12 +1,11 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { PredictionForm } from "@/components/PredictionForm";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { preloadImages } from "@/utils/imagePreloader";
 import { FeatureCardsSection } from "@/components/prediction/FeatureCardsSection";
-import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
-import { Button } from "@/components/ui/button";
-import { Brain, Workflow } from "lucide-react";
+import { Brain } from "lucide-react";
 
 // Array of background images for rotation
 const backgroundImages = [
@@ -38,7 +37,6 @@ const imagePaths = [
 const Predict = () => {
   const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
-  const [showDiagrams, setShowDiagrams] = useState<boolean>(false);
 
   // Function to preload the background images
   useEffect(() => {
@@ -78,22 +76,7 @@ const Predict = () => {
             <p className="text-muted-foreground text-lg">
               Enter a location to get an AI-powered assessment of wildfire risk based on environmental factors, real-time weather data, and historical patterns.
             </p>
-            
-            <Button 
-              variant="outline" 
-              className="mt-4 bg-white/50"
-              onClick={() => setShowDiagrams(!showDiagrams)}
-            >
-              <Workflow className="h-4 w-4 mr-2" />
-              {showDiagrams ? "Hide System Diagrams" : "View System Diagrams"}
-            </Button>
           </div>
-          
-          {showDiagrams && (
-            <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <DiagramsDisplay />
-            </div>
-          )}
           
           <PredictionForm />
           
