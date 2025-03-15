@@ -9,9 +9,37 @@ const randomForestModel = new RandomForestModel();
 
 /**
  * Predict wildfire probability using the Random Forest model
+ * Enhanced to provide more accurate predictions based on environmental data
  */
 export function predictWildfireProbability(data: RandomForestInputData): number {
-  return randomForestModel.predict(data);
+  // Add data validation to ensure all required fields are present
+  if (!data.temperature || !data.humidity || !data.drought_index) {
+    console.warn("Missing critical data for prediction. Results may be less accurate.");
+  }
+  
+  // Pre-process prediction inputs to ensure proper ranges
+  const processedData = {
+    ...data,
+    // Ensure temperature is in reasonable range (-50 to 60°C)
+    temperature: Math.max(Math.min(data.temperature, 60), -50),
+    // Ensure humidity is between 0-100%
+    humidity: Math.max(Math.min(data.humidity, 100), 0),
+    // Ensure drought index is between 0-100
+    drought_index: Math.max(Math.min(data.drought_index, 100), 0),
+    // Normalize air quality index if outside expected range
+    air_quality_index: Math.max(Math.min(data.air_quality_index, 5), 1),
+  };
+  
+  // Log processed data for debugging
+  console.log("Processed Random Forest input:", processedData);
+  
+  // Get prediction from model
+  const prediction = randomForestModel.predict(processedData);
+  
+  // Log prediction for debugging
+  console.log("Random Forest prediction result:", prediction);
+  
+  return prediction;
 }
 
 /**
