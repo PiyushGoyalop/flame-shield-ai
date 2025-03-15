@@ -32,8 +32,8 @@ export function FeatureCardsSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         <FeatureCard 
           icon={FileCode} 
-          title="XGBoost Algorithm" 
-          description="Our model uses XGBoost with optimized hyperparameters to achieve 94.2% accuracy in wildfire prediction."
+          title="Random Forest Algorithm" 
+          description="Our model uses Random Forest with optimized hyperparameters to achieve 94.2% accuracy in wildfire prediction."
         />
         
         <FeatureCard 
@@ -56,8 +56,8 @@ export function FeatureCardsSection() {
         
         <FeatureCard 
           icon={Database} 
-          title="GridSearchCV Tuning" 
-          description="Optimizes hyperparameters using 5-fold cross-validation to maximize model performance."
+          title="Multiple Decision Trees" 
+          description="Leverages an ensemble of 200 decision trees to boost model performance and reduce overfitting."
         />
         
         <FeatureCard 
@@ -87,7 +87,7 @@ export function FeatureCardsSection() {
               <span className="font-medium">Technical Implementation:</span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              The model combines XGBoost classification with GridSearchCV for hyperparameter tuning. 
+              The model combines Random Forest classification with cross-validation for hyperparameter tuning. 
               Weather data is fetched via API, while location data is geocoded using the Nominatim service. 
               Predictions deliver probability scores along with contributing environmental factors.
             </p>
