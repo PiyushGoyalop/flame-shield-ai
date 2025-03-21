@@ -1,30 +1,17 @@
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { StatCard } from "@/components/StatCard";
 import { BarChart4, Globe, Flame, CloudRain, Thermometer, Wind } from "lucide-react";
 
 export function StatsSection() {
   const [animateStats, setAnimateStats] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    // Use IntersectionObserver instead of scroll event or timeout
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setAnimateStats(true);
-          // Once visible, disconnect to save resources
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 } // Trigger when 10% of the element is visible
-    );
+    const timer = setTimeout(() => {
+      setAnimateStats(true);
+    }, 500);
     
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-    
-    return () => observer.disconnect();
+    return () => clearTimeout(timer);
   }, []);
 
   const formatNumber = (num: number) => {
@@ -32,12 +19,15 @@ export function StatsSection() {
   };
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 relative overflow-hidden will-change-transform">
-      {/* Content container with semi-transparent background */}
+    <section className="py-12 md:py-16 relative overflow-hidden">
+      {/* Dynamic background */}
+      <div className="absolute inset-0 bg-wildfire-800 opacity-5 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-wildfire-50/50 to-white/95 z-0"></div>
+      
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-white">Key Statistics</h2>
-          <p className="text-white/80 mt-2">A snapshot of our expanded wildfire analytics impact</p>
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-wildfire-800">Key Statistics</h2>
+          <p className="text-muted-foreground mt-2">A snapshot of our expanded wildfire analytics impact</p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -46,7 +36,7 @@ export function StatsSection() {
             value={animateStats ? formatNumber(24632) : "0"}
             description="Geographic locations processed by our model"
             icon={<Globe className="h-5 w-5 text-wildfire-500" />}
-            className="transition-all duration-500 delay-100 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-100 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
           
           <StatCard
@@ -54,7 +44,7 @@ export function StatsSection() {
             value={animateStats ? formatNumber(18457) : "0"}
             description="Emissions data collected and analyzed"
             icon={<CloudRain className="h-5 w-5 text-wildfire-500" />}
-            className="transition-all duration-500 delay-200 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-200 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
           
           <StatCard
@@ -64,7 +54,7 @@ export function StatsSection() {
             icon={<Flame className="h-5 w-5 text-wildfire-500" />}
             trend="up"
             trendValue="+14% from last year"
-            className="transition-all duration-500 delay-300 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-300 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
           
           <StatCard
@@ -74,7 +64,7 @@ export function StatsSection() {
             icon={<BarChart4 className="h-5 w-5 text-wildfire-500" />}
             trend="up"
             trendValue="+2.3% improvement"
-            className="transition-all duration-500 delay-400 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-400 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
         </div>
         
@@ -84,7 +74,7 @@ export function StatsSection() {
             value={animateStats ? formatNumber(42518) : "0"}
             description="Real-time temperature and humidity readings"
             icon={<Thermometer className="h-5 w-5 text-wildfire-500" />}
-            className="transition-all duration-500 delay-500 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-500 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
           
           <StatCard
@@ -94,7 +84,7 @@ export function StatsSection() {
             icon={<Wind className="h-5 w-5 text-wildfire-500" />}
             trend="up"
             trendValue="+8.7% coverage"
-            className="transition-all duration-500 delay-600 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation"
+            className="transition-all duration-500 delay-600 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation"
           />
           
           <StatCard
@@ -102,7 +92,7 @@ export function StatsSection() {
             value={animateStats ? formatNumber(12500) : "0"}
             description="Weather data requests to enhance predictions"
             icon={<Globe className="h-5 w-5 text-wildfire-500" />}
-            className="transition-all duration-500 delay-700 border-wildfire-200/30 bg-black/30 backdrop-blur-sm hover:bg-black/40 hover:shadow-elevation lg:col-span-1 sm:col-span-2"
+            className="transition-all duration-500 delay-700 border-wildfire-200 hover:border-wildfire-300 hover:shadow-elevation lg:col-span-1 sm:col-span-2"
           />
         </div>
       </div>
