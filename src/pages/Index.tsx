@@ -28,10 +28,15 @@ const Index = () => {
   }, []);
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      {/* Fixed background image container */}
+      <div className="fixed inset-0 bg-forest-dark bg-cover bg-center bg-fixed z-0">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
+      </div>
+      
       <Nav />
       
-      <main className="flex-grow will-change-scroll">
+      <main className="flex-grow will-change-scroll relative z-10">
         <HeroSection />
         <StatsSection />
         <FeatureSection />
@@ -39,7 +44,7 @@ const Index = () => {
         <ProcessSection />
       </main>
       
-      <Footer />
+      <Footer className="relative z-10" />
     </div>
   );
 };

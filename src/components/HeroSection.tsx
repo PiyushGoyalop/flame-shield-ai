@@ -10,11 +10,6 @@ export const HeroSection = memo(function HeroSection() {
 
   return (
     <div className="relative h-screen overflow-hidden">
-      {/* Static background image with overlay */}
-      <div className="absolute inset-0 bg-forest-dark bg-cover bg-center bg-no-repeat z-0">
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
-      </div>
-      
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 h-full flex items-center">
         <div className="max-w-3xl text-white">
