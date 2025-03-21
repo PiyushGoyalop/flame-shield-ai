@@ -13,15 +13,10 @@ const Index = () => {
   usePreloadOgImage();
   
   return (
-    <div className="min-h-screen flex flex-col relative">
-      {/* Static background image with overlay */}
-      <div className="fixed inset-0 bg-forest-dark bg-cover bg-center bg-no-repeat z-0">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs"></div>
-      </div>
-      
+    <div className="min-h-screen flex flex-col">
       <Nav />
       
-      <main className="flex-grow relative z-10">
+      <main className="flex-grow">
         <HeroSection />
         <StatsSection />
         <FeatureSection />

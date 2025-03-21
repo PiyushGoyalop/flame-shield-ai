@@ -2,12 +2,38 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export function HeroSection() {
   const navigate = useNavigate();
+  const [bgImage, setBgImage] = useState<number>(1);
+
+  // Rotate through different background images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgImage(prev => (prev % 4) + 1);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Dynamically get background class based on current image
+  const getBgClass = () => {
+    switch(bgImage) {
+      case 1: return "bg-forest-dark";
+      case 2: return "bg-mountain-bg";
+      case 3: return "bg-water-bg";
+      case 4: return "bg-forest-light";
+      default: return "bg-forest-dark";
+    }
+  };
 
   return (
     <div className="relative h-screen overflow-hidden">
+      {/* Dynamic background image with overlay */}
+      <div className={`absolute inset-0 ${getBgClass()} bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out z-0`}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
+      </div>
+      
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 h-full flex items-center">
         <div className="max-w-3xl text-white">
