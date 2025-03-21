@@ -1,17 +1,30 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { StatCard } from "@/components/StatCard";
 import { BarChart4, Globe, Flame, CloudRain, Thermometer, Wind } from "lucide-react";
 
 export function StatsSection() {
   const [animateStats, setAnimateStats] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimateStats(true);
-    }, 500);
+    // Use IntersectionObserver instead of scroll event or timeout
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setAnimateStats(true);
+          // Once visible, disconnect to save resources
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the element is visible
+    );
     
-    return () => clearTimeout(timer);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => observer.disconnect();
   }, []);
 
   const formatNumber = (num: number) => {
@@ -19,7 +32,7 @@ export function StatsSection() {
   };
 
   return (
-    <section className="py-12 md:py-16 relative overflow-hidden">
+    <section ref={sectionRef} className="py-12 md:py-16 relative overflow-hidden will-change-transform">
       {/* Dynamic background */}
       <div className="absolute inset-0 bg-wildfire-800 opacity-5 z-0"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-wildfire-50/50 to-white/95 z-0"></div>

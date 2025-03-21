@@ -2,32 +2,35 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function ProcessSection() {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   
   useEffect(() => {
-    const handleScroll = () => {
-      const section = document.getElementById('process-section');
-      if (section) {
-        const sectionTop = section.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
-        if (sectionTop < windowHeight * 0.75) {
+    // Use IntersectionObserver instead of scroll event
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
           setIsInView(true);
+          // Once visible, disconnect scroll observation
+          observer.disconnect();
         }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check on load
+      },
+      { threshold: 0.1 } // Trigger when 10% of the element is visible
+    );
     
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => observer.disconnect();
   }, []);
 
-  // Cycle through steps for animation
+  // Cycle through steps for animation - only when in view
   useEffect(() => {
     if (!isInView) return;
     
@@ -62,12 +65,17 @@ export function ProcessSection() {
   ];
 
   return (
-    <section id="process-section" className="py-20 relative overflow-hidden bg-white">
+    <section 
+      ref={sectionRef} 
+      id="process-section" 
+      className="py-20 relative overflow-hidden bg-white will-change-transform"
+    >
       <div className="absolute inset-0 bg-dot-pattern opacity-10 z-0"></div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
-          <div className={`lg:w-1/2 transition-all duration-700 ${isInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+          <div className={`lg:w-1/2 transition-all duration-500 ${isInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}
+               style={{ willChange: isInView ? 'transform, opacity' : 'auto' }}>
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-wildfire-800">
               Our Wildfire Prediction Process
             </h2>
@@ -79,8 +87,7 @@ export function ProcessSection() {
               {steps.map((step, index) => (
                 <div 
                   key={index} 
-                  className={`flex gap-4 p-4 rounded-lg transition-all duration-500 ${activeStep === index ? 'bg-wildfire-50 border border-wildfire-200' : ''}`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
+                  className={`flex gap-4 p-4 rounded-lg transition-all duration-300 ${activeStep === index ? 'bg-wildfire-50 border border-wildfire-200' : ''}`}
                 >
                   <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold ${activeStep === index ? 'bg-wildfire-500 text-white' : 'bg-wildfire-100 text-wildfire-600 border border-wildfire-200'}`}>
                     {step.number}
@@ -103,7 +110,8 @@ export function ProcessSection() {
             </div>
           </div>
           
-          <div className={`lg:w-1/2 transition-all duration-700 delay-300 ${isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+          <div className={`lg:w-1/2 transition-all duration-500 ${isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
+               style={{ willChange: isInView ? 'transform, opacity' : 'auto' }}>
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-wildfire-300 to-wildfire-500 rounded-xl blur-sm opacity-75"></div>
               <div className="relative bg-white rounded-xl overflow-hidden border border-wildfire-200">
@@ -112,6 +120,7 @@ export function ProcessSection() {
                     src="https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80" 
                     alt="Wildfire prediction visualization" 
                     className="w-full aspect-[4/3] object-cover"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                   <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -122,7 +131,11 @@ export function ProcessSection() {
                     <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-wildfire-300 rounded-full" 
-                        style={{ width: `${(activeStep + 1) * 25}%`, transition: 'width 1s ease-in-out' }}
+                        style={{ 
+                          width: `${(activeStep + 1) * 25}%`,
+                          transition: 'width 1s ease-in-out',
+                          willChange: 'width'
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -139,8 +152,8 @@ export function ProcessSection() {
         </div>
       </div>
       
-      {/* Decorative element */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-wildfire-200 rounded-full filter blur-3xl opacity-30 animate-float"></div>
+      {/* Static decorative element instead of animated */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-wildfire-200 rounded-full filter blur-3xl opacity-30"></div>
     </section>
   );
 }

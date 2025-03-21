@@ -2,36 +2,17 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { memo } from "react";
 
-export function HeroSection() {
+// Memoize the component to prevent unnecessary rerenders
+export const HeroSection = memo(function HeroSection() {
   const navigate = useNavigate();
-  const [bgImage, setBgImage] = useState<number>(1);
-
-  // Rotate through different background images
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBgImage(prev => (prev % 4) + 1);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Dynamically get background class based on current image
-  const getBgClass = () => {
-    switch(bgImage) {
-      case 1: return "bg-forest-dark";
-      case 2: return "bg-mountain-bg";
-      case 3: return "bg-water-bg";
-      case 4: return "bg-forest-light";
-      default: return "bg-forest-dark";
-    }
-  };
 
   return (
     <div className="relative h-screen overflow-hidden">
-      {/* Dynamic background image with overlay */}
-      <div className={`absolute inset-0 ${getBgClass()} bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out z-0`}>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
+      {/* Static background image with overlay */}
+      <div className="absolute inset-0 bg-forest-dark bg-cover bg-center bg-no-repeat z-0">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
       </div>
       
       {/* Content */}
@@ -67,9 +48,9 @@ export function HeroSection() {
         </div>
       </div>
       
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-1/4 -right-32 w-96 h-96 bg-wildfire-400/40 rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-wildfire-600/40 rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
+      {/* Decorative gradient orbs - using opacity-0 when not in view */}
+      <div className="absolute top-1/4 -right-32 w-96 h-96 bg-wildfire-400/40 rounded-full filter blur-3xl opacity-20"></div>
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-wildfire-600/40 rounded-full filter blur-3xl opacity-20"></div>
     </div>
   );
-}
+});
