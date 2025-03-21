@@ -4,14 +4,11 @@ import { Cloud, ThermometerSun, Trees, Flame, Wind } from "lucide-react";
 
 export function GreenhouseGasSection() {
   return (
-    <section className="py-16 relative">
-      {/* Background overlay for readability */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] z-0"></div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
-        <div className="text-center mb-12 bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-white/10 max-w-3xl mx-auto">
-          <h2 className="text-3xl font-display font-bold mb-4 text-white">Greenhouse Gases & Wildfires</h2>
-          <p className="text-white/80 max-w-2xl mx-auto">
+    <section className="py-16 bg-gradient-to-b from-white to-wildfire-50">
+      <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-display font-bold mb-4">Greenhouse Gases & Wildfires</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             Understanding the relationship between greenhouse gas emissions and wildfire risks is crucial for prevention and mitigation efforts.
           </p>
         </div>
@@ -36,15 +33,15 @@ export function GreenhouseGasSection() {
           />
         </div>
         
-        <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20">
-          <h3 className="text-2xl font-display font-bold mb-6 text-white">Mitigation Strategies</h3>
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-wildfire-100">
+          <h3 className="text-2xl font-display font-bold mb-6 text-wildfire-800">Mitigation Strategies</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h4 className="text-lg font-medium flex items-center gap-2 text-wildfire-300">
+              <h4 className="text-lg font-medium flex items-center gap-2 text-wildfire-700">
                 <Flame className="h-5 w-5" /> Reducing Emissions
               </h4>
-              <ul className="space-y-2 list-disc pl-5 text-white/80">
+              <ul className="space-y-2 list-disc pl-5 text-muted-foreground">
                 <li>Transition to renewable energy sources</li>
                 <li>Improve energy efficiency in buildings and transportation</li>
                 <li>Implement carbon capture and storage technologies</li>
@@ -54,10 +51,10 @@ export function GreenhouseGasSection() {
             </div>
             
             <div className="space-y-4">
-              <h4 className="text-lg font-medium flex items-center gap-2 text-wildfire-300">
+              <h4 className="text-lg font-medium flex items-center gap-2 text-wildfire-700">
                 <Trees className="h-5 w-5" /> Nature-Based Solutions
               </h4>
-              <ul className="space-y-2 list-disc pl-5 text-white/80">
+              <ul className="space-y-2 list-disc pl-5 text-muted-foreground">
                 <li>Protect and restore forests that absorb CO₂</li>
                 <li>Implement sustainable land management practices</li>
                 <li>Create firebreaks and defensible spaces in vulnerable areas</li>
@@ -67,9 +64,9 @@ export function GreenhouseGasSection() {
             </div>
           </div>
           
-          <div className="mt-8 p-4 bg-wildfire-900/30 rounded-lg border border-wildfire-800/30">
-            <p className="text-sm text-white/90">
-              <strong className="text-wildfire-300">Did you know?</strong> A single large wildfire can release as much carbon dioxide as millions of cars do in a year. Preventing wildfires is not just about protecting lives and property—it's also a critical climate action.
+          <div className="mt-8 p-4 bg-wildfire-50 rounded-lg border border-wildfire-100">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-wildfire-700">Did you know?</strong> A single large wildfire can release as much carbon dioxide as millions of cars do in a year. Preventing wildfires is not just about protecting lives and property—it's also a critical climate action.
             </p>
           </div>
         </div>
@@ -89,15 +86,15 @@ function InfoCard({
   description: string 
 }) {
   return (
-    <Card className="border-white/20 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all hover:-translate-y-1 duration-300">
+    <Card className="border-wildfire-200 hover:border-wildfire-300 transition-all hover:-translate-y-1 duration-300">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <div className="bg-wildfire-900/30 p-2.5 rounded-lg">
-            <Icon className="h-5 w-5 text-wildfire-400" />
+          <div className="bg-wildfire-100 p-2.5 rounded-lg">
+            <Icon className="h-5 w-5 text-wildfire-600" />
           </div>
           <div>
-            <h3 className="font-medium text-lg mb-2 text-white">{title}</h3>
-            <p className="text-white/80">
+            <h3 className="font-medium text-lg mb-2">{title}</h3>
+            <p className="text-muted-foreground">
               {description}
             </p>
           </div>
