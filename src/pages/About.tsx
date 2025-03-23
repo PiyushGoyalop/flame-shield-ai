@@ -24,10 +24,12 @@ const About = () => {
             </p>
           </div>
           
-          {/* System Flow Diagrams Section */}
-          <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <DiagramsDisplay />
-          </div>
+          {/* System Flow Diagrams Section - Only show when showDiagrams is true */}
+          {showDiagrams && (
+            <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <DiagramsDisplay />
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
             <div>
