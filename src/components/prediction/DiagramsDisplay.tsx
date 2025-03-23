@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -98,7 +97,7 @@ export function DiagramsDisplay() {
       content: `┌───────────────────────────────────────────────────────────────┐
 │                 Advanced Random Forest Model                   │
 │                  (200 Specialized Trees)                       │
-└───────────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────┘
     │                      │                        │
     ▼                      ▼                        ▼
 ┌─────────────┐      ┌─────────────┐         ┌─────────────┐
