@@ -79,6 +79,12 @@ export function Footer() {
                   Name: Piyush Goyal
                 </li>
                 <li className="text-wildfire-100/70">
+                  Name: Palash Vyas
+                </li>
+                <li className="text-wildfire-100/70">
+                  Name: Parth Patil
+                </li>
+                <li className="text-wildfire-100/70">
                   Email: piyushgoyalujn386@gmail.com
                 </li>
                 <li className="text-wildfire-100/70">
