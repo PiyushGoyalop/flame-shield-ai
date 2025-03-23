@@ -17,6 +17,7 @@ import Account from "./pages/Account";
 import VerifyEmail from "./pages/VerifyEmail";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import ModelResults from "./pages/ModelResults";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => {
               <Route path="/verify" element={<VerifyEmail />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/model-results" element={<ModelResults />} />
               <Route path="/auth-redirect" element={<AuthRedirectHandler />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

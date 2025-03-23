@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
 import { Button } from "@/components/ui/button";
 import { Workflow } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const About = () => {
   const [showDiagrams, setShowDiagrams] = useState<boolean>(true);
@@ -106,6 +107,15 @@ const About = () => {
             </Button>
           </div>
           
+          {/* Subtle link to model results at the bottom */}
+          <div className="mt-16 text-center">
+            <Link 
+              to="/model-results" 
+              className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+            >
+              Research Model Performance Data
+            </Link>
+          </div>
         </div>
       </main>
       
