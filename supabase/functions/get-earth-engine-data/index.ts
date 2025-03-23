@@ -1,6 +1,5 @@
 
 import { serve } from 'https://deno.land/std@0.170.0/http/server.ts';
-import { ee } from 'https://esm.sh/@google/earthengine@0.1.367-headless';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,169 +29,7 @@ interface EarthEngineResponse {
   land_cover: LandCoverData;
 }
 
-// Initialize Earth Engine with the service account credentials
-async function initializeEarthEngine() {
-  try {
-    const credentials = JSON.parse(Deno.env.get('GOOGLE_EARTH_ENGINE_CREDENTIALS') || '{}');
-    
-    if (!credentials.client_email || !credentials.private_key) {
-      console.error('Invalid or missing Earth Engine credentials');
-      return false;
-    }
-    
-    await new Promise((resolve, reject) => {
-      ee.data.authenticateViaPrivateKey(
-        credentials,
-        () => resolve(true),
-        (error: Error) => reject(error)
-      );
-    });
-    
-    await new Promise((resolve) => {
-      ee.initialize(
-        null,
-        null,
-        () => resolve(true),
-        (error: Error) => {
-          console.error('Earth Engine initialization error:', error);
-          resolve(false);
-        }
-      );
-    });
-    
-    return true;
-  } catch (error) {
-    console.error('Error initializing Earth Engine:', error);
-    return false;
-  }
-}
-
-// Function to get vegetation indices (NDVI and EVI) for a location
-async function getVegetationIndices(lat: number, lon: number): Promise<VegetationData> {
-  // Create a point geometry for the location
-  const point = ee.Geometry.Point([lon, lat]);
-  
-  // Use Sentinel-2 dataset for recent imagery with less cloud cover
-  const sentinel = ee.ImageCollection('COPERNICUS/S2_SR')
-    .filterBounds(point)
-    .filterDate(ee.Date(Date.now()).advance(-3, 'month'), ee.Date(Date.now()))
-    .sort('CLOUDY_PIXEL_PERCENTAGE')
-    .first();
-  
-  // Calculate NDVI
-  const ndvi = sentinel.normalizedDifference(['B8', 'B4']);
-  
-  // Calculate EVI: 2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))
-  const evi = sentinel.expression(
-    '2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))',
-    {
-      'NIR': sentinel.select('B8'),
-      'RED': sentinel.select('B4'),
-      'BLUE': sentinel.select('B2')
-    }
-  );
-  
-  // Get the values at the point
-  const ndviValue = await new Promise<number>((resolve) => {
-    ndvi.reduceRegion({
-      reducer: ee.Reducer.mean(),
-      geometry: point,
-      scale: 10
-    }).evaluate((result: any) => {
-      resolve(result ? result.nd : 0);
-    });
-  });
-  
-  const eviValue = await new Promise<number>((resolve) => {
-    evi.reduceRegion({
-      reducer: ee.Reducer.mean(),
-      geometry: point,
-      scale: 10
-    }).evaluate((result: any) => {
-      resolve(result ? result.B8 : 0);
-    });
-  });
-  
-  return {
-    ndvi: parseFloat(ndviValue.toFixed(2)),
-    evi: parseFloat(eviValue.toFixed(2))
-  };
-}
-
-// Function to get land cover percentages for a location
-async function getLandCoverData(lat: number, lon: number): Promise<LandCoverData> {
-  // Create a point geometry with a buffer for the area around the location
-  const point = ee.Geometry.Point([lon, lat]);
-  const area = point.buffer(1000); // 1km buffer
-  
-  // Use ESA WorldCover dataset for land cover analysis
-  const landcover = ee.Image('ESA/WorldCover/v100/2020');
-  
-  // ESA WorldCover values:
-  // 10: Tree cover, 20: Shrubland, 30: Grassland, 40: Cropland, 
-  // 50: Built-up, 60: Barren / sparse vegetation, 70: Snow and ice,
-  // 80: Permanent water bodies, 90: Herbaceous wetland, 95: Mangroves, 100: Moss and lichen
-  
-  // Calculate area for each land cover type
-  const areas = landcover.reduceRegion({
-    reducer: ee.Reducer.frequencyHistogram(),
-    geometry: area,
-    scale: 10,
-    maxPixels: 1e9
-  });
-  
-  // Process the areas result
-  const landCoverResult = await new Promise<Record<string, number>>((resolve) => {
-    areas.evaluate((result: any) => {
-      const histogram = result ? result.Map : {};
-      resolve(histogram);
-    });
-  });
-  
-  // Initialize counts for each category
-  let forest = 0;  // Tree cover: 10, Shrubland: 20, Mangroves: 95
-  let grassland = 0;  // Grassland: 30, Cropland: 40, Wetland: 90, Moss: 100
-  let urban = 0;  // Built-up: 50
-  let barren = 0;  // Barren: 60, Snow/Ice: 70
-  let water = 0;  // Water: 80
-  
-  const total = Object.values(landCoverResult).reduce((sum, count) => sum + (count as number), 0);
-  
-  // Categorize land cover types
-  if (landCoverResult) {
-    forest += (landCoverResult['10'] || 0) + (landCoverResult['20'] || 0) + (landCoverResult['95'] || 0);
-    grassland += (landCoverResult['30'] || 0) + (landCoverResult['40'] || 0) + 
-                (landCoverResult['90'] || 0) + (landCoverResult['100'] || 0);
-    urban += (landCoverResult['50'] || 0);
-    barren += (landCoverResult['60'] || 0) + (landCoverResult['70'] || 0);
-    water += (landCoverResult['80'] || 0);
-  }
-  
-  // Calculate percentages
-  const forestPercent = Math.round((forest / total) * 100) || 0;
-  const grasslandPercent = Math.round((grassland / total) * 100) || 0;
-  const urbanPercent = Math.round((urban / total) * 100) || 0;
-  const barrenPercent = Math.round((barren / total) * 100) || 0;
-  const waterPercent = Math.round((water / total) * 100) || 0;
-  
-  // Ensure percentages add up to 100%
-  let totalPercent = forestPercent + grasslandPercent + urbanPercent + barrenPercent + waterPercent;
-  let forestAdjusted = forestPercent;
-  
-  if (totalPercent !== 100) {
-    forestAdjusted += (100 - totalPercent);
-  }
-  
-  return {
-    forest_percent: forestAdjusted,
-    grassland_percent: grasslandPercent,
-    urban_percent: urbanPercent,
-    water_percent: waterPercent,
-    barren_percent: barrenPercent
-  };
-}
-
-// Generate realistic mock data based on location as a fallback
+// Generate realistic mock data based on location
 function generateMockEarthEngineData(lat: number, lon: number): EarthEngineResponse {
   // Create location-specific seed for consistent results
   const locationSeed = Math.abs(Math.sin(lat * lon)) * 0.7;
@@ -275,44 +112,10 @@ async function handleRequest(req: Request): Promise<Response> {
     
     console.log(`Processing Earth Engine request for coordinates: ${latitude}, ${longitude}`);
     
-    // Try to use the real Earth Engine API
-    let earthEngineData: EarthEngineResponse | null = null;
-    let useRealData = false;
-    
-    try {
-      // Initialize Earth Engine with credentials
-      const initialized = await initializeEarthEngine();
-      
-      if (initialized) {
-        console.log("Earth Engine initialized successfully");
-        
-        // Get vegetation indices
-        const vegetationData = await getVegetationIndices(latitude, longitude);
-        console.log("Vegetation indices retrieved:", vegetationData);
-        
-        // Get land cover data
-        const landCoverData = await getLandCoverData(latitude, longitude);
-        console.log("Land cover data retrieved:", landCoverData);
-        
-        earthEngineData = {
-          vegetation_index: vegetationData,
-          land_cover: landCoverData
-        };
-        
-        useRealData = true;
-      } else {
-        console.log("Earth Engine initialization failed, falling back to mock data");
-      }
-    } catch (error) {
-      console.error("Error using Earth Engine API:", error);
-      console.log("Falling back to mock data due to Earth Engine API error");
-    }
-    
-    // Fall back to mock data if real API fails
-    if (!useRealData) {
-      earthEngineData = generateMockEarthEngineData(latitude, longitude);
-      console.log("Generated mock Earth Engine data:", earthEngineData);
-    }
+    // For now, we'll use the mock data generator since Earth Engine integration
+    // requires a different approach in Deno/Edge functions
+    const earthEngineData = generateMockEarthEngineData(latitude, longitude);
+    console.log("Generated mock Earth Engine data:", earthEngineData);
     
     return new Response(
       JSON.stringify(earthEngineData),
