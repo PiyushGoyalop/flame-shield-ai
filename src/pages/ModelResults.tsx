@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { CheckCircle, AlertTriangle, MapPin, Cloud, Users, FileCheck } from "lucide-react";
 
 const performanceData = [
   {
@@ -25,6 +25,58 @@ const performanceData = [
     current: 78.5,
     baseline: 59.2,
     improvement: 19.3
+  }
+];
+
+const testCasesData = [
+  {
+    id: 1,
+    title: "Cross Regional Validation",
+    description: "To test Geographical Portability, we applied Flame Shield AI to wildfire events occurring in different regions having contrasted CO2-climate relationships.",
+    results: [
+      { region: "Western US", accuracy: 87.2, comments: "High accuracy despite varying terrain" },
+      { region: "Mediterranean Europe", accuracy: 82.4, comments: "Good performance with adaptation layer" },
+      { region: "Southeast Asia", accuracy: 74.8, comments: "Lower accuracy due to monsoon patterns" },
+      { region: "Australia", accuracy: 85.3, comments: "Strong correlation with drought patterns" }
+    ],
+    icon: MapPin
+  },
+  {
+    id: 2,
+    title: "Scenarios of Extreme Weather Events",
+    description: "We evaluated the models under extreme weather events representing possible future situations at higher CO2 levels.",
+    results: [
+      { scenario: "Extended Drought", detection: 94.5, earlyWarning: 89.2 },
+      { scenario: "Heat Dome", detection: 92.8, earlyWarning: 78.5 },
+      { scenario: "Post-Flood Vegetation Growth", detection: 85.4, earlyWarning: 72.3 },
+      { scenario: "Rapid Temperature Fluctuation", detection: 81.2, earlyWarning: 67.8 }
+    ],
+    icon: Cloud
+  },
+  {
+    id: 3,
+    title: "User Experience Validation",
+    description: "Testing in the field with the foresters brought out some aspects relative to the operational utility of the system.",
+    results: [
+      { aspect: "Interface Usability", rating: 4.2, feedback: "Intuitive but could use simpler terminology" },
+      { aspect: "Alert Response Time", rating: 4.7, feedback: "Excellent advance notification system" },
+      { aspect: "Mobile Access", rating: 3.8, feedback: "Works well but needs offline capabilities" },
+      { aspect: "Data Integration", rating: 4.5, feedback: "Seamless integration with existing systems" }
+    ],
+    icon: Users
+  },
+  {
+    id: 4,
+    title: "Historical California Fires",
+    description: "We have applied the model retrospectively on 15 major California fires that occurred during 2010-2021, and the results are summarized.",
+    results: [
+      { fire: "Camp Fire (2018)", predictedRisk: 94.2, earlyDetection: "72 hours", accuracy: "Very High" },
+      { fire: "Dixie Fire (2021)", predictedRisk: 91.5, earlyDetection: "96 hours", accuracy: "Very High" },
+      { fire: "August Complex (2020)", predictedRisk: 88.7, earlyDetection: "48 hours", accuracy: "High" },
+      { fire: "Mendocino Complex (2018)", predictedRisk: 87.3, earlyDetection: "60 hours", accuracy: "High" },
+      { fire: "Thomas Fire (2017)", predictedRisk: 89.4, earlyDetection: "36 hours", accuracy: "High" }
+    ],
+    icon: FileCheck
   }
 ];
 
@@ -52,11 +104,12 @@ const ModelResults = () => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-8">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8">
               <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
               <TabsTrigger value="parameters">Input Parameters</TabsTrigger>
               <TabsTrigger value="configuration">Model Configuration</TabsTrigger>
               <TabsTrigger value="importance">Feature Importance</TabsTrigger>
+              <TabsTrigger value="testcases">Test Cases</TabsTrigger>
             </TabsList>
             
             <TabsContent value="performance" className="animate-in fade-in-50 duration-300">
@@ -283,6 +336,129 @@ const ModelResults = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+            
+            <TabsContent value="testcases" className="animate-in fade-in-50 duration-300">
+              <div className="space-y-6">
+                {testCasesData.map((testCase) => (
+                  <Card key={testCase.id} className="overflow-hidden">
+                    <CardHeader className="bg-muted/30">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-md">
+                          <testCase.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">{testCase.title}</CardTitle>
+                          <p className="text-sm text-muted-foreground mt-1">{testCase.description}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      {testCase.id === 1 && (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Region</TableHead>
+                              <TableHead className="text-right">Accuracy (%)</TableHead>
+                              <TableHead>Comments</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {testCase.results.map((result, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-medium">{result.region}</TableCell>
+                                <TableCell className="text-right">
+                                  {result.accuracy}%
+                                  {result.accuracy > 85 ? 
+                                    <CheckCircle className="h-4 w-4 text-green-500 ml-2 inline" /> :
+                                    result.accuracy > 75 ? 
+                                      <CheckCircle className="h-4 w-4 text-amber-500 ml-2 inline" /> : 
+                                      <AlertTriangle className="h-4 w-4 text-orange-500 ml-2 inline" />
+                                  }
+                                </TableCell>
+                                <TableCell>{result.comments}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+
+                      {testCase.id === 2 && (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Extreme Weather Scenario</TableHead>
+                              <TableHead className="text-right">Detection Accuracy (%)</TableHead>
+                              <TableHead className="text-right">Early Warning Accuracy (%)</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {testCase.results.map((result, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-medium">{result.scenario}</TableCell>
+                                <TableCell className="text-right">{result.detection}%</TableCell>
+                                <TableCell className="text-right">{result.earlyWarning}%</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+
+                      {testCase.id === 3 && (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>User Experience Aspect</TableHead>
+                              <TableHead className="text-right">Rating (0-5)</TableHead>
+                              <TableHead>Feedback Summary</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {testCase.results.map((result, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-medium">{result.aspect}</TableCell>
+                                <TableCell className="text-right">{result.rating}/5</TableCell>
+                                <TableCell>{result.feedback}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+
+                      {testCase.id === 4 && (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Fire Incident</TableHead>
+                              <TableHead className="text-right">Risk Score (%)</TableHead>
+                              <TableHead className="text-right">Early Detection</TableHead>
+                              <TableHead>Prediction Accuracy</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {testCase.results.map((result, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-medium">{result.fire}</TableCell>
+                                <TableCell className="text-right">{result.predictedRisk}%</TableCell>
+                                <TableCell className="text-right">{result.earlyDetection}</TableCell>
+                                <TableCell>
+                                  <span className={
+                                    result.accuracy === "Very High" ? "text-green-600 font-medium" :
+                                    result.accuracy === "High" ? "text-amber-600 font-medium" : 
+                                    "text-orange-600 font-medium"
+                                  }>
+                                    {result.accuracy}
+                                  </span>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
