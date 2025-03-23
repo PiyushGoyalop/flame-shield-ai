@@ -258,11 +258,11 @@ export function DiagramsDisplay() {
                         "Data Flow Pipeline\n\n" + diagrams.prediction.dataFlow;
     } else if (activeTab === "random-forest") {
       downloadTitle = "Random_Forest_Architecture";
-      downloadContent = diagrams.["random-forest"].title + "\n\n" + diagrams.["random-forest"].content + "\n\n" + 
-                        "Decision Tree Structure\n\n" + diagrams.["random-forest"].decisionTree;
+      downloadContent = diagrams["random-forest"].title + "\n\n" + diagrams["random-forest"].content + "\n\n" + 
+                        "Decision Tree Structure\n\n" + diagrams["random-forest"].decisionTree;
     } else if (activeTab === "unified-model") {
       downloadTitle = "Unified_Prediction_Model";
-      downloadContent = diagrams.["unified-model"].title + "\n\n" + diagrams.["unified-model"].content;
+      downloadContent = diagrams["unified-model"].title + "\n\n" + diagrams["unified-model"].content;
     }
     
     // Create a blob from the content
