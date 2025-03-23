@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,47 +11,100 @@ export function DiagramsDisplay() {
   const diagrams = {
     "system-architecture": {
       title: "System Architecture",
-      content: `┌──────────────────┐     ┌───────────────────┐     ┌─────────────────────┐
-│                  │     │                   │     │                     │
-│  User Interface  │────►│  Backend API      │────►│  Database           │
-│  (React)         │     │  (Serverless)     │     │  (PostgreSQL)       │
-│                  │     │                   │     │                     │
-└──────────────────┘     └───────────────────┘     └─────────────────────┘
-          │                        │                         │
-          │                        │                         │
-          ▼                        ▼                         ▼
-┌──────────────────┐     ┌───────────────────┐     ┌─────────────────────┐
-│                  │     │                   │     │                     │
-│  Authentication  │     │  Data Processing  │     │  Machine Learning   │
-│  (Clerk Auth)    │     │  (Supabase Edge)  │     │  (Random Forest)    │
-│                  │     │                   │     │                     │
-└──────────────────┘     └───────────────────┘     └─────────────────────┘
-                                  │
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│                          External Services                              │
-│                                                                         │
-├─────────────────┬─────────────────────┬───────────────┬────────────────┤
-│                 │                     │               │                │
-│  Weather API    │  Earth Engine API   │  Geocoding    │  Air Quality   │
-│                 │                     │               │                │
-└─────────────────┴─────────────────────┴───────────────┴────────────────┘
-                                  │
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│                           User Experience                               │
-│                                                                         │
-├─────────────────┬─────────────────────┬───────────────┬────────────────┤
-│                 │                     │               │                │
-│  Predictions    │  Visualization      │  History      │  Analytics     │
-│                 │                     │               │                │
-└─────────────────┴─────────────────────┴───────────────┴────────────────┘`
+      content: `┌───────────────────────────────────────────────────────────────────────────────┐
+│                           WILDFIRE PREDICTION SYSTEM                           │
+└───────────────────────────────┬───────────────────────────────────────────────┘
+                                │
+                                ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                         1. DATA INTEGRATION MODULE                            │
+│                                                                               │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐  │
+│  │                │  │                │  │                │  │             │  │
+│  │ Weather API    │  │ Satellite      │  │ Geographic     │  │ Historic    │  │
+│  │ Temperature    │  │ Imagery        │  │ Data Sources   │  │ Wildfire    │  │
+│  │ Humidity       │  │ Vegetation     │  │ Land Cover     │  │ Database    │  │
+│  │ Precipitation  │  │ NDVI & EVI     │  │ Elevation      │  │ Records     │  │
+│  │                │  │                │  │                │  │             │  │
+│  └───────┬────────┘  └───────┬────────┘  └───────┬────────┘  └──────┬──────┘  │
+│          │                   │                   │                  │         │
+└──────────┼───────────────────┼───────────────────┼──────────────────┼─────────┘
+           │                   │                   │                  │
+           └───────────────────┼───────────────────┼──────────────────┘
+                               │                   │
+                               ▼                   ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                      2. CLIMATE-FIRE ANALYSIS MODULE                          │
+│                                                                               │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐  │
+│  │                │  │                │  │                │  │             │  │
+│  │ Drought Index  │  │ Vegetation     │  │ Topographic    │  │ CO₂ & Air   │  │
+│  │ Calculation    │  │ Health Analysis│  │ Risk Modeling  │  │ Quality     │  │
+│  │                │  │                │  │                │  │ Analysis     │  │
+│  └───────┬────────┘  └───────┬────────┘  └───────┬────────┘  └──────┬──────┘  │
+│          │                   │                   │                  │         │
+└──────────┼───────────────────┼───────────────────┼──────────────────┼─────────┘
+           │                   │                   │                  │
+           └───────────────────┼───────────────────┼──────────────────┘
+                               │                   │
+                               ▼                   ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           3. PREDICTION ENGINE                                │
+│                                                                               │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐  │
+│  │                │  │                │  │                │  │             │  │
+│  │ Random Forest  │  │ Feature        │  │ Risk Score     │  │ Confidence  │  │
+│  │ Model          │  │ Importance     │  │ Calculation    │  │ Analysis    │  │
+│  │ (200+ Trees)   │  │ Analysis       │  │ Algorithm      │  │ Model       │  │
+│  │                │  │                │  │                │  │             │  │
+│  └───────┬────────┘  └───────┬────────┘  └───────┬────────┘  └──────┬──────┘  │
+│          │                   │                   │                  │         │
+└──────────┼───────────────────┼───────────────────┼──────────────────┼─────────┘
+           │                   │                   │                  │
+           └───────────────────┼───────────────────┼──────────────────┘
+                               │                   │
+                               ▼                   ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           4. USER INTERFACE                                   │
+│                                                                               │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐  │
+│  │                │  │                │  │                │  │             │  │
+│  │ Location       │  │ Risk           │  │ Visualization  │  │ Historical  │  │
+│  │ Search &       │  │ Assessment     │  │ & Interactive  │  │ Data        │  │
+│  │ Input          │  │ Display        │  │ Maps           │  │ Comparison  │  │
+│  │                │  │                │  │                │  │             │  │
+│  └────────────────┘  └────────────────┘  └────────────────┘  └─────────────┘  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘`,
+      description: `The system architecture consists of four main modules with a top-down data flow:
+
+1. DATA INTEGRATION MODULE
+   - Collects raw data from various sources including weather APIs, satellite imagery, geographic databases, and historical wildfire records
+   - Standardizes and preprocesses all incoming data for further analysis
+   - Handles real-time and batch data collection processes
+   
+2. CLIMATE-FIRE ANALYSIS MODULE
+   - Processes integrated data to extract meaningful environmental indicators
+   - Calculates drought indexes based on temperature, precipitation, and humidity
+   - Analyzes vegetation health using satellite imagery indices (NDVI, EVI)
+   - Models topographic risk factors like elevation, slope, and aspect
+   - Evaluates air quality and greenhouse gas metrics that influence fire behavior
+   
+3. PREDICTION ENGINE
+   - Employs an advanced Random Forest machine learning model with 200+ specialized decision trees
+   - Analyzes feature importance to identify the most significant fire risk factors
+   - Calculates risk probability scores using weighted ensemble methods
+   - Provides confidence analysis for prediction reliability assessment
+   
+4. USER INTERFACE
+   - Allows location search and input for specific area analysis
+   - Displays intuitive risk assessment results with color-coded indicators
+   - Provides interactive maps and data visualizations for deeper insights
+   - Enables comparison with historical data and previous predictions
+
+DATA FLOW: Raw environmental data → Analysis & feature engineering → ML prediction → User-friendly visualization`
     },
-    website: {
+    "website": {
       title: "Website Architecture",
       content: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
 │                     │     │                     │     │                     │
@@ -137,7 +189,35 @@ export function DiagramsDisplay() {
     },
     "random-forest": {
       title: "Random Forest Architecture",
-      content: `┌───────────────────────────────────────────────────────────────┐
+      content: `┌─────────────────────────────────────────────┐
+│              Random Forest Tree              │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+         ┌───────────────────┐
+         │Temperature > 30°C?│
+         └─────┬───────┬─────┘
+               │       │
+               │       │
+               ▼       ▼
+     ┌──────────────┐ ┌──────────────┐
+     │Humidity < 30%│ │Humidity < 45%│
+     └──────┬───────┘ └───────┬──────┘
+            │                 │
+            │                 │
+            ▼                 ▼
+   ┌────────────────┐   ┌────────────────┐
+   │Drought Index   │   │Drought Index   │
+   │     > 70?      │   │     > 50?      │
+   └───────┬────────┘   └────────┬───────┘
+           │                     │
+           │                     │
+           ▼                     ▼
+┌──────────────────┐  ┌──────────────────┐
+│  VERY HIGH RISK  │  │   MEDIUM RISK    │
+│    (80-99%)      │  │     (40-60%)     │
+└──────────────────┘  └──────────────────┘`,
+      decisionTree: `┌───────────────────────────────────────────────────────────────┐
 │                 Advanced Random Forest Model                   │
 │                  (200 Specialized Trees)                       │
 └───────────────────────────────────────────────┘
@@ -182,35 +262,7 @@ export function DiagramsDisplay() {
 │  │Probability     │  │Importance      │  │Interval        │  │
 │  └────────────────┘  └────────────────┘  └────────────────┘  │
 │                                                               │
-└───────────────────────────────────────────────────────────────┘`,
-      decisionTree: `┌─────────────────────────────────────────────┐
-│              Random Forest Tree              │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-         ┌───────────────────┐
-         │Temperature > 30°C?│
-         └─────┬───────┬─────┘
-               │       │
-               │       │
-               ▼       ▼
-     ┌──────────────┐ ┌──────────────┐
-     │Humidity < 30%│ │Humidity < 45%│
-     └──────┬───────┘ └───────┬──────┘
-            │                 │
-            │                 │
-            ▼                 ▼
-   ┌────────────────┐   ┌────────────────┐
-   │Drought Index   │   │Drought Index   │
-   │     > 70?      │   │     > 50?      │
-   └───────┬────────┘   └────────┬───────┘
-           │                     │
-           │                     │
-           ▼                     ▼
-┌──────────────────┐  ┌──────────────────┐
-│  VERY HIGH RISK  │  │   MEDIUM RISK    │
-│    (80-99%)      │  │     (40-60%)     │
-└──────────────────┘  └──────────────────┘`
+└───────────────────────────────────────────────────────────────┘`
     },
     "unified-model": {
       title: "Unified Prediction Model",
@@ -261,7 +313,7 @@ export function DiagramsDisplay() {
 │  │                │   │                │   │                │           │
 │  │ 200+ Decision  │   │ Feature        │   │ Confidence     │           │
 │  │ Trees          │   │ Importance     │   │ Calculation    │           │
-│  │                │   │ Analysis       │   │                │           │
+│  │                │   │                │   │                │           │
 │  └────────┬───────┘   └──────┬─────────┘   └──────┬─────────┘           │
 │           │                  │                    │                     │
 └───────────┼──────────────────┼────────────────────┼─────────────────────┘
@@ -292,7 +344,8 @@ export function DiagramsDisplay() {
     
     if (activeTab === "system-architecture") {
       downloadTitle = "System_Architecture";
-      downloadContent = diagrams["system-architecture"].title + "\n\n" + diagrams["system-architecture"].content;
+      downloadContent = diagrams["system-architecture"].title + "\n\n" + diagrams["system-architecture"].content + "\n\n" + 
+                        diagrams["system-architecture"].description;
     } else if (activeTab === "website") {
       downloadTitle = "Website_Architecture";
       downloadContent = diagrams.website.title + "\n\n" + diagrams.website.content + "\n\n" + 
@@ -355,6 +408,13 @@ export function DiagramsDisplay() {
                 <pre className="text-xs whitespace-pre bg-white p-3 rounded border border-gray-300 overflow-x-auto">
                   {diagrams["system-architecture"].content}
                 </pre>
+              </div>
+              
+              <h3 className="font-semibold mt-6 mb-2 text-gray-800">Module Description & Data Flow</h3>
+              <div className="bg-white p-3 rounded border border-gray-300">
+                <p className="text-sm text-gray-700 whitespace-pre-line">
+                  {diagrams["system-architecture"].description}
+                </p>
               </div>
             </div>
           </TabsContent>
