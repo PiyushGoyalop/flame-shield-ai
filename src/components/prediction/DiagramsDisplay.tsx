@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,10 +6,52 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
 export function DiagramsDisplay() {
-  const [activeTab, setActiveTab] = useState("website");
+  const [activeTab, setActiveTab] = useState("system-architecture");
 
   // Diagram content for each tab
   const diagrams = {
+    "system-architecture": {
+      title: "System Architecture",
+      content: `┌──────────────────┐     ┌───────────────────┐     ┌─────────────────────┐
+│                  │     │                   │     │                     │
+│  User Interface  │────►│  Backend API      │────►│  Database           │
+│  (React)         │     │  (Serverless)     │     │  (PostgreSQL)       │
+│                  │     │                   │     │                     │
+└──────────────────┘     └───────────────────┘     └─────────────────────┘
+          │                        │                         │
+          │                        │                         │
+          ▼                        ▼                         ▼
+┌──────────────────┐     ┌───────────────────┐     ┌─────────────────────┐
+│                  │     │                   │     │                     │
+│  Authentication  │     │  Data Processing  │     │  Machine Learning   │
+│  (Clerk Auth)    │     │  (Supabase Edge)  │     │  (Random Forest)    │
+│                  │     │                   │     │                     │
+└──────────────────┘     └───────────────────┘     └─────────────────────┘
+                                  │
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│                          External Services                              │
+│                                                                         │
+├─────────────────┬─────────────────────┬───────────────┬────────────────┤
+│                 │                     │               │                │
+│  Weather API    │  Earth Engine API   │  Geocoding    │  Air Quality   │
+│                 │                     │               │                │
+└─────────────────┴─────────────────────┴───────────────┴────────────────┘
+                                  │
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│                           User Experience                               │
+│                                                                         │
+├─────────────────┬─────────────────────┬───────────────┬────────────────┤
+│                 │                     │               │                │
+│  Predictions    │  Visualization      │  History      │  Analytics     │
+│                 │                     │               │                │
+└─────────────────┴─────────────────────┴───────────────┴────────────────┘`
+    },
     website: {
       title: "Website Architecture",
       content: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
@@ -247,7 +290,10 @@ export function DiagramsDisplay() {
     let downloadTitle = "";
     let downloadContent = "";
     
-    if (activeTab === "website") {
+    if (activeTab === "system-architecture") {
+      downloadTitle = "System_Architecture";
+      downloadContent = diagrams["system-architecture"].title + "\n\n" + diagrams["system-architecture"].content;
+    } else if (activeTab === "website") {
       downloadTitle = "Website_Architecture";
       downloadContent = diagrams.website.title + "\n\n" + diagrams.website.content + "\n\n" + 
                         "User Flow\n\n" + diagrams.website.userFlow;
@@ -293,13 +339,25 @@ export function DiagramsDisplay() {
         </Button>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="website" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="system-architecture" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="system-architecture">System Architecture</TabsTrigger>
             <TabsTrigger value="website">Website Flow</TabsTrigger>
             <TabsTrigger value="prediction">Prediction Flow</TabsTrigger>
             <TabsTrigger value="random-forest">Random Forest</TabsTrigger>
             <TabsTrigger value="unified-model">Unified Model</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="system-architecture" className="mt-4">
+            <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+              <h3 className="font-semibold mb-2 text-gray-800">System Architecture</h3>
+              <div className="overflow-auto">
+                <pre className="text-xs whitespace-pre bg-white p-3 rounded border border-gray-300 overflow-x-auto">
+                  {diagrams["system-architecture"].content}
+                </pre>
+              </div>
+            </div>
+          </TabsContent>
           
           <TabsContent value="website" className="mt-4">
             <div className="bg-gray-50 p-4 rounded-md border border-gray-200">

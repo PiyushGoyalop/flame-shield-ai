@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Workflow } from "lucide-react";
 
 const About = () => {
-  const [showDiagrams, setShowDiagrams] = useState<boolean>(false);
+  const [showDiagrams, setShowDiagrams] = useState<boolean>(true);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -22,6 +22,11 @@ const About = () => {
             <p className="text-muted-foreground text-lg">
               Learn about our mission, methodology, and the technology behind our wildfire prediction model.
             </p>
+          </div>
+          
+          {/* System Flow Diagrams Section */}
+          <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <DiagramsDisplay />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
@@ -87,7 +92,7 @@ const About = () => {
             </div>
           </div>
           
-          {/* System Flow Diagrams Section */}
+          {/* Toggle Diagrams Button */}
           <div className="mt-16 mb-4 text-center">
             <Button 
               variant="outline" 
@@ -99,11 +104,6 @@ const About = () => {
             </Button>
           </div>
           
-          {showDiagrams && (
-            <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <DiagramsDisplay />
-            </div>
-          )}
         </div>
       </main>
       
