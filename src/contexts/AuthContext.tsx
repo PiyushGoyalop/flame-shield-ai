@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   getSession,
   signInWithEmail,
+  signInWithGoogle,
   signUpWithEmail,
   resendConfirmationEmail as resendEmail,
   signOut as logOut
@@ -18,6 +19,7 @@ interface AuthContextProps {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; session: Session | null }>;
   signOut: () => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
@@ -71,6 +73,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Sign in error:", error.message);
       toast({
         title: "Sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      
+      // Note: No need to show toast or navigate here as the OAuth flow will redirect 
+      // the user away from the application to Google's login page
+    } catch (error: any) {
+      console.error("Google sign in error:", error.message);
+      toast({
+        title: "Google sign in failed",
         description: error.message,
         variant: "destructive",
       });
@@ -141,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       isLoading,
       signIn,
+      signInWithGoogle: handleGoogleSignIn,
       signUp,
       signOut,
       resendConfirmationEmail,

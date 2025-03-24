@@ -27,6 +27,28 @@ export const signInWithEmail = async (email: string, password: string) => {
 };
 
 /**
+ * Signs in a user with Google OAuth
+ */
+export const signInWithGoogle = async () => {
+  console.log("Initiating Google sign in");
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/auth-redirect'
+    }
+  });
+  
+  if (error) {
+    console.error("Google sign in error:", error);
+    throw error;
+  }
+  
+  console.log("Google sign in initiated:", data);
+  return data;
+};
+
+/**
  * Signs up a new user with email, password, and additional metadata
  */
 export const signUpWithEmail = async (

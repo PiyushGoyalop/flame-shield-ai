@@ -10,6 +10,9 @@ import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
 import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 import { isStrongPassword } from "@/services/authService";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SignUpFormProps {
   onSignUp: (name: string, email: string, password: string) => Promise<void>;
@@ -31,6 +34,7 @@ export function SignUpForm({ onSignUp }: SignUpFormProps) {
   });
   
   const { toast } = useToast();
+  const { signInWithGoogle } = useAuth();
   
   useEffect(() => {
     setPasswordValidation({
@@ -93,91 +97,106 @@ export function SignUpForm({ onSignUp }: SignUpFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
-        <Input
-          id="name"
-          placeholder="John Doe"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={isLoading}
-          required
-        />
+    <div className="space-y-6">
+      <GoogleSignInButton onClick={signInWithGoogle} />
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or sign up with email
+          </span>
+        </div>
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <PasswordInput
-          id="password"
-          value={password}
-          onChange={setPassword}
-          disabled={isLoading}
-          required={true}
-        />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Full Name</Label>
+          <Input
+            id="name"
+            placeholder="John Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isLoading}
+            required
+          />
+        </div>
         
-        <PasswordRequirements validation={passwordValidation} />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <PasswordInput
-          id="confirm-password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          disabled={isLoading}
-          required={true}
-        />
-      </div>
-      
-      <div className="flex items-center space-x-2 pt-2">
-        <Checkbox 
-          id="terms" 
-          checked={acceptTerms}
-          onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-        />
-        <label
-          htmlFor="terms"
-          className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={setPassword}
+            disabled={isLoading}
+            required={true}
+          />
+          
+          <PasswordRequirements validation={passwordValidation} />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="confirm-password">Confirm Password</Label>
+          <PasswordInput
+            id="confirm-password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            disabled={isLoading}
+            required={true}
+          />
+        </div>
+        
+        <div className="flex items-center space-x-2 pt-2">
+          <Checkbox 
+            id="terms" 
+            checked={acceptTerms}
+            onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+          />
+          <label
+            htmlFor="terms"
+            className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            I accept the{" "}
+            <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
+              Privacy Policy
+            </Link>
+          </label>
+        </div>
+        
+        <LoadingButton 
+          isLoading={isLoading} 
+          loadingText="Creating Account..."
+          icon={<UserPlus className="h-4 w-4" />}
         >
-          I accept the{" "}
-          <Link to="/terms" className="text-wildfire-600 hover:text-wildfire-800">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link to="/privacy" className="text-wildfire-600 hover:text-wildfire-800">
-            Privacy Policy
+          Create Account
+        </LoadingButton>
+        
+        <div className="text-center text-sm text-muted-foreground mt-6">
+          Already have an account?{" "}
+          <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
+            Sign in
           </Link>
-        </label>
-      </div>
-      
-      <LoadingButton 
-        isLoading={isLoading} 
-        loadingText="Creating Account..."
-        icon={<UserPlus className="h-4 w-4" />}
-      >
-        Create Account
-      </LoadingButton>
-      
-      <div className="text-center text-sm text-muted-foreground mt-6">
-        Already have an account?{" "}
-        <Link to="/signin" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
-          Sign in
-        </Link>
-      </div>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 }

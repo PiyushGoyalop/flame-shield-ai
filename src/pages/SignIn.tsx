@@ -8,7 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthLayout } from "@/components/layouts/AuthLayout";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { LoadingButton } from "@/components/auth/LoadingButton";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { Separator } from "@/components/ui/separator";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn: signInUser, user } = useAuth();
+  const { signIn: signInUser, signInWithGoogle, user } = useAuth();
 
   // If user is already logged in, redirect to home page
   useEffect(() => {
@@ -57,46 +59,61 @@ const SignIn = () => {
       title="Sign In" 
       description="Access your wildfire prediction history and saved locations"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading}
-            required
-          />
+      <div className="space-y-6">
+        <GoogleSignInButton onClick={signInWithGoogle} />
+        
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with email
+            </span>
+          </div>
         </div>
         
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <PasswordInput 
-            id="password"
-            value={password}
-            onChange={setPassword}
-            disabled={isLoading}
-            required={true}
-          />
-        </div>
-        
-        <LoadingButton 
-          isLoading={isLoading} 
-          loadingText="Signing In..."
-          icon={<Mail className="h-4 w-4" />}
-        >
-          Sign In with Email
-        </LoadingButton>
-        
-        <div className="text-center text-sm text-muted-foreground mt-6">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
-            Sign up
-          </Link>
-        </div>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <PasswordInput 
+              id="password"
+              value={password}
+              onChange={setPassword}
+              disabled={isLoading}
+              required={true}
+            />
+          </div>
+          
+          <LoadingButton 
+            isLoading={isLoading} 
+            loadingText="Signing In..."
+            icon={<Mail className="h-4 w-4" />}
+          >
+            Sign In with Email
+          </LoadingButton>
+          
+          <div className="text-center text-sm text-muted-foreground mt-6">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-wildfire-600 hover:text-wildfire-800 font-medium">
+              Sign up
+            </Link>
+          </div>
+        </form>
+      </div>
     </AuthLayout>
   );
 };
