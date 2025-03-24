@@ -8,7 +8,7 @@ import { Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
-  const [showDiagrams, setShowDiagrams] = useState<boolean>(true);
+  const [showDiagrams, setShowDiagrams] = useState<boolean>(false);
 
   return (
     <div className="min-h-screen flex flex-col">
