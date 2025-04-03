@@ -54,7 +54,12 @@ export function Footer() {
               <h3 className="font-medium text-base mb-4 text-wildfire-200">Contact</h3>
               <div className="space-y-4 text-sm">
                 <div>
-                  <p className="text-wildfire-100/70">Name: Piyush Goyal</p>
+                  <h4 className="text-wildfire-200 mb-2">Team Members</h4>
+                  <ul className="space-y-1">
+                    <li className="text-wildfire-100/70">Piyush Goyal</li>
+                    <li className="text-wildfire-100/70">Palash Vyas</li>
+                    <li className="text-wildfire-100/70">Parth Patil</li>
+                  </ul>
                 </div>
                 <div>
                   <h4 className="text-wildfire-200 mb-2">Contact Info</h4>
