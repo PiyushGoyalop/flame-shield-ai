@@ -13,7 +13,7 @@ export function Footer() {
         <div className="absolute inset-0 bg-dot-pattern opacity-10 z-0"></div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-12">
-          <div className={`grid grid-cols-1 ${isHomePage ? "md:grid-cols-3" : "md:grid-cols-4"} gap-8`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Flame size={24} className="text-wildfire-300" />
@@ -49,35 +49,6 @@ export function Footer() {
                 </li>
               </ul>
             </div>
-            
-            {/* Resources section - only show on non-homepage */}
-            {!isHomePage && (
-              <div>
-                <h3 className="font-medium text-base mb-4 text-wildfire-200">Resources</h3>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <a href="#" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
-                      Dataset
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
-                      API Documentation
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
-                      Research Papers
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
-                      Data Privacy
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            )}
             
             <div>
               <h3 className="font-medium text-base mb-4 text-wildfire-200">Contact</h3>
