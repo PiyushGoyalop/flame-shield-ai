@@ -1,6 +1,6 @@
 
 import { Flame } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export function Footer() {
   const location = useLocation();
@@ -28,24 +28,24 @@ export function Footer() {
               <h3 className="font-medium text-base mb-4 text-wildfire-200">Navigation</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="/" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
+                  <Link to="/" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
                     Home
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/analytics" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
+                  <Link to="/analytics" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
                     Analytics
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/predict" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
+                  <Link to="/predict" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
                     Prediction
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/about" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
+                  <Link to="/about" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
                     About
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -72,15 +72,15 @@ export function Footer() {
               © {new Date().getFullYear()} Wildfire Analytics. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="/terms" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
+              <Link to="/terms" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Terms
-              </a>
-              <a href="/privacy" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
+              </Link>
+              <Link to="/privacy" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Privacy
-              </a>
-              <a href="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
+              </Link>
+              <Link to="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Cookies
-              </a>
+              </Link>
             </div>
           </div>
         </div>
