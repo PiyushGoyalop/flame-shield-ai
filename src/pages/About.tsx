@@ -98,10 +98,10 @@ const About = () => {
           <div className="mt-16 mb-4 text-center space-x-4">
             <Button 
               variant="outline" 
-              className="bg-white/50"
+              className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors bg-transparent border-none"
               onClick={() => setShowDiagrams(!showDiagrams)}
             >
-              <Workflow className="h-4 w-4 mr-2" />
+              <Workflow className="h-3 w-3 mr-1" />
               {showDiagrams ? "Hide System Flow Diagrams" : "View System Flow Diagrams"}
             </Button>
             
