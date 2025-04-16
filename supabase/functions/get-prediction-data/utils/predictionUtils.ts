@@ -1,4 +1,3 @@
-
 // predictionUtils.ts - Enhanced prediction utilities for advanced wildfire risk assessment
 
 import { RandomForestModel } from "../models/RandomForestModel.ts";
@@ -66,6 +65,13 @@ export function predictWildfireProbability(data: RandomForestInputData): number 
   // Log processed data for research and debugging
   console.log("Advanced processed Random Forest input:", processedData);
   
+  // Convert simplified AQI to standard scale
+  const standardAQI = convertAQIToStandardScale(processedData.air_quality_index);
+  
+  // Log both simplified and standard AQI for transparency
+  console.log(`OpenWeather AQI: ${data.air_quality_index} (1-5 scale)`);
+  console.log(`Standard AQI: ${standardAQI} (0-500 scale)`);
+  
   // Get prediction from enhanced model
   const prediction = randomForestModel.predict(processedData);
   
@@ -110,4 +116,16 @@ export function explainPrediction(): Record<string, number> {
   }
   
   return adjustedImportance;
+}
+
+// Add a utility function to convert OpenWeather's simplified AQI to standard 0-500 scale
+export function convertAQIToStandardScale(simpleAQI: number): number {
+  switch(simpleAQI) {
+    case 1: return 50;   // Good
+    case 2: return 100;  // Fair
+    case 3: return 150;  // Moderate
+    case 4: return 200;  // Poor
+    case 5: return 300;  // Very Poor
+    default: return 0;   // Invalid or unknown
+  }
 }

@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -35,6 +35,20 @@ export function MainStats({
   };
   
   const riskInfo = getRiskLevel(probability);
+
+  // Function to convert OpenWeather's simplified AQI to standard scale
+  const convertAQIToStandardScale = (simpleAQI?: number): number => {
+    switch(simpleAQI) {
+      case 1: return 50;   // Good
+      case 2: return 100;  // Fair
+      case 3: return 150;  // Moderate
+      case 4: return 200;  // Poor
+      case 5: return 300;  // Very Poor
+      default: return 0;   // Invalid or unknown
+    }
+  };
+
+  const standardAQI = convertAQIToStandardScale(airQualityIndex);
 
   return (
     <div className="mt-6 space-y-4">
@@ -127,7 +141,7 @@ export function MainStats({
                   <Wind className="h-4 w-4 text-purple-500" /> 
                   <span>Air Quality Index</span>
                 </span>
-                <span className="font-semibold">{airQualityIndex} AQI</span>
+                <span className="font-semibold">{standardAQI} AQI</span>
               </div>
             )}
             
