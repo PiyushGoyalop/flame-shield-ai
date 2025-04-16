@@ -4,7 +4,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
 import { Button } from "@/components/ui/button";
-import { Workflow } from "lucide-react";
+import { Workflow, FileCode } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
@@ -95,8 +95,8 @@ const About = () => {
             </div>
           </div>
           
-          {/* Toggle Diagrams Button */}
-          <div className="mt-16 mb-4 text-center">
+          {/* Toggle Diagrams Buttons */}
+          <div className="mt-16 mb-4 text-center space-x-4">
             <Button 
               variant="outline" 
               className="bg-white/50"
@@ -105,6 +105,16 @@ const About = () => {
               <Workflow className="h-4 w-4 mr-2" />
               {showDiagrams ? "Hide System Flow Diagrams" : "View System Flow Diagrams"}
             </Button>
+            
+            <Link to="/uml-diagrams">
+              <Button 
+                variant="outline" 
+                className="bg-white/50"
+              >
+                <FileCode className="h-4 w-4 mr-2" />
+                UML Diagrams
+              </Button>
+            </Link>
           </div>
           
           {/* Subtle link to model results at the bottom */}
