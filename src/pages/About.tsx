@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
 import { Button } from "@/components/ui/button";
-import { Workflow, FileCode } from "lucide-react";
+import { Workflow, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
@@ -109,9 +108,9 @@ const About = () => {
             <Link to="/uml-diagrams">
               <Button 
                 variant="outline" 
-                className="bg-white/50"
+                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors bg-transparent border-none"
               >
-                <FileCode className="h-4 w-4 mr-2" />
+                <FileText className="h-3 w-3 mr-1" />
                 UML Diagrams
               </Button>
             </Link>
