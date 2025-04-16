@@ -1,14 +1,11 @@
-import { useState } from "react";
+
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
-import { DiagramsDisplay } from "@/components/prediction/DiagramsDisplay";
 import { Button } from "@/components/ui/button";
-import { Workflow, FileText } from "lucide-react";
+import { FileText, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
-  const [showDiagrams, setShowDiagrams] = useState<boolean>(false);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -23,13 +20,6 @@ const About = () => {
               Learn about our mission, methodology, and the technology behind our wildfire prediction model.
             </p>
           </div>
-          
-          {/* System Flow Diagrams Section - Only show when showDiagrams is true */}
-          {showDiagrams && (
-            <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <DiagramsDisplay />
-            </div>
-          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
             <div>
@@ -94,16 +84,17 @@ const About = () => {
             </div>
           </div>
           
-          {/* Toggle Diagrams Buttons */}
+          {/* Technical Diagram Links - Subtle buttons */}
           <div className="mt-16 mb-4 text-center space-x-4">
-            <Button 
-              variant="outline" 
-              className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors bg-transparent border-none"
-              onClick={() => setShowDiagrams(!showDiagrams)}
-            >
-              <Workflow className="h-3 w-3 mr-1" />
-              {showDiagrams ? "Hide System Flow Diagrams" : "View System Flow Diagrams"}
-            </Button>
+            <Link to="/system-flow-diagrams">
+              <Button 
+                variant="outline" 
+                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors bg-transparent border-none"
+              >
+                <Workflow className="h-3 w-3 mr-1" />
+                System Flow Diagrams
+              </Button>
+            </Link>
             
             <Link to="/uml-diagrams">
               <Button 
