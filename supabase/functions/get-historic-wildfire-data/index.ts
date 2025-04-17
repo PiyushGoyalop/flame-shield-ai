@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../get-prediction-data/utils.ts";
+import { corsHeaders } from "../shared/cors.ts";
 import { USGSWildfireFeature, USGSWildfireResponse } from "./types.ts";
 
 // Main edge function entry point
