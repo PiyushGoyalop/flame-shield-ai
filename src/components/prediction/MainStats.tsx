@@ -1,6 +1,12 @@
 import React from 'react';
-import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind } from "lucide-react";
+import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind, HelpCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 interface MainStatsProps {
   probability: number;
@@ -23,10 +29,8 @@ export function MainStats({
   pm2_5, 
   pm10 
 }: MainStatsProps) {
-  // Format probability to display with one decimal place when not a whole number
   const formattedProbability = probability % 1 === 0 ? probability : probability.toFixed(1);
   
-  // Determine risk level based on probability
   const getRiskLevel = (prob: number) => {
     if (prob < 30) return { level: "Low", color: "text-green-600" };
     if (prob < 60) return { level: "Moderate", color: "text-amber-600" };
@@ -36,7 +40,6 @@ export function MainStats({
   
   const riskInfo = getRiskLevel(probability);
 
-  // Function to convert OpenWeather's simplified AQI to standard scale
   const convertAQIToStandardScale = (simpleAQI?: number): number => {
     switch(simpleAQI) {
       case 1: return 50;   // Good
@@ -52,7 +55,6 @@ export function MainStats({
 
   return (
     <div className="mt-6 space-y-4">
-      {/* Primary risk indicator */}
       <Card className="border-wildfire-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -73,9 +75,7 @@ export function MainStats({
         </CardContent>
       </Card>
       
-      {/* Display all three sections side by side */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Environment Stats */}
         <Card className="border-wildfire-100">
           <CardContent className="p-4 space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
@@ -85,8 +85,19 @@ export function MainStats({
             
             <div className="flex justify-between items-center">
               <span className="flex items-center gap-2 text-sm">
-                <Cloud className="h-4 w-4 text-wildfire-600" /> 
+                <Cloud className="h-4 w-4 text-orange-600" /> 
                 <span>CO₂ Levels</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-gray-500 ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>CO₂ Measurement in Metric Tons (MT)</p>
+                      <p>Represents greenhouse gas emissions</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </span>
               <span className="font-semibold">{co2Level} MT</span>
             </div>
@@ -101,7 +112,6 @@ export function MainStats({
           </CardContent>
         </Card>
         
-        {/* Weather Stats */}
         <Card className="border-wildfire-100">
           <CardContent className="p-4 space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
@@ -127,7 +137,6 @@ export function MainStats({
           </CardContent>
         </Card>
         
-        {/* Air Quality Stats */}
         <Card className="border-wildfire-100">
           <CardContent className="p-4 space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
@@ -140,6 +149,22 @@ export function MainStats({
                 <span className="flex items-center gap-2 text-sm">
                   <Wind className="h-4 w-4 text-purple-500" /> 
                   <span>Air Quality Index</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-gray-500 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>AQI Range: 0-500</p>
+                        <p>0-50: Good</p>
+                        <p>51-100: Moderate</p>
+                        <p>101-150: Unhealthy for Sensitive Groups</p>
+                        <p>151-200: Unhealthy</p>
+                        <p>201-300: Very Unhealthy</p>
+                        <p>301-500: Hazardous</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </span>
                 <span className="font-semibold">{standardAQI} AQI</span>
               </div>
