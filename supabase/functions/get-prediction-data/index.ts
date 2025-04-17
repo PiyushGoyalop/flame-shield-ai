@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleRequest } from "./handlers.ts";
-import { corsHeaders } from "./utils.ts";
+import { corsHeaders } from "../shared/cors.ts";
 
 // Main edge function entry point
 serve(async (req) => {

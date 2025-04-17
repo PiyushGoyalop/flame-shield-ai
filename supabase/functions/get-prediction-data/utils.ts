@@ -1,9 +1,4 @@
-
-// CORS headers for cross-origin requests
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../shared/cors.ts";
 
 // Environment variables
 export const OPENWEATHER_API_KEY = Deno.env.get("OPENWEATHER_API_KEY") || "";

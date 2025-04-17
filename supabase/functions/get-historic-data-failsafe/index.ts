@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../get-prediction-data/utils.ts";
+import { corsHeaders } from "../shared/cors.ts";
 
 // Main edge function entry point
 serve(async (req) => {
@@ -127,11 +127,6 @@ async function getHistoricWildfireData(location: string, startYear?: number, end
     filteredData = filteredData.filter(item => item.year <= endYear);
   }
   
-  // For a real implementation with an 800MB file, you would:
-  // 1. Store the file in Supabase storage or another suitable location
-  // 2. Use a database (like PostgreSQL) to store indexed versions of the data
-  // 3. Create efficient queries to retrieve only the needed data
-
   // Process data for response
   const yearlyIncidents = filteredData.map(item => ({
     year: item.year,

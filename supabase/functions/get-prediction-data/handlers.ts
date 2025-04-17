@@ -5,13 +5,13 @@ import {
   AirPollutionData 
 } from "./types.ts";
 import { 
-  corsHeaders, 
   logApiKey,
   convertCOToCO2Equivalent,
   calculateDroughtIndex,
   calculateWildfireProbability,
   OPENWEATHER_API_KEY
 } from "./utils.ts";
+import { corsHeaders } from "../shared/cors.ts";
 import {
   prepareInputData,
   predictWildfireProbability,
@@ -228,5 +228,85 @@ function generatePrediction(
   vegetationData?: { ndvi: number, evi: number },
   landCoverData?: { forest_percent: number, grassland_percent: number }
 ): PredictionData {
-  // ... keep existing code (formula-based prediction logic)
+  // Weight factors by importance - adjusted to better align with Random Forest
+  const tempWeight = 0.22;
+  const humidityWeight = 0.18;
+  const droughtWeight = 0.2;
+  const co2Weight = 0.04;
+  const aqiWeight = 0.05;
+  const pm25Weight = 0.06;
+  const vegetationWeight = 0.09; // vegetation factor
+  const landCoverWeight = 0.08;   // land cover factor
+  
+  // Normalize each factor to a 0-1 scale
+  const tempFactor = Math.max(0, Math.min(1, (weatherData.main.temp - 5) / 30)); // 0 at 5°C, 1 at 35°C
+  const humidityFactor = Math.max(0, Math.min(1, (100 - weatherData.main.humidity) / 80)); // 0 at 100%, 1 at 20%
+  const droughtFactor = droughtIndex / 100;
+  const co2Factor = Math.max(0, Math.min(1, co2Level / 50));
+  
+  // Air quality index is 1-5, normalize to 0-1
+  const aqiFactor = Math.max(0, Math.min(1, (airQualityIndex - 1) / 4));
+  
+  // PM2.5 normalization (typically 0-500 scale for AQI)
+  const pm25Factor = Math.max(0, Math.min(1, pm2_5 / 100));
+  
+  // Vegetation factor - NDVI around 0.6-0.8 indicates dense vegetation (more fuel)
+  // Lower values (0.1-0.3) indicate sparse vegetation (less fuel)
+  let vegetationFactor = 0.5; // Default middle value
+  if (vegetationData) {
+    // Higher NDVI generally means more fuel for fires
+    // But very high values might indicate green, moist vegetation which is less prone to burning
+    const ndvi = vegetationData.ndvi;
+    if (ndvi > 0.7) vegetationFactor = 0.7; // Very dense but possibly moist vegetation
+    else if (ndvi > 0.5) vegetationFactor = 0.9; // Ideal fuel condition - dense but potentially dry
+    else if (ndvi > 0.3) vegetationFactor = 0.7; // Moderate vegetation
+    else if (ndvi > 0.1) vegetationFactor = 0.4; // Sparse vegetation
+    else vegetationFactor = 0.2; // Very little vegetation
+  }
+  
+  // Land cover factor - forests and grasslands provide more fuel
+  let landCoverFactor = 0.5; // Default middle value
+  if (landCoverData) {
+    // Calculate based on forest and grassland percentages (main fuel sources)
+    const fuelPercentage = (landCoverData.forest_percent + landCoverData.grassland_percent) / 100;
+    landCoverFactor = Math.min(1, fuelPercentage);
+  }
+  
+  // Check if location is in high-risk latitude band (most wildfires occur between 30-50 degrees)
+  const latAbs = Math.abs(lat);
+  const isHighRiskLatitude = (latAbs >= 30 && latAbs <= 50) ? 1.1 : 1.0;
+  
+  let probability = (
+    tempFactor * tempWeight +
+    humidityFactor * humidityWeight +
+    droughtFactor * droughtWeight +
+    co2Factor * co2Weight +
+    aqiFactor * aqiWeight +
+    pm25Factor * pm25Weight +
+    vegetationFactor * vegetationWeight +
+    landCoverFactor * landCoverWeight
+  ) * 100 * isHighRiskLatitude;
+  
+  // Apply the same scaling as Random Forest for consistency
+  probability = probability * 0.85;
+  
+  // Cap at 95%
+  probability = Math.min(95, Math.round(probability * 100) / 100);
+  
+  return {
+    location: weatherData.name || location,
+    latitude: lat,
+    longitude: lon,
+    probability: probability,
+    co2_level: co2Level,
+    temperature: weatherData.main.temp,
+    humidity: weatherData.main.humidity,
+    drought_index: droughtIndex,
+    air_quality_index: airQualityIndex,
+    pm2_5: pm2_5,
+    pm10: pm10,
+    vegetation_index: vegetationData,
+    land_cover: landCoverData,
+    model_type: "formula"
+  };
 }
