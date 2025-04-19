@@ -10,6 +10,8 @@ interface EarthEngineDataProps {
   vegetationIndex?: {
     ndvi: number;
     evi: number;
+    data_source?: string;
+    request_timestamp?: string;
   };
   landCover?: {
     forest_percent: number;

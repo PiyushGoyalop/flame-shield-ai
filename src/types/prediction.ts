@@ -31,6 +31,8 @@ export interface PredictionData {
   vegetation_index?: {
     ndvi: number;
     evi: number;
+    data_source?: string;
+    request_timestamp?: string;
   };
   land_cover?: {
     forest_percent: number;

@@ -5,6 +5,8 @@ interface VegetationIndicesProps {
   vegetationIndex: {
     ndvi: number;
     evi: number;
+    data_source?: string;
+    request_timestamp?: string;
   };
 }
 

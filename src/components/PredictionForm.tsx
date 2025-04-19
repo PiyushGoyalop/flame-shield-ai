@@ -31,7 +31,7 @@ export function PredictionForm() {
         toast({
           title: "Google Earth Engine API Issue Detected",
           description: "Using simulated vegetation data. The API connection may need attention.",
-          variant: "warning"
+          variant: "destructive" // Changed to "destructive" as "warning" is not a valid variant
         });
       }
     }
