@@ -1,12 +1,6 @@
 import React from 'react';
-import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind, HelpCircle } from "lucide-react";
+import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
 
 interface MainStatsProps {
   probability: number;
@@ -87,19 +81,11 @@ export function MainStats({
               <span className="flex items-center gap-2 text-sm">
                 <Cloud className="h-4 w-4 text-orange-600" /> 
                 <span>CO₂ Levels</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="h-4 w-4 text-gray-500 ml-1" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>CO₂ Measurement in Metric Tons (MT)</p>
-                      <p>Represents greenhouse gas emissions</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </span>
-              <span className="font-semibold">{co2Level} MT</span>
+              <span className="font-semibold">
+                {co2Level} MT 
+                <span className="text-xs text-gray-500 ml-1">(Metric Tons)</span>
+              </span>
             </div>
             
             <div className="flex justify-between items-center">
@@ -149,24 +135,11 @@ export function MainStats({
                 <span className="flex items-center gap-2 text-sm">
                   <Wind className="h-4 w-4 text-purple-500" /> 
                   <span>Air Quality Index</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-500 ml-1" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>AQI Range: 0-500</p>
-                        <p>0-50: Good</p>
-                        <p>51-100: Moderate</p>
-                        <p>101-150: Unhealthy for Sensitive Groups</p>
-                        <p>151-200: Unhealthy</p>
-                        <p>201-300: Very Unhealthy</p>
-                        <p>301-500: Hazardous</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </span>
-                <span className="font-semibold">{standardAQI} AQI</span>
+                <span className="font-semibold">
+                  {standardAQI} AQI
+                  <span className="text-xs text-gray-500 ml-1">(0-500 Scale)</span>
+                </span>
               </div>
             )}
             
