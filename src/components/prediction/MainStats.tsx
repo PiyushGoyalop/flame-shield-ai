@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Leaf, Cloud, Thermometer, Droplets, AlertTriangle, Wind } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,18 +35,51 @@ export function MainStats({
   
   const riskInfo = getRiskLevel(probability);
 
-  const convertAQIToStandardScale = (simpleAQI?: number): number => {
-    switch(simpleAQI) {
-      case 1: return 50;   // Good
-      case 2: return 100;  // Fair
-      case 3: return 150;  // Moderate
-      case 4: return 200;  // Poor
-      case 5: return 300;  // Very Poor
-      default: return 0;   // Invalid or unknown
+  // Get appropriate AQI display text and color based on OpenWeather's 1-5 scale
+  const getAQIInfo = (aqi?: number) => {
+    if (!aqi) return { text: "Unknown", color: "text-gray-500", value: 0 };
+    
+    switch(aqi) {
+      case 1: 
+        return { 
+          text: "Good", 
+          color: "text-green-600",
+          value: 50 // Approx equivalent on 0-500 scale
+        };
+      case 2: 
+        return { 
+          text: "Fair", 
+          color: "text-lime-600",
+          value: 100
+        };
+      case 3: 
+        return { 
+          text: "Moderate", 
+          color: "text-amber-600",
+          value: 150
+        };
+      case 4: 
+        return { 
+          text: "Poor", 
+          color: "text-orange-600",
+          value: 200
+        };
+      case 5: 
+        return { 
+          text: "Very Poor", 
+          color: "text-red-600",
+          value: 300
+        };
+      default: 
+        return { 
+          text: "Unknown", 
+          color: "text-gray-500",
+          value: 0
+        };
     }
   };
 
-  const standardAQI = convertAQIToStandardScale(airQualityIndex);
+  const aqiInfo = getAQIInfo(airQualityIndex);
 
   return (
     <div className="mt-6 space-y-4">
@@ -137,8 +171,9 @@ export function MainStats({
                   <span>Air Quality Index</span>
                 </span>
                 <span className="font-semibold">
-                  {standardAQI} AQI
-                  <span className="text-xs text-gray-500 ml-1">(0-500 Scale)</span>
+                  {airQualityIndex} 
+                  <span className={`ml-2 text-xs ${aqiInfo.color}`}>{aqiInfo.text}</span>
+                  <span className="text-xs text-gray-500 ml-1 block text-right">(1-5 Scale)</span>
                 </span>
               </div>
             )}
@@ -149,7 +184,7 @@ export function MainStats({
                   <Cloud className="h-4 w-4 text-indigo-500" /> 
                   <span>PM2.5</span>
                 </span>
-                <span className="font-semibold">{pm2_5}</span>
+                <span className="font-semibold">{pm2_5} μg/m³</span>
               </div>
             )}
             
@@ -159,7 +194,7 @@ export function MainStats({
                   <Cloud className="h-4 w-4 text-blue-500" /> 
                   <span>PM10</span>
                 </span>
-                <span className="font-semibold">{pm10}</span>
+                <span className="font-semibold">{pm10} μg/m³</span>
               </div>
             )}
             
