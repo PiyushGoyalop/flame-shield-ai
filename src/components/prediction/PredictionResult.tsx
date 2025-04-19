@@ -25,7 +25,8 @@ const transformPredictionData = (result: PredictionData) => {
     pm2_5: result.pm2_5 || 0,
     pm10: result.pm10 || 0,
     model_type: result.model_type || "formula_based",
-    feature_importance: result.feature_importance || {}
+    feature_importance: result.feature_importance || {},
+    data_source: result.vegetation_index?.data_source || "unknown"
   };
 };
 
@@ -46,6 +47,17 @@ export const PredictionResult = memo(function PredictionResult({
 
   // Transform data to ensure compatibility with PredictionData type
   const displayData = transformPredictionData(result);
+  
+  // Extract Earth Engine data source for logging/debugging
+  const dataSource = result.vegetation_index?.data_source;
+  const requestTimestamp = result.vegetation_index?.request_timestamp;
+  
+  if (dataSource) {
+    console.log(`Earth Engine data source: ${dataSource}`);
+  }
+  if (requestTimestamp) {
+    console.log(`Earth Engine request timestamp: ${requestTimestamp}`);
+  }
 
   return (
     <div className="mt-8 space-y-6">
@@ -75,12 +87,15 @@ export const PredictionResult = memo(function PredictionResult({
         airQualityIndex={displayData.air_quality_index}
         pm2_5={displayData.pm2_5}
         pm10={displayData.pm10}
+        dataSource={displayData.data_source}
       />
       
       {(result.vegetation_index || result.land_cover) && (
         <EarthEngineDataDisplay 
           vegetationIndex={result.vegetation_index} 
           landCover={result.land_cover} 
+          dataSource={dataSource}
+          requestTimestamp={requestTimestamp}
         />
       )}
       

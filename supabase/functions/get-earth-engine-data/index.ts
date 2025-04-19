@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.170.0/http/server.ts';
 import { create, verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
 
@@ -28,11 +27,16 @@ interface LandCoverData {
 interface EarthEngineResponse {
   vegetation_index: VegetationData;
   land_cover: LandCoverData;
+  data_source: string; // Added to track if real or mock data is used
+  request_timestamp: string; // Added to log when the request was made
 }
 
 // Function to fetch real Earth Engine data using a direct HTTP request to Google Earth Engine API
 async function fetchRealEarthEngineData(lat: number, lon: number): Promise<EarthEngineResponse | null> {
   try {
+    console.log(`Attempting to fetch real Earth Engine data for coordinates: ${lat}, ${lon}`);
+    console.log(`Request timestamp: ${new Date().toISOString()}`);
+    
     // Earth Engine REST API endpoint for NDVI calculation
     // We need to use the Google Earth Engine REST API since we can't use the JS client in Deno
     const privateKey = Deno.env.get("GOOGLE_EARTH_ENGINE_PRIVATE_KEY");
@@ -74,7 +78,8 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
     );
     
     if (!ndviResponse.ok) {
-      console.error("Failed to get NDVI data:", await ndviResponse.text());
+      const errorText = await ndviResponse.text();
+      console.error("Failed to get NDVI data:", errorText);
       return null;
     }
     
@@ -97,7 +102,8 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
     );
     
     if (!landCoverResponse.ok) {
-      console.error("Failed to get land cover data:", await landCoverResponse.text());
+      const errorText = await landCoverResponse.text();
+      console.error("Failed to get land cover data:", errorText);
       return null;
     }
     
@@ -112,6 +118,8 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
         evi: processEVIResponse(ndviData),
       },
       land_cover: processLandCoverResponse(landCoverData),
+      data_source: "real_api",
+      request_timestamp: new Date().toISOString()
     };
   } catch (error) {
     console.error("Error fetching Earth Engine data:", error);
@@ -304,6 +312,7 @@ function generateMockEarthEngineData(lat: number, lon: number): EarthEngineRespo
   if (finalTotal < 100) forest += (100 - finalTotal);
   if (finalTotal > 100) forest -= (finalTotal - 100);
   
+  // Add data source and timestamp to the response
   return {
     vegetation_index: {
       ndvi: parseFloat(ndvi.toFixed(2)),
@@ -315,12 +324,15 @@ function generateMockEarthEngineData(lat: number, lon: number): EarthEngineRespo
       urban_percent: urban,
       water_percent: water,
       barren_percent: barren
-    }
+    },
+    data_source: "mock_fallback",
+    request_timestamp: new Date().toISOString()
   };
 }
 
 async function handleRequest(req: Request): Promise<Response> {
   console.log("Earth Engine API request received");
+  console.log(`Request timestamp: ${new Date().toISOString()}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -371,7 +383,10 @@ async function handleRequest(req: Request): Promise<Response> {
     console.error("Error processing Earth Engine request:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to process Earth Engine data" }),
+      JSON.stringify({ 
+        error: error.message || "Failed to process Earth Engine data",
+        timestamp: new Date().toISOString()
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
