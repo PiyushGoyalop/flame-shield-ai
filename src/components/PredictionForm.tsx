@@ -31,9 +31,12 @@ export function PredictionForm() {
         toast({
           title: "Google Earth Engine API Issue Detected",
           description: "Using simulated vegetation data. The API connection may need attention.",
-          variant: "destructive" // Changed to "destructive" as "warning" is not a valid variant
+          variant: "destructive"
         });
       }
+    } else if (result?.vegetation_index?.data_source === 'real_api') {
+      // Reset the API issue flag if we get real data
+      setApiIssueDetected(false);
     }
   }, [result, toast, apiIssueDetected]);
 

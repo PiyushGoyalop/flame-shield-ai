@@ -42,6 +42,10 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
     const privateKey = Deno.env.get("GOOGLE_EARTH_ENGINE_PRIVATE_KEY");
     const clientEmail = Deno.env.get("GOOGLE_EARTH_ENGINE_CLIENT_EMAIL");
     
+    // Log for debugging environment variables
+    console.log(`Environment privateKey exists: ${!!privateKey}`);
+    console.log(`Environment clientEmail exists: ${!!clientEmail}`);
+    
     if (!privateKey || !clientEmail) {
       console.error("Missing Earth Engine credentials");
       throw new Error("Earth Engine API credentials are not properly configured");
@@ -58,21 +62,22 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
     console.log("Private key prepared for authentication");
     
     // Get an access token from Google using service account credentials
-    const accessToken = await getGoogleAccessToken(clientEmail, cleanPrivateKey);
-    
-    if (!accessToken) {
-      console.error("Failed to get Google access token");
-      throw new Error("Authentication with Google failed");
+    let accessToken;
+    try {
+      accessToken = await getGoogleAccessToken(clientEmail, cleanPrivateKey);
+      if (!accessToken) {
+        console.error("Failed to get Google access token");
+        throw new Error("Authentication with Google failed");
+      }
+    } catch (authError) {
+      console.error("Google authentication error:", authError);
+      throw new Error(`Google authentication failed: ${authError.message}`);
     }
     
     console.log("Successfully obtained Google access token, proceeding with API request");
     
-    // For this demonstration, instead of making a complex Earth Engine API call,
-    // we'll use a simplified approach to get vegetation data
-    // In a production scenario, you would construct proper Earth Engine computations
-    
-    // Simulate a successful API response with realistic data based on location
-    // This would be replaced with actual API calls in production
+    // For this demonstration, we'll use a simplified approach to get vegetation data
+    // In a production scenario, you would make actual API calls to Earth Engine
     const ndviValue = calculateRealisticNDVI(lat, lon);
     const eviValue = ndviValue * 0.85; // EVI is typically slightly lower than NDVI
     
@@ -93,6 +98,7 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
     };
   } catch (error) {
     console.error("Error in fetchRealEarthEngineData:", error);
+    // Return null instead of throwing to allow fallback to mock data
     return null;
   }
 }
@@ -212,51 +218,61 @@ async function getGoogleAccessToken(clientEmail: string, privateKey: string): Pr
     // Create the JWT header and payload
     const now = Math.floor(Date.now() / 1000);
     
-    // Use proper JWT creation with the djwt library
-    const key = await crypto.subtle.importKey(
-      "pkcs8",
-      new TextEncoder().encode(privateKey),
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
+    // Debug the private key format (without revealing the actual key)
+    console.log(`Private key length: ${privateKey.length}`);
+    console.log(`Private key starts with: ${privateKey.substring(0, 5)}...`);
+    console.log(`Private key contains '\\n': ${privateKey.includes('\\n')}`);
     
-    const jwt = await create(
-      { alg: "RS256", typ: "JWT" },
-      {
-        iss: clientEmail,
-        sub: clientEmail,
-        aud: "https://oauth2.googleapis.com/token",
-        iat: now,
-        exp: now + 3600,
-        scope: "https://www.googleapis.com/auth/earthengine"
-      },
-      key
-    );
-    
-    console.log("JWT generated, exchanging for access token");
-    
-    // Exchange the JWT for an access token
-    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        assertion: jwt,
-      }).toString(),
-    });
-    
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error(`Failed to get access token: ${tokenResponse.status} ${errorText}`);
-      return null;
+    try {
+      // Use proper JWT creation with the djwt library
+      const key = await crypto.subtle.importKey(
+        "pkcs8",
+        new TextEncoder().encode(privateKey),
+        { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      
+      const jwt = await create(
+        { alg: "RS256", typ: "JWT" },
+        {
+          iss: clientEmail,
+          sub: clientEmail,
+          aud: "https://oauth2.googleapis.com/token",
+          iat: now,
+          exp: now + 3600,
+          scope: "https://www.googleapis.com/auth/earthengine"
+        },
+        key
+      );
+      
+      console.log("JWT generated, exchanging for access token");
+      
+      // Exchange the JWT for an access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+          assertion: jwt,
+        }).toString(),
+      });
+      
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error(`Failed to get access token: ${tokenResponse.status} ${errorText}`);
+        return null;
+      }
+      
+      const tokenData = await tokenResponse.json();
+      console.log("Successfully obtained access token");
+      return tokenData.access_token;
+    } catch (keyError) {
+      console.error("Error with key import or JWT creation:", keyError);
+      throw new Error(`JWT creation failed: ${keyError.message}`);
     }
-    
-    const tokenData = await tokenResponse.json();
-    console.log("Successfully obtained access token");
-    return tokenData.access_token;
   } catch (error) {
     console.error("Error generating Google access token:", error);
     return null;
@@ -297,16 +313,17 @@ function generateMockEarthEngineData(lat: number, lon: number): EarthEngineRespo
   
   // Normalize to ensure total is 100%
   const total = forest + grassland + urban + water + barren;
-  forestPercent = Math.round((forest / total) * 100);
-  grasslandPercent = Math.round((grassland / total) * 100);
-  urbanPercent = Math.round((urban / total) * 100);
-  waterPercent = Math.round((water / total) * 100);
-  barrenPercent = Math.round((barren / total) * 100);
+  const forestPercent = Math.round((forest / total) * 100);
+  const grasslandPercent = Math.round((grassland / total) * 100);
+  const urbanPercent = Math.round((urban / total) * 100);
+  const waterPercent = Math.round((water / total) * 100);
+  const barrenPercent = Math.round((barren / total) * 100);
   
   // Final adjustment to ensure exactly 100%
   const finalTotal = forestPercent + grasslandPercent + urbanPercent + waterPercent + barrenPercent;
-  if (finalTotal < 100) forestPercent += (100 - finalTotal);
-  if (finalTotal > 100) forestPercent -= (finalTotal - 100);
+  let adjustedForestPercent = forestPercent;
+  if (finalTotal < 100) adjustedForestPercent += (100 - finalTotal);
+  if (finalTotal > 100) adjustedForestPercent -= (finalTotal - 100);
   
   // Add data source and timestamp to the response
   return {
@@ -315,7 +332,7 @@ function generateMockEarthEngineData(lat: number, lon: number): EarthEngineRespo
       evi: parseFloat(evi.toFixed(2))
     },
     land_cover: {
-      forest_percent: forestPercent,
+      forest_percent: adjustedForestPercent,
       grassland_percent: grasslandPercent,
       urban_percent: urbanPercent,
       water_percent: waterPercent,

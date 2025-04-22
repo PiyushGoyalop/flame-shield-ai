@@ -21,6 +21,11 @@ export function VegetationIndicesDisplay({ vegetationIndex }: VegetationIndicesP
     if (ndvi >= 0.1) return "Poor vegetation health, sparse coverage";
     return "Very low vegetation, possibly barren or urban";
   };
+  
+  // Determine source text and style
+  const isRealData = vegetationIndex.data_source === 'real_api';
+  const sourceText = isRealData ? "Real-time Earth Engine data" : "Simulated vegetation data";
+  const sourceTextClass = isRealData ? "text-green-600" : "text-amber-600";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -33,6 +38,11 @@ export function VegetationIndicesDisplay({ vegetationIndex }: VegetationIndicesP
         <span className="text-xs text-green-600 mt-1">
           {getVegetationHealthText(vegetationIndex.ndvi)}
         </span>
+        {vegetationIndex.data_source && (
+          <span className={`text-xs mt-2 ${sourceTextClass}`}>
+            {sourceText}
+          </span>
+        )}
       </div>
       <div className="flex flex-col p-3 bg-green-50 rounded-lg">
         <span className="text-sm text-muted-foreground">EVI (Enhanced Vegetation)</span>
