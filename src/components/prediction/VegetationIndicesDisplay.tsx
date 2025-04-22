@@ -1,5 +1,5 @@
 
-import { Leaf } from "lucide-react";
+import { Leaf, Zap } from "lucide-react";
 
 interface VegetationIndicesProps {
   vegetationIndex: {
@@ -24,8 +24,11 @@ export function VegetationIndicesDisplay({ vegetationIndex }: VegetationIndicesP
   
   // Determine source text and style
   const isRealData = vegetationIndex.data_source === 'real_api';
-  const sourceText = isRealData ? "Real-time Earth Engine data" : "Simulated vegetation data";
+  const sourceText = isRealData 
+    ? "Real-time Earth Engine data" 
+    : "Simulated vegetation data";
   const sourceTextClass = isRealData ? "text-green-600" : "text-amber-600";
+  const sourceIcon = isRealData ? <Zap className="h-3 w-3" /> : null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -39,9 +42,10 @@ export function VegetationIndicesDisplay({ vegetationIndex }: VegetationIndicesP
           {getVegetationHealthText(vegetationIndex.ndvi)}
         </span>
         {vegetationIndex.data_source && (
-          <span className={`text-xs mt-2 ${sourceTextClass}`}>
-            {sourceText}
-          </span>
+          <div className={`text-xs mt-2 ${sourceTextClass} flex items-center gap-1`}>
+            {sourceIcon}
+            <span>{sourceText}</span>
+          </div>
         )}
       </div>
       <div className="flex flex-col p-3 bg-green-50 rounded-lg">

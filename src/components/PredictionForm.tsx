@@ -5,7 +5,7 @@ import { LocationSelector } from "./prediction/LocationSelector";
 import { PredictionResult } from "./prediction/PredictionResult";
 import { Button } from "./ui/button";
 import { usePrediction } from "@/hooks/usePrediction";
-import { Brain, AlertCircle } from "lucide-react";
+import { Brain, AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,7 +30,7 @@ export function PredictionForm() {
       if (!apiIssueDetected) {
         toast({
           title: "Google Earth Engine API Issue Detected",
-          description: "Using simulated vegetation data. The API connection may need attention.",
+          description: "Using simulated vegetation data. Please check the API credentials.",
           variant: "destructive"
         });
       }
@@ -50,11 +50,20 @@ export function PredictionForm() {
           </div>
           
           {apiIssueDetected && (
-            <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-start space-x-2">
-              <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-start space-x-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-yellow-700">
                 <p className="font-medium">Google Earth Engine API Issue Detected</p>
-                <p className="text-xs mt-1">The system is currently using simulated vegetation data. The Google Earth Engine API connection may need attention.</p>
+                <p className="text-xs mt-1">The system is currently using simulated vegetation data. This usually happens when:</p>
+                <ul className="text-xs mt-1 list-disc pl-4">
+                  <li>The Google Earth Engine API credentials are missing or incorrect</li>
+                  <li>The API service is temporarily unavailable</li>
+                  <li>The authentication process failed</li>
+                </ul>
+                <p className="text-xs mt-2 flex items-center">
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Try refreshing the page or contact the administrator to check API credentials.
+                </p>
               </div>
             </div>
           )}

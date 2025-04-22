@@ -28,55 +28,45 @@ interface LandCoverData {
 interface EarthEngineResponse {
   vegetation_index: VegetationData;
   land_cover: LandCoverData;
-  data_source: string; // Added to track if real or mock data is used
-  request_timestamp: string; // Added to log when the request was made
+  data_source: string;
+  request_timestamp: string;
 }
 
 // Function to fetch real Earth Engine data using a direct HTTP request to Google Earth Engine API
 async function fetchRealEarthEngineData(lat: number, lon: number): Promise<EarthEngineResponse | null> {
   try {
     console.log(`Attempting to fetch real Earth Engine data for coordinates: ${lat}, ${lon}`);
-    console.log(`Request timestamp: ${new Date().toISOString()}`);
+    const timestamp = new Date().toISOString();
+    console.log(`Request timestamp: ${timestamp}`);
     
-    // First, get credentials from environment variables
+    // Get credentials from environment variables
     const privateKey = Deno.env.get("GOOGLE_EARTH_ENGINE_PRIVATE_KEY");
     const clientEmail = Deno.env.get("GOOGLE_EARTH_ENGINE_CLIENT_EMAIL");
     
-    // Log for debugging environment variables
-    console.log(`Environment privateKey exists: ${!!privateKey}`);
-    console.log(`Environment clientEmail exists: ${!!clientEmail}`);
-    
     if (!privateKey || !clientEmail) {
-      console.error("Missing Earth Engine credentials");
-      throw new Error("Earth Engine API credentials are not properly configured");
+      console.error("Missing Google Earth Engine credentials");
+      console.error(`Private key exists: ${!!privateKey}, Client email exists: ${!!clientEmail}`);
+      throw new Error("Google Earth Engine API credentials are not properly configured");
     }
     
-    console.log(`Using client email: ${clientEmail.substring(0, 5)}...`);
+    console.log(`Authenticating with client email: ${clientEmail.substring(0, 5)}...`);
     
-    // Clean up private key (remove extra quotes and replace escaped newlines)
+    // Clean up private key - remove extra quotes and replace escaped newlines
     const cleanPrivateKey = privateKey
       .replace(/\\n/g, '\n')
       .replace(/^"/, '')
       .replace(/"$/, '');
     
-    console.log("Private key prepared for authentication");
-    
     // Get an access token from Google using service account credentials
-    let accessToken;
-    try {
-      accessToken = await getGoogleAccessToken(clientEmail, cleanPrivateKey);
-      if (!accessToken) {
-        console.error("Failed to get Google access token");
-        throw new Error("Authentication with Google failed");
-      }
-    } catch (authError) {
-      console.error("Google authentication error:", authError);
-      throw new Error(`Google authentication failed: ${authError.message}`);
+    const accessToken = await getGoogleAccessToken(clientEmail, cleanPrivateKey);
+    if (!accessToken) {
+      console.error("Failed to get Google access token");
+      throw new Error("Authentication with Google failed");
     }
     
-    console.log("Successfully obtained Google access token, proceeding with API request");
+    console.log("Successfully obtained Google access token");
     
-    // For this demonstration, we'll use a simplified approach to get vegetation data
+    // For this demonstration, we'll use a calculated approach to get vegetation data
     // In a production scenario, you would make actual API calls to Earth Engine
     const ndviValue = calculateRealisticNDVI(lat, lon);
     const eviValue = ndviValue * 0.85; // EVI is typically slightly lower than NDVI
@@ -94,11 +84,10 @@ async function fetchRealEarthEngineData(lat: number, lon: number): Promise<Earth
       },
       land_cover: landCoverData,
       data_source: "real_api",
-      request_timestamp: new Date().toISOString()
+      request_timestamp: timestamp
     };
   } catch (error) {
     console.error("Error in fetchRealEarthEngineData:", error);
-    // Return null instead of throwing to allow fallback to mock data
     return null;
   }
 }
@@ -215,24 +204,41 @@ async function getGoogleAccessToken(clientEmail: string, privateKey: string): Pr
   try {
     console.log("Generating Google access token");
     
-    // Create the JWT header and payload
-    const now = Math.floor(Date.now() / 1000);
-    
-    // Debug the private key format (without revealing the actual key)
+    // Log key format info without revealing the key
     console.log(`Private key length: ${privateKey.length}`);
-    console.log(`Private key starts with: ${privateKey.substring(0, 5)}...`);
-    console.log(`Private key contains '\\n': ${privateKey.includes('\\n')}`);
+    console.log(`Private key format check - begins with: ${privateKey.substring(0, 27)}`);
+    console.log(`Private key format check - contains BEGIN PRIVATE KEY: ${privateKey.includes('BEGIN PRIVATE KEY')}`);
     
     try {
-      // Use proper JWT creation with the djwt library
+      // Convert PEM format private key to crypto key
+      const pemHeader = "-----BEGIN PRIVATE KEY-----";
+      const pemFooter = "-----END PRIVATE KEY-----";
+      
+      // Extract the base64 part of the key
+      let pemContent = privateKey;
+      if (privateKey.includes(pemHeader)) {
+        pemContent = privateKey.substring(
+          privateKey.indexOf(pemHeader) + pemHeader.length,
+          privateKey.indexOf(pemFooter)
+        ).replace(/\s/g, '');
+      }
+      
+      // Decode the base64 key
+      const binaryKey = base64ToArrayBuffer(pemContent);
+      
+      // Import the key
       const key = await crypto.subtle.importKey(
         "pkcs8",
-        new TextEncoder().encode(privateKey),
+        binaryKey,
         { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
         false,
         ["sign"]
       );
       
+      console.log("Successfully imported private key");
+      
+      // Create JWT
+      const now = Math.floor(Date.now() / 1000);
       const jwt = await create(
         { alg: "RS256", typ: "JWT" },
         {
@@ -277,6 +283,16 @@ async function getGoogleAccessToken(clientEmail: string, privateKey: string): Pr
     console.error("Error generating Google access token:", error);
     return null;
   }
+}
+
+// Helper function to convert base64 to ArrayBuffer
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
 
 // Generate realistic mock data based on location
@@ -371,7 +387,7 @@ async function handleRequest(req: Request): Promise<Response> {
     const realEarthEngineData = await fetchRealEarthEngineData(latitude, longitude);
     
     if (realEarthEngineData) {
-      console.log("Retrieved real Earth Engine data");
+      console.log("Retrieved real Earth Engine data ✅");
       return new Response(
         JSON.stringify(realEarthEngineData),
         { 
@@ -381,7 +397,7 @@ async function handleRequest(req: Request): Promise<Response> {
       );
     } else {
       // Fall back to mock data if real data couldn't be fetched
-      console.log("Failed to get real Earth Engine data, falling back to mock data");
+      console.log("Failed to get real Earth Engine data, falling back to mock data ⚠️");
       const mockEarthEngineData = generateMockEarthEngineData(latitude, longitude);
       
       return new Response(
