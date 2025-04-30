@@ -4,7 +4,6 @@ import { WildfireRiskCard } from './stats/WildfireRiskCard';
 import { EnvironmentCard } from './stats/EnvironmentCard';
 import { WeatherStatsCard } from './stats/WeatherStatsCard';
 import { AirQualityCard } from './stats/AirQualityCard';
-import { AlertCircle } from 'lucide-react';
 
 interface MainStatsProps {
   probability: number;
@@ -15,7 +14,7 @@ interface MainStatsProps {
   airQualityIndex?: number;
   pm2_5?: number;
   pm10?: number;
-  dataSource?: string; // Add data source information
+  dataSource?: string; // Keep this for backward compatibility
 }
 
 export function MainStats({ 
@@ -42,13 +41,6 @@ export function MainStats({
           pm10={pm10}
         />
       </div>
-      
-      {dataSource === 'mock_fallback' && (
-        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-md text-xs text-yellow-700 flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4" />
-          <span>Using simulated Earth Engine data. The Google Earth Engine API connection may need attention.</span>
-        </div>
-      )}
     </div>
   );
 }

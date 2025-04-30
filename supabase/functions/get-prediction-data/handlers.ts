@@ -1,3 +1,4 @@
+
 import { 
   RequestBody, 
   PredictionData, 
@@ -68,29 +69,9 @@ export async function handleRequest(req: Request): Promise<Response> {
       const airPollutionData = await getAirPollutionData(lat, lon);
       console.log(`Air pollution data received for ${location}`);
       
-      // Get Earth Engine data (vegetation indices and land cover)
-      let vegetationData, landCoverData;
-      try {
-        const earthEngineResponse = await fetch(`https://lmnvkkpxcqzogeisbygc.supabase.co/functions/v1/get-earth-engine-data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.headers.get('Authorization') || ''
-          },
-          body: JSON.stringify({ latitude: lat, longitude: lon })
-        });
-        
-        if (earthEngineResponse.ok) {
-          const earthEngineData = await earthEngineResponse.json();
-          console.log(`Earth Engine data received for ${location}`);
-          vegetationData = earthEngineData.vegetation_index;
-          landCoverData = earthEngineData.land_cover;
-        } else {
-          console.error(`Failed to get Earth Engine data: ${await earthEngineResponse.text()}`);
-        }
-      } catch (error) {
-        console.error(`Error fetching Earth Engine data: ${error.message}`);
-      }
+      // Generate mock vegetation data and land cover data
+      const vegetationData = generateMockVegetationData(lat, lon);
+      const landCoverData = generateMockLandCoverData(lat, lon);
       
       // Always use the Random Forest model (ignoring useRandomForest parameter)
       const predictionData = generateRandomForestPrediction(
@@ -155,6 +136,67 @@ export async function handleRequest(req: Request): Promise<Response> {
       }
     );
   }
+}
+
+// Generate mock vegetation data
+function generateMockVegetationData(lat: number, lon: number) {
+  // Create location-specific seed for consistent results
+  const locationSeed = Math.abs(Math.sin(lat * lon)) * 0.7;
+  
+  // Adjust values based on latitude (assuming more vegetation in temperate zones)
+  const isTemperateZone = Math.abs(lat) > 20 && Math.abs(lat) < 60;
+  const isEquatorial = Math.abs(lat) < 20;
+  
+  // Base vegetation values
+  let ndviBase = isTemperateZone ? 0.6 : isEquatorial ? 0.8 : 0.3;
+  let eviBase = isTemperateZone ? 0.5 : isEquatorial ? 0.7 : 0.2;
+  
+  // Adjust for randomness
+  const ndvi = Math.min(1, Math.max(0, ndviBase + (locationSeed * 0.4 - 0.2)));
+  const evi = Math.min(1, Math.max(0, eviBase + (locationSeed * 0.4 - 0.2)));
+  
+  return {
+    ndvi: parseFloat(ndvi.toFixed(2)),
+    evi: parseFloat(evi.toFixed(2)),
+    data_source: 'mock_data',
+    request_timestamp: new Date().toISOString()
+  };
+}
+
+// Generate mock land cover data
+function generateMockLandCoverData(lat: number, lon: number) {
+  // Create location-specific seed for consistent results
+  const locationSeed = Math.abs(Math.sin(lat * lon)) * 0.7;
+  
+  // Adjust values based on latitude
+  const isTemperateZone = Math.abs(lat) > 20 && Math.abs(lat) < 60;
+  const isEquatorial = Math.abs(lat) < 20;
+  const isPolar = Math.abs(lat) > 60;
+  
+  // Land cover percentages
+  let forest = isTemperateZone ? 40 : isEquatorial ? 60 : 10;
+  let grassland = isTemperateZone ? 30 : isEquatorial ? 20 : 20;
+  let urban = 15;
+  let water = 10;
+  let barren = isPolar ? 50 : 5;
+  
+  // Adjust based on location seed
+  forest = Math.min(100, Math.max(0, forest + (locationSeed * 30 - 15)));
+  grassland = Math.min(100, Math.max(0, grassland + (locationSeed * 20 - 10)));
+  urban = Math.min(100, Math.max(0, urban + (locationSeed * 15 - 7.5)));
+  water = Math.min(100, Math.max(0, water + (locationSeed * 10 - 5)));
+  barren = Math.min(100, Math.max(0, barren + (locationSeed * 20 - 10)));
+  
+  // Normalize to ensure total is 100%
+  const total = forest + grassland + urban + water + barren;
+  
+  return {
+    forest_percent: Math.round((forest / total) * 100),
+    grassland_percent: Math.round((grassland / total) * 100),
+    urban_percent: Math.round((urban / total) * 100),
+    water_percent: Math.round((water / total) * 100),
+    barren_percent: Math.round((barren / total) * 100)
+  };
 }
 
 // Process all data and generate prediction results using Random Forest

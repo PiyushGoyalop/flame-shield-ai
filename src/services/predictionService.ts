@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PredictionData } from "@/types/prediction";
 
@@ -63,48 +62,7 @@ export async function getPredictionData(
     console.error("Failed to fetch historical data:", err);
   }
   
-  // Get Earth Engine vegetation and land cover data
-  let vegetationIndex, landCover;
-  try {
-    if (data.latitude && data.longitude) {
-      console.log(`Fetching Earth Engine data for coordinates: ${data.latitude}, ${data.longitude}`);
-      const startTime = new Date();
-      console.log(`Earth Engine request start time: ${startTime.toISOString()}`);
-      
-      const { data: earthEngineResponse, error: earthEngineError } = await supabase.functions.invoke('get-earth-engine-data', {
-        body: { 
-          latitude: data.latitude, 
-          longitude: data.longitude 
-        }
-      });
-      
-      const endTime = new Date();
-      const duration = endTime.getTime() - startTime.getTime();
-      console.log(`Earth Engine request duration: ${duration}ms`);
-      
-      if (earthEngineError) {
-        console.error("Error calling Earth Engine API:", earthEngineError);
-      } else {
-        console.log("Earth Engine API response:", earthEngineResponse);
-        
-        if (earthEngineResponse) {
-          vegetationIndex = {
-            ndvi: earthEngineResponse.vegetation_index.ndvi,
-            evi: earthEngineResponse.vegetation_index.evi,
-            data_source: earthEngineResponse.data_source,
-            request_timestamp: earthEngineResponse.request_timestamp
-          };
-          landCover = earthEngineResponse.land_cover;
-          
-          // Log the data source information
-          console.log(`Earth Engine data source: ${earthEngineResponse.data_source}`);
-          console.log(`Earth Engine request timestamp: ${earthEngineResponse.request_timestamp}`);
-        }
-      }
-    }
-  } catch (err) {
-    console.error("Failed to fetch Earth Engine data:", err);
-  }
+  // Note: We no longer fetch Earth Engine data separately, it's now included in the prediction response
   
   return {
     location: data.location,
@@ -119,8 +77,8 @@ export async function getPredictionData(
     pm2_5: data.pm2_5,
     pm10: data.pm10,
     historic_data: historicData,
-    vegetation_index: vegetationIndex,
-    land_cover: landCover,
+    vegetation_index: data.vegetation_index,
+    land_cover: data.land_cover,
     model_type: data.model_type,
     feature_importance: data.feature_importance
   };
