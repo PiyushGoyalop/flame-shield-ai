@@ -1,5 +1,5 @@
 
-import { Rocket, Calendar, Bell, MobilePhone, Database, Satellite } from "lucide-react";
+import { Rocket, Calendar, Bell, Smartphone, Database, Satellite } from "lucide-react";
 
 export function FutureSlide() {
   const futureFeatures = [
@@ -17,7 +17,7 @@ export function FutureSlide() {
     },
     {
       title: "Mobile App",
-      icon: MobilePhone,
+      icon: Smartphone,
       description: "Native applications for iOS and Android with offline functionality",
       status: "Design Phase"
     },
