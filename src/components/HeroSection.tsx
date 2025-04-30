@@ -1,75 +1,74 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Play, ArrowRight, PresentationIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 export function HeroSection() {
   const navigate = useNavigate();
-  const [bgImage, setBgImage] = useState<number>(1);
-
-  // Rotate through different background images
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBgImage(prev => (prev % 4) + 1);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Dynamically get background class based on current image
-  const getBgClass = () => {
-    switch(bgImage) {
-      case 1: return "bg-forest-dark";
-      case 2: return "bg-mountain-bg";
-      case 3: return "bg-water-bg";
-      case 4: return "bg-forest-light";
-      default: return "bg-forest-dark";
-    }
-  };
-
+  
   return (
-    <div className="relative h-screen overflow-hidden">
-      {/* Dynamic background image with overlay */}
-      <div className={`absolute inset-0 ${getBgClass()} bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out z-0`}>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
-      </div>
+    <section className="py-20 md:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-white to-wildfire-50 z-0"></div>
       
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 h-full flex items-center">
-        <div className="max-w-3xl text-white">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6 tracking-tight">
-            Predict and Analyze{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-wildfire-300 to-wildfire-500">Wildfire Risks</span>{" "}
-            with Precision
-          </h1>
+      {/* Decorative Elements */}
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-wildfire-200 rounded-full filter blur-3xl opacity-30 animate-float"></div>
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-amber-200 rounded-full filter blur-3xl opacity-20 animate-float-delayed"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+          <div className="lg:w-1/2 space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight">
+              Predicting Wildfires With <span className="text-wildfire-600">AI Technology</span>
+            </h1>
+            
+            <p className="text-xl text-muted-foreground">
+              Our advanced machine learning model analyzes environmental factors, weather patterns, and historical data to predict wildfire risks with high accuracy.
+            </p>
+            
+            <div className="pt-4 flex flex-wrap gap-4">
+              <Button 
+                onClick={() => navigate("/predict")} 
+                className="bg-wildfire-600 hover:bg-wildfire-700 text-white"
+                size="lg"
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Try Prediction Tool
+              </Button>
+              
+              <Button 
+                onClick={() => navigate("/about")} 
+                variant="outline" 
+                size="lg"
+              >
+                Learn More <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              
+              <Button 
+                onClick={() => navigate("/presentation")} 
+                variant="ghost" 
+                size="lg"
+                className="text-wildfire-600 hover:text-wildfire-700 hover:bg-wildfire-50"
+              >
+                <PresentationIcon className="mr-2 h-4 w-4" />
+                View Presentation
+              </Button>
+            </div>
+          </div>
           
-          <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl">
-            Leverage our cutting-edge machine learning model to predict wildfire probabilities based on location data, CO₂ emissions, and historical patterns.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              size="lg" 
-              className="bg-wildfire-500 hover:bg-wildfire-600 transition-all text-white"
-              onClick={() => navigate("/predict")}
-            >
-              Make a Prediction <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-white/20 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20"
-              onClick={() => navigate("/analytics")}
-            >
-              Explore Analytics
-            </Button>
+          <div className="lg:w-1/2">
+            <div className="relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-wildfire-300 to-wildfire-500 rounded-xl blur-sm opacity-75"></div>
+              <div className="relative rounded-xl overflow-hidden shadow-xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1609152770613-ede93c9ffb35?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80" 
+                  alt="Wildfire" 
+                  className="w-full aspect-video object-cover"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-1/4 -right-32 w-96 h-96 bg-wildfire-400/40 rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-wildfire-600/40 rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
-    </div>
+    </section>
   );
 }
