@@ -21,7 +21,6 @@ import Privacy from "./pages/Privacy";
 import ModelResults from "./pages/ModelResults";
 import UMLDiagrams from "./pages/UMLDiagrams";
 import SystemFlowDiagrams from "./pages/SystemFlowDiagrams";
-import Presentation from "./pages/Presentation";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +48,6 @@ const App = () => {
               <Route path="/model-results" element={<ModelResults />} />
               <Route path="/uml-diagrams" element={<UMLDiagrams />} />
               <Route path="/system-flow-diagrams" element={<SystemFlowDiagrams />} />
-              <Route path="/presentation" element={<Presentation />} />
               <Route path="/auth-redirect" element={<AuthRedirectHandler />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
