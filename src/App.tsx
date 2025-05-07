@@ -21,10 +21,14 @@ import Privacy from "./pages/Privacy";
 import ModelResults from "./pages/ModelResults";
 import UMLDiagrams from "./pages/UMLDiagrams";
 import SystemFlowDiagrams from "./pages/SystemFlowDiagrams";
+import { useFavicon } from "./hooks/useFavicon";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Use the favicon hook to set the favicon
+  useFavicon();
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
