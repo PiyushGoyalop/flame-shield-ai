@@ -27,7 +27,7 @@ export function GoogleSignInButton({ onClick }: GoogleSignInButtonProps) {
       type="button"
       disabled={isLoading}
       onClick={handleClick}
-      className="w-full flex items-center justify-center gap-2"
+      className="w-full flex items-center justify-center gap-2 border-gray-300 hover:bg-gray-50"
     >
       {isLoading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
