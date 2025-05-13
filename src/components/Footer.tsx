@@ -22,6 +22,12 @@ export function Footer() {
               <p className="text-wildfire-100/80 text-sm">
                 Advanced analytics and predictions for wildfire risk assessment using machine learning and environmental data.
               </p>
+              {/* Add prominent privacy policy link */}
+              <div className="mt-4">
+                <Link to="/privacy" className="text-wildfire-300 hover:text-wildfire-200 transition-colors font-medium underline">
+                  Privacy Policy
+                </Link>
+              </div>
             </div>
             
             <div>
@@ -45,6 +51,12 @@ export function Footer() {
                 <li>
                   <Link to="/about" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
                     About
+                  </Link>
+                </li>
+                {/* Make Privacy Policy more visible in navigation */}
+                <li>
+                  <Link to="/privacy" className="text-wildfire-100/70 hover:text-wildfire-200 transition-colors">
+                    Privacy Policy
                   </Link>
                 </li>
               </ul>
@@ -80,8 +92,8 @@ export function Footer() {
               <Link to="/terms" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Terms
               </Link>
-              <Link to="/privacy" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
-                Privacy
+              <Link to="/privacy" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors font-medium">
+                Privacy Policy
               </Link>
               <Link to="#" className="text-wildfire-100/60 hover:text-wildfire-200 transition-colors">
                 Cookies
