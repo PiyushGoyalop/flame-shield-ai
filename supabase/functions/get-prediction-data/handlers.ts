@@ -94,45 +94,43 @@ export async function handleRequest(req: Request): Promise<Response> {
         }
       );
     } catch (error) {
-      // More specific error for geocoding failures
-      if (error.message.includes("geocoding") || error.message.includes("location")) {
-        console.error("Location error:", error.message);
+      // More specific error for geocoding failures — return safe hardcoded hint
+      if (error.message && (error.message.includes("geocoding") || error.message.includes("location"))) {
+        console.error("Location error:", error);
         return new Response(
-          JSON.stringify({ 
-            error: error.message,
+          JSON.stringify({
+            error: "Location not found",
             details: "Try using a simpler location format like 'City' or 'City, State'"
           }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, "Content-Type": "application/json" } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
           }
         );
       }
-      
-      // General API errors
+
+      // General API errors — log internally, return generic message
       console.error("API error:", error);
       return new Response(
-        JSON.stringify({ 
-          error: "Error processing weather data. Please try again with a different location.",
-          details: error.message
+        JSON.stringify({
+          error: "Unable to process weather data. Please try again with a different location."
         }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
   } catch (error) {
     console.error("Unexpected error processing prediction:", error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        error: "Unexpected error processing prediction", 
-        details: error.message || "An unknown error occurred"
+      JSON.stringify({
+        error: "Unable to process your request. Please try again."
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }

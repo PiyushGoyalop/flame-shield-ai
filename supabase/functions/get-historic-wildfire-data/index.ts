@@ -19,12 +19,12 @@ serve(async (req) => {
     return await handleRequest(req);
   } catch (error) {
     console.error("Unhandled error in edge function:", error);
-    
+
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      JSON.stringify({ error: "Unable to process your request. Please try again." }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }
@@ -62,12 +62,12 @@ async function handleRequest(req: Request): Promise<Response> {
     );
   } catch (error) {
     console.error("Error processing historic wildfire data:", error);
-    
+
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to process historic wildfire data" }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      JSON.stringify({ error: "Unable to process historic wildfire data. Please try again." }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }
