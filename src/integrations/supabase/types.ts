@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      api_predictions: {
+        Row: {
+          air_quality_index: number | null
+          barren_percent: number | null
+          co2_level: number | null
+          created_at: string
+          drought_index: number | null
+          forest_percent: number | null
+          grassland_percent: number | null
+          humidity: number | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          pm10: number | null
+          pm2_5: number | null
+          probability: number
+          temperature: number | null
+          urban_percent: number | null
+          user_id: string
+          vegetation_evi: number | null
+          vegetation_ndvi: number | null
+          water_percent: number | null
+        }
+        Insert: {
+          air_quality_index?: number | null
+          barren_percent?: number | null
+          co2_level?: number | null
+          created_at?: string
+          drought_index?: number | null
+          forest_percent?: number | null
+          grassland_percent?: number | null
+          humidity?: number | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          pm10?: number | null
+          pm2_5?: number | null
+          probability: number
+          temperature?: number | null
+          urban_percent?: number | null
+          user_id: string
+          vegetation_evi?: number | null
+          vegetation_ndvi?: number | null
+          water_percent?: number | null
+        }
+        Update: {
+          air_quality_index?: number | null
+          barren_percent?: number | null
+          co2_level?: number | null
+          created_at?: string
+          drought_index?: number | null
+          forest_percent?: number | null
+          grassland_percent?: number | null
+          humidity?: number | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          pm10?: number | null
+          pm2_5?: number | null
+          probability?: number
+          temperature?: number | null
+          urban_percent?: number | null
+          user_id?: string
+          vegetation_evi?: number | null
+          vegetation_ndvi?: number | null
+          water_percent?: number | null
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          co2_level: number
+          created_at: string
+          drought_index: number
+          humidity: number
+          id: string
+          location: string
+          probability: number
+          temperature: number
+          user_id: string
+        }
+        Insert: {
+          co2_level?: number
+          created_at?: string
+          drought_index?: number
+          humidity?: number
+          id?: string
+          location: string
+          probability: number
+          temperature?: number
+          user_id: string
+        }
+        Update: {
+          co2_level?: number
+          created_at?: string
+          drought_index?: number
+          humidity?: number
+          id?: string
+          location?: string
+          probability?: number
+          temperature?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
