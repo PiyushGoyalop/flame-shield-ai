@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../shared/cors.ts";
+import { requireUser } from "../shared/auth.ts";
 import { USGSWildfireFeature, USGSWildfireResponse } from "./types.ts";
 
 // Main edge function entry point
@@ -9,7 +10,11 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-  
+
+  // Require authenticated user before doing any work
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+
   try {
     return await handleRequest(req);
   } catch (error) {
